@@ -156,7 +156,7 @@ export default function PhotoDetailPage({ params }: { params: { id: string } }) 
       <section className="py-12">
         <div className="wrap">
           {/* Two-column layout: main image/info + sidebar */}
-          <div className="grid gap-14 items-start" style={{ gridTemplateColumns: '1fr 360px' }}>
+          <div className="grid gap-14 items-start grid-cols-[1fr_360px]">
 
             {/* ---- Main column ---- */}
             <div>
@@ -230,11 +230,10 @@ export default function PhotoDetailPage({ params }: { params: { id: string } }) 
 
               {/* Pulse breakdown */}
               <div className="mt-14 py-8 border-t border-rule border-b border-rule">
-                <div className="grid gap-8 items-baseline" style={{ gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr' }}>
+                <div className="grid gap-8 items-baseline grid-cols-5">
                   <div>
                     <div className="caps opacity-55 mb-2">Pulse</div>
-                    {/* Runtime-dynamic font size for pulse number */}
-                    <div className="mono font-medium leading-[1]" style={{ fontSize: 48, letterSpacing: '-.02em' }}>
+                    <div className="mono font-medium leading-[1] text-[48px] tracking-[-.02em]">
                       {photo.pulse.toFixed(0)}
                     </div>
                   </div>
