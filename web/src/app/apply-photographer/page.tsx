@@ -93,8 +93,7 @@ export default function ApplyPhotographerPage() {
         <div className="wrap">
           <div className="caps opacity-55 mb-[14px]">Apply as photographer</div>
           <div
-            className="grid items-end"
-            style={{ gridTemplateColumns: '1.4fr 1fr', gap: 80 }} // proportional layout: static inline ok
+            className="grid items-end grid-cols-[1.4fr_1fr] gap-20"
           >
             <h1 className="display-hero th text-[clamp(48px,6vw,88px)] m-0">
               Submit your portfolio<br />for upload access

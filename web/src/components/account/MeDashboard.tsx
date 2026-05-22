@@ -37,7 +37,7 @@ export function MeDashboard({ persona, isVoyageur, isPhotographer, myPhotos }: M
 
       {/* Voyageur eligibility card */}
       {isVoyageur && (
-        <div className="mt-8 p-7 bg-cream border border-rule" style={{ padding: '28px 32px' }}>
+        <div className="mt-8 py-7 px-8 bg-cream border border-rule">
           <div className="flex justify-between items-start gap-6">
             <div>
               <div className="caps opacity-55 mb-[10px] flex items-center gap-2">
@@ -53,8 +53,7 @@ export function MeDashboard({ persona, isVoyageur, isPhotographer, myPhotos }: M
             <div className="text-right min-w-[140px]">
               <div className="mono text-[11px] opacity-55">CASHBACK TIER</div>
               <div
-                className="text-[36px] font-medium tracking-[-0.025em] mt-[6px]"
-                style={{ color: '#b08e54' }} // static brand color — stays as inline style
+                className="text-[36px] font-medium tracking-[-0.025em] mt-[6px] text-gold"
               >
                 5%
               </div>
@@ -130,8 +129,7 @@ export function MeDashboard({ persona, isVoyageur, isPhotographer, myPhotos }: M
           ).map(([time, body], i) => (
             <li
               key={i}
-              className="th grid gap-6 py-[14px] border-b border-rule"
-              style={{ gridTemplateColumns: '120px 1fr' }} // fixed layout proportion — static inline ok per rule
+              className="th grid gap-6 py-[14px] border-b border-rule grid-cols-[120px_1fr]"
             >
               <span className="mono text-[11px] opacity-55 tracking-[.08em] pt-[2px]">
                 {time.toUpperCase()}

@@ -70,11 +70,10 @@ export function MeSidebar({
             <button
               key={s.id}
               onClick={() => router.push(s.path)}
-              className="flex justify-between items-center py-3 px-4 -mx-4 cursor-pointer transition-colors duration-150"
+              className="flex justify-between items-center py-3 px-4 -mx-4 cursor-pointer transition-colors duration-150 text-[13px]"
               style={{
                 background: active ? 'var(--cream)' : 'transparent', // runtime: active state
                 borderLeft: `2px solid ${active ? 'var(--fg)' : 'transparent'}`, // runtime: active state
-                fontSize: 13,
                 fontWeight: active ? 500 : 400, // runtime: active state
                 letterSpacing: active ? '-.005em' : '0', // runtime: active state
                 color: active ? 'var(--fg)' : 'var(--fg-soft)', // runtime: active state

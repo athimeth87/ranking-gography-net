@@ -229,8 +229,7 @@ export default function UploadPage() {
             <LimitReachedState countdown={countdown} onView={() => router.push(profilePath)} />
           ) : (
             <div
-              className="grid gap-16"
-              style={{ gridTemplateColumns: '1.4fr 1fr' }} // proportional layout: static inline ok
+              className="grid gap-16 grid-cols-[1.4fr_1fr]"
             >
               {/* Left: drop zone + preview */}
               <div>

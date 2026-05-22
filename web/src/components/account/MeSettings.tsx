@@ -174,8 +174,7 @@ export function MeSettings({ persona, isVoyageur }: MeSettingsProps) {
             {!confirmDelete ? (
               <button
                 onClick={() => setConfirmDelete(true)}
-                className="btn btn-sm shrink-0"
-                style={{ borderColor: 'var(--fg)' }} // static brand token, consistent with source
+                className="btn btn-sm shrink-0 border-fg"
               >
                 Delete account
               </button>
@@ -185,8 +184,7 @@ export function MeSettings({ persona, isVoyageur }: MeSettingsProps) {
                   Cancel
                 </button>
                 <button
-                  className="btn btn-sm"
-                  style={{ background: '#a83232', color: '#fff', borderColor: '#a83232' }} // danger confirm: static brand color pair
+                  className="btn btn-sm bg-[#a83232] text-white border-[#a83232]"
                 >
                   Confirm delete
                 </button>

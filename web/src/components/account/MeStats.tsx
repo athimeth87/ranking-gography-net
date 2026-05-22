@@ -52,7 +52,7 @@ export function MeStats({ myPhotos }: MeStatsProps) {
           <svg
             viewBox={`0 0 ${W} ${H}`}
             preserveAspectRatio="none"
-            style={{ width: '100%', height: '100%' }}
+            className="w-full h-full"
           >
             {/* Grid lines */}
             {[0, 0.25, 0.5, 0.75, 1].map((t) => (

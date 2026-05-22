@@ -46,12 +46,7 @@ export default function Page({ params }: PageProps) {
   return (
     <div className="page-fade">
       <div
-        className="wrap grid items-start"
-        style={{
-          padding: '48px 40px 96px',
-          gridTemplateColumns: '240px 1fr',
-          gap: 56,
-        }}
+        className="wrap grid items-start pt-12 px-10 pb-24 grid-cols-[240px_1fr] gap-14"
       >
         <MeSidebar
           persona={persona}
