@@ -24,7 +24,8 @@ export function PhotoGrid({
   if (uniform) {
     return (
       <div
-        style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 24 }}
+        className="grid gap-6"
+        style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}
       >
         {photos.map((p) => (
           <PhotoCard
@@ -42,9 +43,9 @@ export function PhotoGrid({
   }
 
   return (
-    <div style={{ columnCount: cols, columnGap: 24 }}>
+    <div className="gap-6" style={{ columnCount: cols }}>
       {photos.map((p) => (
-        <div key={p.id} style={{ breakInside: 'avoid', marginBottom: 32 }}>
+        <div key={p.id} className="break-inside-avoid mb-8">
           <PhotoCard
             photo={p}
             showRank={showRank}

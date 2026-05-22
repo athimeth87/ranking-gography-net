@@ -38,39 +38,33 @@ export function PhotoCard({
         <img src={photo.src} alt={photo.title} loading="lazy" />
       </div>
       <div className="pmeta">
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, flex: 1, minWidth: 0 }}>
+        <div className="flex items-baseline gap-3 flex-1 min-w-0">
           {showRank && (
-            <span className="rank" style={{ flexShrink: 0 }}>
+            <span className="rank shrink-0">
               {String(photo.rank).padStart(2, '0')}
             </span>
           )}
-          <div style={{ minWidth: 0, flex: 1 }}>
-            <div
-              className="ptitle"
-              style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-            >
+          <div className="min-w-0 flex-1">
+            <div className="ptitle truncate">
               {photo.title}
             </div>
             <div className="pby">{photographer ? photographer.name : photo.by}</div>
           </div>
         </div>
-        <div style={{ flexShrink: 0, marginLeft: 16, textAlign: 'right' }}>
+        <div className="shrink-0 ml-4 text-right">
           <div className="pulse">
             <span className="big">{photo.pulse.toFixed(0)}</span>
             <span className="lab">{pulseLabel}</span>
           </div>
           {delta !== null && (
-            <div
-              className="mono"
-              style={{ fontSize: 10, color: 'var(--fg-soft)', marginTop: 4, letterSpacing: '.04em' }}
-            >
+            <div className="mono text-[10px] text-fg-soft mt-1 tracking-[.04em]">
               {delta.toFixed(1)} from #1
             </div>
           )}
         </div>
       </div>
       {photo.picks.length > 0 && (
-        <div style={{ position: 'absolute', top: 12, right: 12, display: 'flex', gap: 6 }}>
+        <div className="absolute top-3 right-3 flex gap-[6px]">
           {photo.picks.includes('editor') && photo.picks.includes('ambassador') ? (
             <PickBadge kind="both" />
           ) : (
