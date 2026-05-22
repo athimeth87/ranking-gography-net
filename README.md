@@ -3,7 +3,7 @@
 Photo ranking + voting platform — **"Gography Photo Awards"**.
 Domain: `ranking.gography.net`
 
-> Production scaffold lives in [`nextjs/`](./nextjs/). The legacy static design preview is kept at the repo root for visual reference only — it is not the deploy target.
+> **Active project: [`web/`](./web/)** — a TypeScript rebuild (Next.js 14 App Router + TypeScript + Tailwind + shadcn/ui). The earlier JavaScript scaffold in [`nextjs/`](./nextjs/) and the static `.jsx`/`.html` preview at the repo root are kept for reference only — they are not the deploy target.
 
 ---
 
