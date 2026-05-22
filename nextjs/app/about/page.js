@@ -19,13 +19,13 @@ function PageAbout() {
         photoId="p013"
         eyebrow="About"
         title={<>A platform for photographers<br />who never stop travelling</>}
-        subtitle="Gography Photo Awards — เวทีสำหรับช่างภาพและนักเดินทาง ภาพต้องหายใจได้ ไม่ใช่ภาพที่ algorithm จัดการ"
+        subtitle="GOGRAPHY Photo Awards — เวทีสำหรับช่างภาพและนักเดินทาง ภาพต้องหายใจได้ ไม่ใช่ภาพที่ algorithm จัดการ"
       />
 
       <section style={{ padding: '0 0 96px' }}>
         <div className="wrap-narrow">
           <p style={{ fontSize: 22, lineHeight: 1.6, letterSpacing: '-.005em', color: 'var(--fg)' }} className="th">
-            Gography เริ่มต้นจากบริษัททัวร์ — เราออกแบบทริปถ่ายภาพในที่ที่นักเดินทางไม่กี่คนได้ไป Patagonia, Iceland, Atacama, Mongolia เราอยากเห็นภาพเหล่านั้นมารวมตัวอยู่ในที่เดียว
+            GOGRAPHY เริ่มต้นจากบริษัททัวร์ — เราออกแบบทริปถ่ายภาพในที่ที่นักเดินทางไม่กี่คนได้ไป Patagonia, Iceland, Atacama, Mongolia เราอยากเห็นภาพเหล่านั้นมารวมตัวอยู่ในที่เดียว
           </p>
           <div className="magrule" style={{ margin: '48px 0' }} />
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40 }}>
@@ -33,7 +33,7 @@ function PageAbout() {
               500px ถูกขายไปนานแล้ว Instagram กลายเป็นที่ของ reel ที่เร่งจังหวะให้เร็วเกินกว่าภาพจะหายใจ เราเห็นช่องว่าง — ที่สำหรับภาพถ่ายที่ทำด้วยใจ ไม่ใช่ algorithm
             </p>
             <p style={{ fontSize: 15, lineHeight: 1.8, color: 'var(--fg-soft)' }} className="th">
-              Gography Photo Awards คือเวทีที่นั่น คะแนนจัดอันดับเปิดเผยทั้งหมด ทุก 4 เดือนเราเลือกภาพที่ดีที่สุดของฤดูกาล มอบ Voucher 50,000 บาท และเก็บไว้ใน Hall of Fame ตลอดไป
+              GOGRAPHY Photo Awards คือเวทีที่นั่น คะแนนจัดอันดับเปิดเผยทั้งหมด ทุก 4 เดือนเราเลือกภาพที่ดีที่สุดของฤดูกาล มอบ Voucher 50,000 บาท และเก็บไว้ใน Hall of Fame ตลอดไป
             </p>
           </div>
         </div>
@@ -57,7 +57,7 @@ function PageAbout() {
             {[
               { name: 'Anan Khamthuan', role: 'Editor in Chief', loc: 'Bangkok' },
               { name: 'Sasin Phongphan', role: 'Curation Director', loc: 'Chiang Mai' },
-              { name: 'Vichai Sasiprapha', role: 'Travel Lead, Gography', loc: 'Bangkok' },
+              { name: 'Vichai Sasiprapha', role: 'Travel Lead, GOGRAPHY', loc: 'Bangkok' },
               { name: 'Naree Suwannapong', role: 'Community', loc: 'Bangkok' },
             ].map(p => (
               <div key={p.name} style={{ paddingBottom: 32, borderBottom: '1px solid var(--rule)' }}>
@@ -76,7 +76,7 @@ function PageAbout() {
           </h2>
           <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginTop: 32 }}>
             <button className="btn btn-solid">Apply as photographer</button>
-            <button className="btn">Travel with Gography</button>
+            <button className="btn">Travel with GOGRAPHY</button>
           </div>
         </div>
       </section>

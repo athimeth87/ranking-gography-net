@@ -75,7 +75,7 @@ export function PageCover({
           }}
         >
           <div className="mono" style={{ fontSize: 11, letterSpacing: '.22em', textTransform: 'uppercase', opacity: 0.85 }}>
-            Gography Photo Awards
+            GOGRAPHY Photo Awards
           </div>
           {eyebrow && (
             <div className="mono" style={{ fontSize: 11, letterSpacing: '.22em', textTransform: 'uppercase', opacity: 0.85 }}>

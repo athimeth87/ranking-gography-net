@@ -173,7 +173,7 @@ function PagePhotographer({ username }) {
                   <div>
                     <div className="caps" style={{ opacity: .55, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}><VoyageurMark size={9} /> Voyageur</div>
                     <h3 className="th" style={{ fontSize: 26, fontWeight: 400, letterSpacing: '-.015em', margin: 0, lineHeight: 1.25 }}>
-                      ลูกค้าทริป Gography — มีสิทธิ์ลุ้นรางวัล Voyageurs Awards
+                      ลูกค้าทริป GOGRAPHY — มีสิทธิ์ลุ้นรางวัล Voyageurs Awards
                     </h3>
                     <div className="mono" style={{ marginTop: 20, fontSize: 12, lineHeight: 1.9 }}>
                       <div style={{ opacity: .55, marginBottom: 8 }}>TRIPS COMPLETED</div>

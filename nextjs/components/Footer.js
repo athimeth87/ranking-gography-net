@@ -9,7 +9,7 @@ export function Footer() {
           <div>
             <div className="logo" style={{ marginBottom: 18 }}>
               <span className="mark">G</span>
-              <span>Gography</span>
+              <span>GOGRAPHY</span>
               <small>Photo Awards</small>
             </div>
             <p style={{ fontSize: 13, lineHeight: 1.7, maxWidth: 360, color: 'var(--fg-soft)' }} className="th">
@@ -52,7 +52,7 @@ export function Footer() {
           </div>
         </div>
         <div className="colophon">
-          <span>© 2026 Gography Co., Ltd.</span>
+          <span>© 2026 GOGRAPHY Co., Ltd.</span>
           <span>ranking.gography.net · v0.1 design preview</span>
         </div>
       </div>

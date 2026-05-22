@@ -145,7 +145,7 @@ function PageLogin() {
       <div style={{ maxWidth: 380, width: '100%', textAlign: 'center', padding: '0 40px' }}>
         <div className="logo" style={{ justifyContent: 'center', marginBottom: 48 }}>
           <span className="mark">G</span>
-          <span>Gography</span>
+          <span>GOGRAPHY</span>
           <small>Photo Awards</small>
         </div>
         <h1 className="th" style={{ fontSize: 36, fontWeight: 400, letterSpacing: '-.02em', margin: 0, lineHeight: 1.2 }}>

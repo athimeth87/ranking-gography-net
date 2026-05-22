@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* ============================================================
-   Gography Photo Awards — Global styles
+   GOGRAPHY Photo Awards — Global styles
    Note: design uses inline styles primarily; this file holds
    theme variables, font setup, and utility helpers shared
    across the app. Tailwind is enabled but not required.
@@ -192,10 +192,14 @@ footer .colophon { display: flex; justify-content: space-between; align-items: c
 /* Cream */
 .crm { background: var(--cream); }
 
-/* Curation pick badge */
+/* Curation pick badge — collapsed by default, expands on hover (parent badge or photo card) */
 .pickbadge { cursor: default; }
-.pickbadge:hover .pickbadge-label { max-width: 240px; padding-right: 14px; }
-.pcard:hover .pickbadge .pickbadge-label { max-width: 240px; padding-right: 14px; }
+.pickbadge-label { max-width: 0; padding-right: 0; }
+.pickbadge:hover .pickbadge-label,
+.pcard:hover .pickbadge .pickbadge-label {
+  max-width: 240px;
+  padding-right: 14px;
+}
 
 /* Loading skeleton */
 .skel { background: linear-gradient(90deg, var(--tile) 0%, color-mix(in oklab, var(--tile) 60%, var(--bg)) 50%, var(--tile) 100%); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; }

@@ -80,7 +80,7 @@ The app supports 4 user states (set via `AppProvider`):
 
 - `guest` — not signed in
 - `user` — signed-in regular user
-- `customer` — verified Gography customer (Voyageur)
+- `customer` — verified GOGRAPHY customer (Voyageur)
 - `photographer` — approved photographer
 
 Switch in code: `useApp().setUserState('customer')` to preview.
@@ -112,4 +112,4 @@ Replace `lib/data.js` with API calls / Supabase queries. The shape:
 
 ## License
 
-© 2026 Gography Co., Ltd.
+© 2026 GOGRAPHY Co., Ltd.

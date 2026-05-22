@@ -3,7 +3,7 @@ import { Nav } from '@/components/Nav';
 import { AppProvider } from '@/components/AppProvider';
 
 export const metadata = {
-  title: 'Gography Photo Awards — Ranking',
+  title: 'GOGRAPHY Photo Awards — Ranking',
   description: 'A photography ranking platform by photographers and travellers',
 };
 

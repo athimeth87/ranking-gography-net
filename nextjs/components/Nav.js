@@ -54,7 +54,7 @@ export function Nav() {
           </div>
           <Link href="/" className="logo">
             <span className="mark">G</span>
-            <span>Gography</span>
+            <span>GOGRAPHY</span>
             <small>Photo Awards</small>
           </Link>
           <div className="nav-right">

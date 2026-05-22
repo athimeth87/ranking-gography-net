@@ -58,7 +58,7 @@ export function PickBadge({ kind = 'editor' }) {
   return (
     <div className="pickbadge" data-kind={kind} style={{ height: 32, minWidth: 32, background: cfg.bg, color: cfg.fg, display: 'inline-flex', alignItems: 'center', overflow: 'hidden', transition: 'min-width .25s ease, padding .25s ease' }}>
       <div style={{ width: 32, display: 'grid', placeItems: 'center', flexShrink: 0 }}>{cfg.icon}</div>
-      <span className="pickbadge-label" style={{ maxWidth: 0, overflow: 'hidden', whiteSpace: 'nowrap', fontSize: 10.5, letterSpacing: '.14em', textTransform: 'uppercase', fontWeight: 500, transition: 'max-width .25s ease, padding .25s ease' }}>
+      <span className="pickbadge-label" style={{ overflow: 'hidden', whiteSpace: 'nowrap', fontSize: 10.5, letterSpacing: '.14em', textTransform: 'uppercase', fontWeight: 500, transition: 'max-width .25s ease, padding .25s ease' }}>
         {cfg.label}
       </span>
     </div>

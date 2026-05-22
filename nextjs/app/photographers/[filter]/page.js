@@ -31,10 +31,10 @@ function PagePhotographers({ initialFilter }) {
   const coverPhotoId = filter === 'voyageurs' ? 'p015' : filter === 'ambassadors' ? 'p002' : 'p018';
   const coverTitle = filter === 'voyageurs' ? 'Voyageurs' : filter === 'ambassadors' ? 'Ambassadors' : 'All photographers';
   const coverSubtitle = filter === 'voyageurs'
-    ? 'ลูกค้า Gography ที่เคยร่วมทริปและมีภาพอยู่บนเวที'
+    ? 'ลูกค้า GOGRAPHY ที่เคยร่วมทริปและมีภาพอยู่บนเวที'
     : filter === 'ambassadors'
-    ? 'ช่างภาพรับเชิญที่ Gography ไว้วางใจให้คัดเลือกภาพ'
-    : 'รวมช่างภาพและ Voyageurs ที่อยู่บนเวที Gography Photo Awards';
+    ? 'ช่างภาพรับเชิญที่ GOGRAPHY ไว้วางใจให้คัดเลือกภาพ'
+    : 'รวมช่างภาพและ Voyageurs ที่อยู่บนเวที GOGRAPHY Photo Awards';
 
   return (
     <div className="page-fade">

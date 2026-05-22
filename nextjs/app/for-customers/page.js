@@ -23,14 +23,14 @@ function PageForCustomers() {
         photoId="p015"
         eyebrow="For Voyageurs"
         title={<>Your trip photos<br />are worth more</>}
-        subtitle="ลูกค้า Gography ทุกคนได้สถานะ Voyageur — Submit ภาพในหมวดพิเศษ Voyageurs Awards — แข่งกันเฉพาะลูกค้าด้วยกัน รางวัลสูงสุด 50,000 บาท ต่อฤดูกาล"
+        subtitle="ลูกค้า GOGRAPHY ทุกคนได้สถานะ Voyageur — Submit ภาพในหมวดพิเศษ Voyageurs Awards — แข่งกันเฉพาะลูกค้าด้วยกัน รางวัลสูงสุด 50,000 บาท ต่อฤดูกาล"
       />
 
       {/* Reward summary */}
       <section style={{ padding: '40px 0 56px' }}>
         <div className="wrap">
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 0, border: '1px solid var(--rule)' }}>
-            <RewardCell tag="Rank 01 · ต่อหมวด" big="50,000" sub="THB Voucher" detail="ใช้แลกทริป Gography ใดก็ได้ ภายใน 24 เดือน" />
+            <RewardCell tag="Rank 01 · ต่อหมวด" big="50,000" sub="THB Voucher" detail="ใช้แลกทริป GOGRAPHY ใดก็ได้ ภายใน 24 เดือน" />
             <RewardCell tag="Rank 02–03" big="15%" sub="Cashback" detail="ส่วนลดทริปครั้งถัดไป สะสมได้ทุกฤดูกาล" />
             <RewardCell tag="Rank 04–10" big="3–10%" sub="Cashback" detail="ส่วนลดตามลำดับ ระบบคำนวณอัตโนมัติ" />
           </div>
@@ -56,7 +56,7 @@ function PageForCustomers() {
           <SectionHeader eyebrow="The path" title="The full path" />
           <div style={{ display: 'grid', gridTemplateColumns: '180px 1fr', gap: 56, marginTop: 32 }}>
             {[
-              { n: '01', t: 'จบทริปกับ Gography', b: 'ทริปไหนก็ได้ที่จัดโดย Gography — ตั้งแต่ครึ่งวันถึง 14 วัน นับตั้งแต่ปี 2020 เป็นต้นมา', extra: 'ระบบดึงข้อมูลจาก booking records โดยอัตโนมัติ' },
+              { n: '01', t: 'จบทริปกับ GOGRAPHY', b: 'ทริปไหนก็ได้ที่จัดโดย GOGRAPHY — ตั้งแต่ครึ่งวันถึง 14 วัน นับตั้งแต่ปี 2020 เป็นต้นมา', extra: 'ระบบดึงข้อมูลจาก booking records โดยอัตโนมัติ' },
               { n: '02', t: 'สร้างบัญชีด้วย Gmail', b: 'ใช้ Gmail เดียวกับที่จองทริป — Editorial teamจะเช็คและ mark สถานะ "Voyageur" ภายใน 7 วัน', cta: { label: 'Login with Gmail', to: '/login' } },
               { n: '03', t: 'อัพโหลดภาพ — วันละ 1 ภาพ', b: 'เลือกภาพที่ดีที่สุดจากทริป — อัพได้วันละ 1 ภาพต่อบัญชี (รวมทุกหมวด) เพื่อรักษาคุณภาพและลด spam ส่งสะสมได้ตลอดฤดูกาล (4 เดือน)', extra: 'JPEG/PNG/WebP · ขนาดสูงสุด 25MB · reset ทุก 00:00 น. ตามเวลาประเทศไทย' },
               { n: '04', t: 'ปลายฤดูกาล: ประกาศผล', b: 'ทีม Editorial คัดเลือกภาพยอดเยี่ยมในแต่ละหมวด — ผู้ชนะได้รับ voucher และ cashback ผ่านระบบโดยอัตโนมัติ', extra: 'ประกาศผลทุกวันที่ 1 ของเดือนถัดไป' },
@@ -90,9 +90,9 @@ function PageForCustomers() {
                 </Field>
                 <Field label="ทริปที่เคยร่วม">
                   <select className="input">
-                    <option>Gography Patagonia · January 2025</option>
-                    <option>Gography Iceland · November 2024</option>
-                    <option>Gography Atacama · September 2024</option>
+                    <option>GOGRAPHY Patagonia · January 2025</option>
+                    <option>GOGRAPHY Iceland · November 2024</option>
+                    <option>GOGRAPHY Atacama · September 2024</option>
                     <option>อื่นๆ — โปรดระบุในช่องด้านล่าง</option>
                   </select>
                 </Field>
@@ -113,7 +113,7 @@ function PageForCustomers() {
               <SectionHeader eyebrow="What you get" title="เมื่อได้รับการยืนยัน" />
               <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                 {[
-                  ['Voyageur badge', 'แสดงบนโปรไฟล์ — เป็น public proof ว่าคุณเคยร่วมทริป Gography'],
+                  ['Voyageur badge', 'แสดงบนโปรไฟล์ — เป็น public proof ว่าคุณเคยร่วมทริป GOGRAPHY'],
                   ['สิทธิ์ส่งภาพในหมวด Voyageurs Awards', 'แข่งเฉพาะกับ Voyageur ด้วยกัน ไม่ต้องแข่งกับช่างภาพอาชีพ'],
                   ['Access to Voyageurs section', 'My photosจะปรากฏใน Voyageurs section บนหน้า Landing — เพิ่มโอกาสได้รับ exposure'],
                   ['Cashback tracking', 'ระบบนับคะแนนสะสมและคำนวณส่วนลดให้อัตโนมัติ'],
@@ -140,12 +140,12 @@ function PageForCustomers() {
           <div style={{ maxWidth: 800 }}>
             {[
               ['ฉันต้องเป็นช่างภาพอาชีพไหม?', 'ไม่ต้องเลย — โครงการนี้สำหรับลูกค้าทุกคน ไม่ว่ามือใหม่หรือมือสมัครเล่น เกณฑ์การคัดเลือกเน้นที่ "เรื่องราว" และ "ความเป็นตัวเอง" ของภาพ ไม่ใช่ technical perfection'],
-              ['ภาพต้องถ่ายจากทริป Gography เท่านั้น?', 'แนะนำให้ส่งภาพจากทริป Gography — แต่หากต้องการส่งภาพอื่นด้วย คุณยังคงเข้าร่วมหมวดทั่วไป (Landscape/Portrait/BW) ได้ เพียงไม่นับเข้า Voyageurs Awards'],
+              ['ภาพต้องถ่ายจากทริป GOGRAPHY เท่านั้น?', 'แนะนำให้ส่งภาพจากทริป GOGRAPHY — แต่หากต้องการส่งภาพอื่นด้วย คุณยังคงเข้าร่วมหมวดทั่วไป (Landscape/Portrait/BW) ได้ เพียงไม่นับเข้า Voyageurs Awards'],
               ['อัพโหลดได้กี่ภาพต่อวัน?', 'วันละ 1 ภาพต่อบัญชี — เกณฑ์เดียวกับทุกคน (รวมหมวด Voyageurs Awards และหมวดทั่วไป) ระบบ reset เวลา 00:00 น. ทุกวัน'],
               ['โหวต (like) ภาพอื่นได้ไม่จำกัดใช่ไหม?', 'ใช่ — โหวตภาพได้ไม่จำกัดจำนวน เพียงภาพละ 1 ครั้ง (toggle ได้ตลอดเวลา) คะแนนของคุณช่วยภาพอื่นไต่อันดับใน Pulse Score'],
-              ['Cashback ใช้ได้กับทริปไหนบ้าง?', 'ทริปใดก็ได้ที่จัดโดย Gography — ระบุก่อนชำระเงิน Editorial teamจะหักส่วนลดให้อัตโนมัติ'],
+              ['Cashback ใช้ได้กับทริปไหนบ้าง?', 'ทริปใดก็ได้ที่จัดโดย GOGRAPHY — ระบุก่อนชำระเงิน Editorial teamจะหักส่วนลดให้อัตโนมัติ'],
               ['ถ้าฉันไม่เคยใช้ cashback จะหมดอายุไหม?', 'อายุ cashback คือ 24 เดือนนับจากวันประกาศผล — สะสมข้ามฤดูกาลได้สูงสุด 30% ต่อทริป'],
-              ['ใครเป็นคนตัดสินว่าฉันชนะ?', 'ทีม Editorial ของ Gography Photo Awards — เกณฑ์เปิดเผยที่หน้า Pulse Score (แต่ Voyageurs Awards เน้นเรื่องราวมากกว่าตัวเลข)'],
+              ['ใครเป็นคนตัดสินว่าฉันชนะ?', 'ทีม Editorial ของ GOGRAPHY Photo Awards — เกณฑ์เปิดเผยที่หน้า Pulse Score (แต่ Voyageurs Awards เน้นเรื่องราวมากกว่าตัวเลข)'],
             ].map(([q, a], i) => (
               <details key={i} style={{ borderBottom: '1px solid var(--rule)' }} open={i === 0}>
                 <summary style={{ padding: '20px 0', fontSize: 17, fontWeight: 500, cursor: 'pointer', display: 'flex', justifyContent: 'space-between' }} className="th">

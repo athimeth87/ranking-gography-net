@@ -19,7 +19,7 @@ function PageAmbassadors() {
         photoId="p002"
         eyebrow="Curators"
         title="Ambassadors"
-        subtitle="ช่างภาพรับเชิญที่ Gography ไว้วางใจให้คัดเลือก Ambassador Pick — เพิ่ม Pulse Score +50 ต่อภาพ"
+        subtitle="ช่างภาพรับเชิญที่ GOGRAPHY ไว้วางใจให้คัดเลือก Ambassador Pick — เพิ่ม Pulse Score +50 ต่อภาพ"
       />
 
       <section style={{ padding: '40px 0 96px' }} className="rule-top">
@@ -68,7 +68,7 @@ function PageAmbassadors() {
         <div className="wrap-narrow" style={{ textAlign: 'center' }}>
           <div className="caps" style={{ opacity: .55, marginBottom: 24 }}>Become an Ambassador</div>
           <h2 style={{ fontSize: 40, fontWeight: 400, letterSpacing: '-.02em', margin: 0, lineHeight: 1.15 }} className="th">
-            Ambassador programme is invite-only by the Gography team
+            Ambassador programme is invite-only by the GOGRAPHY team
           </h2>
           <p style={{ fontSize: 15, color: 'var(--fg-soft)', marginTop: 24, lineHeight: 1.7 }} className="th">
             หากคุณมีผลงานต่อเนื่องและได้รับ Editor's Pick มากกว่า 3 ครั้ง คุณอาจได้รับคำเชิญในฤดูกาลถัดไป

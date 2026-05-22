@@ -19,7 +19,7 @@ function PageHallOfFame() {
         photoId="p010"
         eyebrow="Awards Archive"
         title="Hall of Fame"
-        subtitle="ทุก 4 เดือน Gography คัดเลือกภาพแห่งฤดูกาลในแต่ละหมวด — ผู้ชนะรับ Voucher 50,000 THB และที่ใน Hall of Fame ตลอดไป"
+        subtitle="ทุก 4 เดือน GOGRAPHY คัดเลือกภาพแห่งฤดูกาลในแต่ละหมวด — ผู้ชนะรับ Voucher 50,000 THB และที่ใน Hall of Fame ตลอดไป"
       />
 
       {/* Cashback program ribbon */}
@@ -31,7 +31,7 @@ function PageHallOfFame() {
             <CashbackTier rank="4–10" label="Cashback 3–10%" detail="ส่วนลดทริปครั้งถัดไป" />
           </div>
           <p className="th" style={{ marginTop: 32, fontSize: 12, color: 'var(--fg-soft)', maxWidth: 720, lineHeight: 1.7 }}>
-            รางวัลเฉพาะลูกค้าทริป Gography ที่ได้รับการรับรองโดยEditorial team — ตรวจสอบสถานะลูกค้าได้ที่หน้าโปรไฟล์ของคุณ
+            รางวัลเฉพาะลูกค้าทริป GOGRAPHY ที่ได้รับการรับรองโดยEditorial team — ตรวจสอบสถานะลูกค้าได้ที่หน้าโปรไฟล์ของคุณ
           </p>
         </div>
       </section>

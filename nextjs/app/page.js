@@ -141,7 +141,7 @@ export default function LandingPage() {
           <img src={banner.src} alt={banner.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,.45) 0%, rgba(0,0,0,.08) 35%, rgba(0,0,0,.1) 65%, rgba(0,0,0,.65) 100%)' }} />
           <div style={{ position: 'absolute', top: 32, left: 40, right: 40, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', color: '#fff' }}>
-            <div className="mono" style={{ fontSize: 11, letterSpacing: '.22em', textTransform: 'uppercase', opacity: .85 }}>Gography Photo Awards</div>
+            <div className="mono" style={{ fontSize: 11, letterSpacing: '.22em', textTransform: 'uppercase', opacity: .85 }}>GOGRAPHY Photo Awards</div>
             <div className="mono" style={{ fontSize: 11, letterSpacing: '.22em', textTransform: 'uppercase', opacity: .85 }}>Spring 2026 · Live</div>
           </div>
           <div style={{ position: 'absolute', left: 40, right: 40, bottom: 48, color: '#fff' }}>
@@ -275,7 +275,7 @@ export default function LandingPage() {
                 Travelled with us?<br />Become a <em style={{ fontStyle: 'normal', fontWeight: 500 }}>Voyageur</em>
               </h2>
               <p style={{ marginTop: 28, fontSize: 17, lineHeight: 1.65, color: 'var(--fg-soft)', maxWidth: 520 }} className="th">
-                Customers who have travelled with Gography earn <strong style={{ color: 'var(--fg)', fontWeight: 500 }}>Voyageur</strong> status — eligible to submit photos in a customer-only category. Each season the winner receives a 50,000 THB voucher, and the top 10 receive cashback on their next trip.
+                Customers who have travelled with GOGRAPHY earn <strong style={{ color: 'var(--fg)', fontWeight: 500 }}>Voyageur</strong> status — eligible to submit photos in a customer-only category. Each season the winner receives a 50,000 THB voucher, and the top 10 receive cashback on their next trip.
               </p>
               <div style={{ display: 'flex', gap: 12, marginTop: 32, flexWrap: 'wrap' }}>
                 <RewardBadge icon="voucher" label="50,000 THB" sub="Voucher · ต่อหมวด" />
@@ -302,7 +302,7 @@ export default function LandingPage() {
           <div style={{ marginTop: 80, paddingTop: 56, borderTop: '1px solid var(--rule)' }}>
             <div className="caps" style={{ opacity: .55, marginBottom: 32 }}>How it works · 3 steps</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 56 }}>
-              <Step n="01" t="รับการยืนยันสถานะ" b="หลังจบทริป ทีม Gography จะ mark บัญชีของคุณเป็น Voyageur ภายใน 7 วัน" />
+              <Step n="01" t="รับการยืนยันสถานะ" b="หลังจบทริป ทีม GOGRAPHY จะ mark บัญชีของคุณเป็น Voyageur ภายใน 7 วัน" />
               <Step n="02" t="อัพโหลดภาพจากทริป" b="ส่งได้วันละ 1 รูปต่อบัญชี · ส่งสะสมต่อเนื่องตลอดฤดูกาล (4 เดือน)" />
               <Step n="03" t="ลุ้นรางวัล" b="ปลายฤดูกาล ทีมงานเลือกภาพดีที่สุดต่อหมวด — ผู้ชนะ 50,000 THB voucher และ Top 10 ได้ cashback 3–15%" />
             </div>

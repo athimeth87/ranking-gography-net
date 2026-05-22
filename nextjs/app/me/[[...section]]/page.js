@@ -41,7 +41,7 @@ function PageMe({ section = 'dashboard', userState = 'user' }) {
         photoId="p013"
         eyebrow="Your account"
         title="Your dashboard"
-        subtitle="ภาพของคุณ คะแนน favorites ทริปกับ Gography — รวมที่เดียว"
+        subtitle="ภาพของคุณ คะแนน favorites ทริปกับ GOGRAPHY — รวมที่เดียว"
         height="38vh"
         minHeight={300}
         maxHeight={420}
