@@ -6,10 +6,12 @@
    GOGRAPHY Photo Awards — Global styles
    Note: design uses inline styles primarily; this file holds
    theme variables, font setup, and utility helpers shared
-   across the app. Tailwind is enabled but not required.
+   across the app. Tailwind + shadcn/ui are enabled but the
+   bulk of the page styling is still hand-rolled.
    ============================================================ */
 
 :root {
+  /* Brand tokens (used by inline styles + custom classes) */
   --bg: #ffffff;
   --fg: #000000;
   --fg-soft: rgba(0,0,0,.55);
@@ -21,9 +23,32 @@
   --sans: 'Inter', 'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif;
   --thai: 'Noto Sans Thai', 'Inter', 'Helvetica Neue', sans-serif;
   --mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+
+  /* shadcn/ui tokens — tuned to the Gography monochrome palette */
+  --background: 0 0% 100%;
+  --foreground: 0 0% 0%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 0%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 0%;
+  --primary: 0 0% 0%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 36 33% 97%;
+  --secondary-foreground: 0 0% 0%;
+  --muted: 36 33% 97%;
+  --muted-foreground: 0 0% 35%;
+  --accent: 36 33% 97%;
+  --accent-foreground: 0 0% 0%;
+  --destructive: 0 70% 45%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 0 0% 88%;
+  --input: 0 0% 88%;
+  --ring: 0 0% 0%;
+  --radius: 0;          /* no rounded corners — premium */
 }
 
-[data-theme="dark"] {
+[data-theme="dark"],
+.dark {
   --bg: #000000;
   --fg: #ffffff;
   --fg-soft: rgba(255,255,255,.6);
@@ -32,6 +57,26 @@
   --rule-strong: rgba(255,255,255,.85);
   --cream: #0d0c0a;
   --tile: #131210;
+
+  --background: 0 0% 0%;
+  --foreground: 0 0% 100%;
+  --card: 0 0% 8%;
+  --card-foreground: 0 0% 100%;
+  --popover: 0 0% 8%;
+  --popover-foreground: 0 0% 100%;
+  --primary: 0 0% 100%;
+  --primary-foreground: 0 0% 0%;
+  --secondary: 0 0% 12%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 0 0% 12%;
+  --muted-foreground: 0 0% 65%;
+  --accent: 0 0% 12%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 70% 50%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 0 0% 16%;
+  --input: 0 0% 16%;
+  --ring: 0 0% 100%;
 }
 
 * { box-sizing: border-box; }
@@ -88,7 +133,7 @@ img { display: block; max-width: 100%; }
 }
 .logo small { font-weight: 400; opacity: .55; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; }
 
-/* Buttons */
+/* Buttons (legacy — premium black/white outline) */
 .btn {
   display: inline-flex; align-items: center; gap: 10px;
   padding: 13px 22px;
