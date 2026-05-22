@@ -17,3 +17,7 @@ Thumbs.db
 .env
 .env.local
 .env.*.local
+
+# Temp commit message files
+.commit-msg*.txt
+
