@@ -9,6 +9,7 @@ import { Footer } from '@/components/Footer';
 import { VoyageurMark, CrownIcon, EditorIcon, RewardIcon, PickBadge } from '@/components/Icons';
 import { useApp } from '@/components/AppProvider';
 import { PageCover } from '@/components/PageCover';
+import { MobileMe } from '@/components/mobile/MobileMe';
 
 // ===== Ported from pages/me.jsx =====
 // User Account pages (/me/*) — wraps all sub-pages with a sticky left sidebar
@@ -36,7 +37,9 @@ function PageMe({ section = 'dashboard', userState = 'user' }) {
   ];
 
   return (
-    <div className="page-fade">
+    <>
+    <div className="md:hidden"><MobileMe section={section} /></div>
+    <div className="page-fade hidden md:block">
       <PageCover
         photoId="p013"
         eyebrow="Your account"
@@ -137,6 +140,7 @@ function PageMe({ section = 'dashboard', userState = 'user' }) {
         </main>
       </div>
     </div>
+    </>
   );
 }
 

@@ -9,6 +9,7 @@ import { Footer } from '@/components/Footer';
 import { VoyageurMark, CrownIcon, EditorIcon, RewardIcon, PickBadge } from '@/components/Icons';
 import { PageCover } from '@/components/PageCover';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
+import { MobileLogin } from '@/components/mobile/MobileLogin';
 
 // ===== Ported from pages/search.jsx =====
 // Search page — query input + filtered results
@@ -170,7 +171,9 @@ function PageLogin() {
   };
 
   return (
-    <div className="login-page page-fade">
+    <>
+    <div className="md:hidden"><MobileLogin /></div>
+    <div className="login-page page-fade hidden md:flex">
       <div className="login-page-glow" aria-hidden="true" />
       <div className="login-card">
         <div className="login-logo-disc">
@@ -227,6 +230,7 @@ function PageLogin() {
         </p>
       </div>
     </div>
+    </>
   );
 }
 
