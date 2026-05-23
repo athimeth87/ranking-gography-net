@@ -8,6 +8,7 @@ import { PhotoCard, PhotoGrid } from '@/components/PhotoCard';
 import { Footer } from '@/components/Footer';
 import { VoyageurMark, CrownIcon, EditorIcon, RewardIcon, PickBadge } from '@/components/Icons';
 import { SectionHeader, LikeButton } from '@/components/Shared';
+import { MobilePhoto } from '@/components/mobile/MobilePhoto';
 
 // ===== Ported from pages/photo.jsx =====
 // Single photo page — large image + sidebar (photographer, EXIF, stats, comments)
@@ -32,7 +33,9 @@ function PagePhoto({ id }) {
   }, [photo.id]);
 
   return (
-    <div className="page-fade">
+    <>
+    <div className="md:hidden"><MobilePhoto id={photo.id} /></div>
+    <div className="page-fade hidden md:block">
       {/* Breadcrumb */}
       <div style={{ padding: '20px 0', borderBottom: '1px solid var(--rule)' }}>
         <div className="wrap mono" style={{ fontSize: 11, letterSpacing: '.14em', textTransform: 'uppercase', opacity: .65, display: 'flex', justifyContent: 'space-between' }}>
@@ -213,6 +216,7 @@ function PagePhoto({ id }) {
 
       <Footer />
     </div>
+    </>
   );
 }
 

@@ -9,6 +9,7 @@ import { Footer } from '@/components/Footer';
 import { VoyageurMark, CrownIcon, EditorIcon, RewardIcon, PickBadge } from '@/components/Icons';
 import { PhotographerCard } from '@/components/Shared';
 import { PageCover } from '@/components/PageCover';
+import { MobilePhotographers } from '@/components/mobile/MobilePhotographers';
 
 // ===== Ported from pages/photographers.jsx =====
 // All photographers index — public directory of every photographer on the platform
@@ -29,7 +30,9 @@ function PagePhotographers({ initialFilter }) {
   else if (sort === 'newest') list.sort((a,b) => b.joined.localeCompare(a.joined));
 
   return (
-    <div className="page-fade">
+    <>
+    <div className="md:hidden"><MobilePhotographers initialFilter={filter} /></div>
+    <div className="page-fade hidden md:block">
       <PageCover
         photoId="p018"
         eyebrow="Directory"
@@ -111,6 +114,7 @@ function PagePhotographers({ initialFilter }) {
 
       <Footer />
     </div>
+    </>
   );
 }
 

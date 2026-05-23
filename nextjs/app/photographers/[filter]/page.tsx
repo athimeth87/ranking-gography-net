@@ -9,6 +9,7 @@ import { Footer } from '@/components/Footer';
 import { VoyageurMark, CrownIcon, EditorIcon, RewardIcon, PickBadge } from '@/components/Icons';
 import { PhotographerCard } from '@/components/Shared';
 import { PageCover } from '@/components/PageCover';
+import { MobilePhotographers } from '@/components/mobile/MobilePhotographers';
 
 // ===== Ported from pages/photographers.jsx =====
 // All photographers index — public directory of every photographer on the platform
@@ -37,7 +38,9 @@ function PagePhotographers({ initialFilter }) {
     : 'รวมช่างภาพและ Voyageurs ที่อยู่บนเวที GOGRAPHY Photo Awards';
 
   return (
-    <div className="page-fade">
+    <>
+    <div className="md:hidden"><MobilePhotographers initialFilter={filter} /></div>
+    <div className="page-fade hidden md:block">
       <PageCover
         photoId={coverPhotoId}
         eyebrow="Directory"
@@ -119,6 +122,7 @@ function PagePhotographers({ initialFilter }) {
 
       <Footer />
     </div>
+    </>
   );
 }
 
