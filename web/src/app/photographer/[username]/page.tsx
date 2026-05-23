@@ -6,6 +6,7 @@ import { PhotoGrid } from '@/components/photo/PhotoGrid';
 import { Footer } from '@/components/layout/Footer';
 import { VoyageurMark, CrownIcon } from '@/components/icons';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { PageCover } from '@/components/layout/PageCover';
 
 // ===== Photographer profile — /photographer/[username] =====
 // Cover-less typography-first profile; tabs: Photos / Galleries / Favorites / About
@@ -54,6 +55,12 @@ export default function PhotographerProfilePage({ params }: { params: { username
     : '—';
   const editorPickCount = myPhotos.filter((p: Photo) => p.picks.includes('editor')).length;
 
+  const eyebrowParts = [
+    photographer.isAmbassador ? 'Ambassador' : null,
+    photographer.isCustomer ? 'Voyageur' : 'Photographer',
+    `@${photographer.username}`,
+  ].filter(Boolean).join(' · ');
+
   // Galleries tab data — drawn from photographer's own photos + allPhotos
   const galleryItems = [
     { title: 'Mae Hong Son Loop', count: 18, cover: myPhotos[0]?.src },
@@ -69,6 +76,16 @@ export default function PhotographerProfilePage({ params }: { params: { username
 
   return (
     <div className="page-fade">
+      <PageCover
+        src={photographer.cover}
+        eyebrow={eyebrowParts}
+        title={photographer.name}
+        subtitle={photographer.bio}
+        credit={`${photographer.loc} · ${myPhotos.length} photos · ${photographer.followers.toLocaleString()} followers`}
+        height="50vh"
+        minHeight={380}
+        maxHeight={560}
+      />
       {/* Identity header — typography-first, no cover image */}
       <section className="pt-[64px] pb-[48px] border-b border-rule">
         <div className="wrap">

@@ -6,6 +6,7 @@ import type { Photo } from '@/lib/types';
 import type { SortKey } from '@/lib/data';
 import { PhotoGrid } from '@/components/photo/PhotoGrid';
 import { Footer } from '@/components/layout/Footer';
+import { PageCover } from '@/components/layout/PageCover';
 
 // ===== Explore page (/explore) =====
 // Masonry grid + filters (sort, time range, picks only)
@@ -108,6 +109,12 @@ export default function ExplorePage() {
 
   return (
     <div className="page-fade">
+      <PageCover
+        photoId="p013"
+        eyebrow="Explore"
+        title="Every photo"
+        subtitle="เลือกชมภาพถ่ายทั้งหมด — กรองตามหมวด เวลา และอันดับ"
+      />
       {/* Header */}
       <section className="pt-[64px] pb-[40px]">
         <div className="wrap">

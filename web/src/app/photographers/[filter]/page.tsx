@@ -6,6 +6,7 @@ import { getPhotographers, getPhotos } from '@/lib/data';
 import type { Photographer } from '@/lib/types';
 import { PhotographerCard } from '@/components/home/PhotographerCard';
 import { Footer } from '@/components/layout/Footer';
+import { PageCover } from '@/components/layout/PageCover';
 
 // ===== Filtered photographers directory — /photographers/[filter] =====
 // Valid filter values: 'all' | 'voyageurs' | 'ambassadors' | 'general'
@@ -43,22 +44,22 @@ export default function PhotographersFilterPage({ params }: { params: { filter: 
     { v: 'general', l: 'Photographers', n: allPhotographers.filter((p: Photographer) => !p.isCustomer && !p.isAmbassador).length },
   ];
 
+  const coverPhotoId = filter === 'voyageurs' ? 'p015' : filter === 'ambassadors' ? 'p002' : 'p018';
+  const coverTitle = filter === 'voyageurs' ? 'Voyageurs' : filter === 'ambassadors' ? 'Ambassadors' : 'All photographers';
+  const coverSubtitle = filter === 'voyageurs'
+    ? 'ลูกค้า GOGRAPHY ที่เคยร่วมทริปและมีภาพอยู่บนเวที'
+    : filter === 'ambassadors'
+    ? 'ช่างภาพรับเชิญที่ GOGRAPHY ไว้วางใจให้คัดเลือกภาพ'
+    : 'รวมช่างภาพและ Voyageurs ที่อยู่บนเวที GOGRAPHY Photo Awards';
+
   return (
     <div className="page-fade">
-      {/* Hero */}
-      <section className="pt-[80px] pb-[32px]">
-        <div className="wrap">
-          <div className="caps opacity-55 mb-6">Directory</div>
-          <div className="grid gap-[80px] items-end grid-cols-[1.6fr_1fr]">
-            <h1 className="display-hero th text-[clamp(56px,6.6vw,96px)] m-0">
-              All photographers
-            </h1>
-            <p className="th text-[16px] leading-[1.65] text-fg-soft m-0">
-              รวมช่างภาพและ Voyageurs ที่อยู่บนเวที Gography Photo Awards — แยกตามสถานะหรือเรียงตามที่คุณต้องการ
-            </p>
-          </div>
-        </div>
-      </section>
+      <PageCover
+        photoId={coverPhotoId}
+        eyebrow="Directory"
+        title={coverTitle}
+        subtitle={coverSubtitle}
+      />
 
       {/* Filter / Sort bar */}
       <section className="py-[32px] border-t border-rule border-b border-rule">
