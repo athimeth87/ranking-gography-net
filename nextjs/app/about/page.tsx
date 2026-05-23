@@ -8,13 +8,16 @@ import { Footer } from '@/components/Footer';
 import { VoyageurMark, CrownIcon, EditorIcon, RewardIcon, PickBadge } from '@/components/Icons';
 import { SectionHeader } from '@/components/Shared';
 import { PageCover } from '@/components/PageCover';
+import { MobileAbout } from '@/components/mobile/MobileAbout';
 
 // ===== Ported from pages/about.jsx =====
 // About — manifesto-style page
 
 function PageAbout() {
   return (
-    <div className="page-fade">
+    <>
+    <div className="md:hidden"><MobileAbout /></div>
+    <div className="page-fade hidden md:block">
       <PageCover
         photoId="p013"
         eyebrow="About"
@@ -83,6 +86,7 @@ function PageAbout() {
 
       <Footer />
     </div>
+    </>
   );
 }
 
