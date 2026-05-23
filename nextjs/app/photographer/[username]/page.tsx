@@ -8,6 +8,7 @@ import { PhotoCard, PhotoGrid } from '@/components/PhotoCard';
 import { Footer } from '@/components/Footer';
 import { VoyageurMark, CrownIcon, EditorIcon, RewardIcon, PickBadge } from '@/components/Icons';
 import { PageCover } from '@/components/PageCover';
+import { MobilePhotographer } from '@/components/mobile/MobilePhotographer';
 
 // ===== Ported from pages/photographer.jsx =====
 // Photographer profile — cover + bio + tabbed gallery
@@ -43,7 +44,9 @@ function PagePhotographer({ username }) {
   ].filter(Boolean).join(' · ');
 
   return (
-    <div className="page-fade">
+    <>
+    <div className="md:hidden"><MobilePhotographer username={photographer.username} /></div>
+    <div className="page-fade hidden md:block">
       <PageCover
         src={photographer.cover}
         eyebrow={eyebrowParts}
@@ -263,6 +266,7 @@ function PagePhotographer({ username }) {
 
       <Footer />
     </div>
+    </>
   );
 }
 
