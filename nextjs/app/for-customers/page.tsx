@@ -9,6 +9,7 @@ import { Footer } from '@/components/Footer';
 import { VoyageurMark, CrownIcon, EditorIcon, RewardIcon, PickBadge } from '@/components/Icons';
 import { SectionHeader } from '@/components/Shared';
 import { PageCover } from '@/components/PageCover';
+import { MobileForCustomers } from '@/components/mobile/MobileForCustomers';
 
 // ===== Ported from pages/for-customers.jsx =====
 // For Customers — dedicated onboarding & program detail page
@@ -18,7 +19,9 @@ function PageForCustomers() {
   const router = useRouter();
   const customerPhoto = PHOTOS.find(p => p.id === 'p015');
   return (
-    <div className="page-fade">
+    <>
+    <div className="md:hidden"><MobileForCustomers /></div>
+    <div className="page-fade hidden md:block">
       <PageCover
         photoId="p015"
         eyebrow="For Voyageurs"
@@ -177,6 +180,7 @@ function PageForCustomers() {
 
       <Footer />
     </div>
+    </>
   );
 }
 
