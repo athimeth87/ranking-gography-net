@@ -15,7 +15,7 @@ The product is "Gography Photo Awards", a premium, monochrome, Thai-first photo
 ranking + voting platform for `ranking.gography.net`. Brand direction: pure
 white/black, no gray backgrounds, no color accent except a warm gold
 (`#b08e54`) reserved for Ambassador / Voyageur cues, sans-serif only, editorial
-/ museum feel. (See `uploads/handoff-brief.md` for the full brand brief.)
+/ museum feel. (See `docs/handoff-brief.md` for the full brand brief.)
 
 ## Decisions (locked during brainstorming)
 
