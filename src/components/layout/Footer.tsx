@@ -37,8 +37,8 @@ export function Footer() {
             <ul>
               <li><Link href="/about">About</Link></li>
               <li><Link href="/apply-photographer">Become a photographer</Link></li>
-              <li><a href="#">Terms</a></li>
-              <li><a href="#">Privacy</a></li>
+              <li><Link href="/terms">Terms</Link></li>
+              <li><Link href="/privacy">Privacy</Link></li>
             </ul>
           </div>
           <div>
