@@ -1,8 +1,10 @@
 'use client';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import type { Photo } from '@/lib/types';
 import { VoyageurMark, RewardIcon } from '@/components/icons';
+import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 
 interface RewardBadgeProps {
   icon: 'voucher' | 'cashback' | 'star';
@@ -52,38 +54,51 @@ interface VoyageursSectionProps {
 
 export function VoyageursSection({ featuredPhoto }: VoyageursSectionProps) {
   const router = useRouter();
+  const [content, setContent] = useState({
+    title: 'Travelled with us?<br />Become a Voyageur',
+    description: 'Customers who have travelled with GOGRAPHY earn <strong>Voyageur</strong> status — eligible to submit photos in a customer-only category. Each season the winner receives a 50,000 THB voucher, and the top 10 receive cashback on their next trip.',
+    reward1_amount: '50,000 THB',
+    reward1_label: 'VOUCHER',
+    reward1_sub: 'ต่อหมวด',
+    reward2_amount: '3-15%',
+    reward2_label: 'CASHBACK',
+    reward2_sub: 'TOP 10'
+  });
+
+  useEffect(() => {
+    const fetchContent = async () => {
+      const supabase = getSupabaseBrowserClient();
+      const { data } = await supabase.from('site_settings').select('value').eq('id', 'voyageurs_section').single();
+      if (data?.value) {
+        setContent({ ...content, ...data.value });
+      }
+    };
+    fetchContent();
+  }, []);
 
   return (
-    <section className="py-24 bg-[var(--cream)] rule-top rule-bot">
-      <div className="wrap">
-        <div className="flex justify-between items-baseline pb-8 border-b border-[var(--rule)] mb-14">
-          <div className="caps opacity-55 flex items-center gap-2">
+    <section className="py-20 border-t border-[var(--rule)]">
+      <div className="wrap grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+        <div>
+          <div className="mono text-[11px] tracking-[.16em] uppercase opacity-55 mb-6 flex items-center gap-2">
             <VoyageurMark size={9} /> The Voyageurs Programme
           </div>
           <div className="mono text-[11px] opacity-55">EXCLUSIVE · CUSTOMERS ONLY</div>
         </div>
 
         <div
-          className="grid items-center grid-cols-[1.1fr_1fr] gap-20"
+          className="grid items-center grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-10 md:gap-14 lg:gap-20"
         >
           {/* Left: copy */}
           <div>
-            <h2
-              className="th font-normal m-0 leading-[1.05] text-[clamp(40px,4.6vw,64px)] tracking-[-.025em]"
-            >
-              Travelled with us?<br />Become a{' '}
-              <em className="not-italic font-medium">Voyageur</em>
-            </h2>
-            <p className="th mt-7 text-[17px] leading-[1.65] text-[var(--fg-soft)] max-w-[520px]">
-              Customers who have travelled with GOGRAPHY earn{' '}
-              <strong className="text-[var(--fg)] font-medium">Voyageur</strong> status — eligible
-              to submit photos in a customer-only category. Each season the winner receives a 50,000
-              THB voucher, and the top 10 receive cashback on their next trip.
-            </p>
-            <div className="flex gap-3 mt-8 flex-wrap">
-              <RewardBadge icon="voucher" label="50,000 THB" sub="Voucher · ต่อหมวด" />
-              <RewardBadge icon="cashback" label="3–15%" sub="Cashback · Top 10" />
-              <RewardBadge icon="star" label="Voyageur" sub="Public badge · ตลอดชีพ" />
+            <h2 className="th text-[56px] leading-[1.05] tracking-tight mb-6" dangerouslySetInnerHTML={{ __html: content.title }}></h2>
+          
+            <p className="th text-[15px] leading-[1.7] text-[var(--fg-soft)] mb-10 max-w-[460px]" dangerouslySetInnerHTML={{ __html: content.description }}></p>
+          
+            <div className="flex gap-4 mb-12">
+              <RewardBadge icon="voucher" label={content.reward1_amount} sub={`${content.reward1_label} · ${content.reward1_sub}`} />
+              <RewardBadge icon="cashback" label={content.reward2_amount} sub={`${content.reward2_label} · ${content.reward2_sub}`} />
+              <RewardBadge icon="star" label="Voyageur" sub="PUBLIC BADGE · ตลอดชีพ" />
             </div>
             <div className="flex gap-3 mt-10 flex-wrap">
               <button className="btn btn-solid" onClick={() => router.push('/for-customers')}>
@@ -100,13 +115,13 @@ export function VoyageursSection({ featuredPhoto }: VoyageursSectionProps) {
             <div className="relative">
               <div
                 className="pimg overflow-hidden cursor-pointer aspect-[4/5]"
-                onClick={() => router.push('/photo/p015')}
+                onClick={() => router.push('/photographers/voyageurs')}
               >
-                {featuredPhoto && (
+                {(content.image_url || featuredPhoto) && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={featuredPhoto.src}
-                    alt=""
+                    src={content.image_url || featuredPhoto?.src}
+                    alt="Voyageur Featured"
                     className="w-full h-full object-cover"
                   />
                 )}
@@ -120,9 +135,9 @@ export function VoyageursSection({ featuredPhoto }: VoyageursSectionProps) {
         </div>
 
         {/* Steps */}
-        <div className="mt-20 pt-14 border-t border-[var(--rule)]">
-          <div className="caps opacity-55 mb-8">How it works · 3 steps</div>
-          <div className="grid grid-cols-3 gap-14">
+        <div className="mt-14 md:mt-20 pt-10 md:pt-14 border-t border-[var(--rule)]">
+          <div className="caps opacity-55 mb-6 md:mb-8">How it works · 3 steps</div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10 lg:gap-14">
             <Step
               n="01"
               t="รับการยืนยันสถานะ"

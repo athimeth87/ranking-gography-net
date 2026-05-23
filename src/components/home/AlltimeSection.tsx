@@ -20,7 +20,7 @@ export function AlltimeSection({ allPhotos, voyageurUsernames }: AlltimeSectionP
   let alltimeSource: Photo[];
   if (alltimeCat === 'All') alltimeSource = allPhotos.slice();
   else if (alltimeCat === 'Voyageurs')
-    alltimeSource = allPhotos.filter((p) => voyageurUsernames.has(p.by));
+    alltimeSource = allPhotos.filter((p) => p.voyageurOnly);
   else alltimeSource = allPhotos.filter((p) => p.cat === alltimeCat);
 
   const alltimeBoard = alltimeSource

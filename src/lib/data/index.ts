@@ -1,11 +1,19 @@
 import type { Category, Comment, Photo, Photographer, Season } from '@/lib/types';
-import { rankPhotos } from '@/lib/pulse';
+import { pulseScore, rankPhotos } from '@/lib/pulse';
 import { PHOTO_SEEDS } from './photos';
 import { PHOTOGRAPHERS } from './photographers';
 import { SEASONS } from './seasons';
 import { COMMENTS } from './comments';
 
 const PHOTOS: Photo[] = rankPhotos(PHOTO_SEEDS);
+
+// ─── Legacy constant exports (used by mobile components) ─────────────────────
+export { PHOTOS, PHOTOGRAPHERS, COMMENTS, pulseScore };
+export const voyageurUsernames: Set<string> = new Set(
+  PHOTOGRAPHERS.filter((p) => p.isCustomer).map((p) => p.username),
+);
+
+// ─── Function-based API ──────────────────────────────────────────────────────
 
 export type SortKey = 'pulse' | 'recent' | 'likes';
 
@@ -24,12 +32,12 @@ export function getPhotos(opts: GetPhotosOptions = {}): Photo[] {
   return list;
 }
 
-export function getPhoto(id: string): Photo | undefined {
-  return PHOTOS.find((p) => p.id === id);
+export function getPhoto(id: string): Photo {
+  return PHOTOS.find((p) => p.id === id)!;
 }
 
-export function getPhotographer(username: string): Photographer | undefined {
-  return PHOTOGRAPHERS.find((p) => p.username === username);
+export function getPhotographer(username: string): Photographer {
+  return PHOTOGRAPHERS.find((p) => p.username === username)!;
 }
 
 export function getPhotographers(): Photographer[] {

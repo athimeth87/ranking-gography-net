@@ -7,6 +7,7 @@ import { Footer } from '@/components/layout/Footer';
 import { useApp } from '@/providers/AppProvider';
 import { PageCover } from '@/components/layout/PageCover';
 import type { Category } from '@/lib/types';
+import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 
 // ---------------------------------------------------------------------------
 // Upload page — single photo upload form with daily limit
@@ -25,6 +26,7 @@ interface Draft {
   forCustomerAwards: boolean;
   caption: string;
   file: DraftFile | null;
+  actualFile: File | null;
 }
 
 interface DropZoneProps {
@@ -37,7 +39,7 @@ interface DropZoneProps {
 function DropZone({ draft, setDraft, dragOver, setDragOver }: DropZoneProps) {
   const handleFile = (f: File) => {
     const url = URL.createObjectURL(f);
-    setDraft((d) => ({ ...d, file: { name: f.name, size: f.size, url } }));
+    setDraft((d) => ({ ...d, file: { name: f.name, size: f.size, url }, actualFile: f }));
   };
 
   const onDrop = (e: React.DragEvent<HTMLDivElement>) => {
@@ -160,9 +162,11 @@ export default function UploadPage() {
     forCustomerAwards: userState === 'customer',
     caption: '',
     file: null,
+    actualFile: null,
   });
   const [dragOver, setDragOver] = useState(false);
   const [countdown, setCountdown] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
 
   const limitReached = uploadedToday >= 1;
 
@@ -185,8 +189,53 @@ export default function UploadPage() {
     return () => clearInterval(id);
   }, []);
 
-  const handleSubmit = () => {
-    if (limitReached || !draft.file) return;
+  const { authUser } = useApp();
+
+  const handleSubmit = async () => {
+    if (limitReached || !draft.file || !draft.actualFile || !authUser?.id) return;
+    setIsUploading(true);
+
+    const supabase = getSupabaseBrowserClient();
+    
+    // 1. Upload to Storage
+    const fileExt = draft.actualFile.name.split('.').pop();
+    const fileName = `${authUser.id}/${Date.now()}.${fileExt}`;
+    
+    const { error: uploadError } = await supabase.storage
+      .from('photos')
+      .upload(fileName, draft.actualFile);
+
+    if (uploadError) {
+      alert('Upload failed: ' + uploadError.message);
+      setIsUploading(false);
+      return;
+    }
+
+    // 2. Insert record to public.photos
+    const { data: publicUrlData } = supabase.storage.from('photos').getPublicUrl(fileName);
+    
+    const slug = `${draft.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now()}`;
+
+    const { error: dbError } = await supabase.from('photos').insert({
+      photographer_id: authUser.id,
+      title: draft.title,
+      slug: slug,
+      description: draft.caption,
+      category: draft.cat.toLowerCase(),
+      storage_url: publicUrlData.publicUrl,
+      width: 4, 
+      height: 3, 
+      likes_count: 0,
+      favorites_count: 0
+    });
+
+    if (dbError) {
+      alert('Database error: ' + dbError.message);
+      setIsUploading(false);
+      return;
+    }
+
+    setIsUploading(false);
     setUploadedToday(1);
   };
 
@@ -380,12 +429,12 @@ export default function UploadPage() {
                   </div>
 
                   <button
-                    className={`btn ${!draft.file || !draft.title ? 'btn-ghost' : 'btn-solid'} mt-3 justify-center`}
-                    disabled={!draft.file || !draft.title}
+                    className={`btn ${!draft.file || !draft.title || isUploading ? 'btn-ghost' : 'btn-solid'} mt-3 justify-center`}
+                    disabled={!draft.file || !draft.title || isUploading}
                     onClick={handleSubmit}
-                    style={{ opacity: !draft.file || !draft.title ? 0.35 : 1 }} // runtime: form validity state
+                    style={{ opacity: !draft.file || !draft.title || isUploading ? 0.35 : 1 }} // runtime: form validity state
                   >
-                    {!draft.file ? 'เลือกภาพก่อน' : !draft.title ? 'ใส่ชื่อภาพ' : 'Submit a photo'}
+                    {!draft.file ? 'เลือกภาพก่อน' : !draft.title ? 'ใส่ชื่อภาพ' : isUploading ? 'Uploading...' : 'Submit a photo'}
                   </button>
                   <p className="mono text-[11px] opacity-55 text-center leading-[1.7]">
                     หลังจากส่งแล้ว ภาพจะปรากฏใน Explore ทันที — และคุณจะกลับมาอัพภาพถัดไปได้พรุ่งนี้

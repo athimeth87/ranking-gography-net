@@ -89,19 +89,21 @@ export default function Page() {
       <section className="pt-[40px] pb-[96px]">
         <div className="wrap">
           <div
-            className="bg-[var(--cream)] p-[64px_56px] border border-[var(--rule)]"
+            className="bg-[var(--cream)] p-6 md:p-10 lg:p-[64px_56px] border border-[var(--rule)] overflow-hidden"
           >
             <div className="mono text-[11px] tracking-[.16em] uppercase opacity-55 mb-[32px]">
               The Pulse Score formula
             </div>
-            <pre
-              className="mono text-[clamp(18px,2.2vw,28px)] leading-[1.7] m-0 font-medium tracking-[-0.005em] whitespace-pre-wrap"
-            >
+            <div className="overflow-x-auto no-scrollbar pb-4">
+              <pre
+                className="mono text-[14px] md:text-[clamp(18px,2.2vw,28px)] leading-[1.7] m-0 font-medium tracking-[-0.005em]"
+              >
 {`pulse  =  (likes × 1  +  likes_24h × 3  +  curation_bonus)
           ─────────────────────────────────────────────────
                        max(hours_since_upload, 1)`}
-            </pre>
-            <div className="mt-[48px] pt-[32px] border-t border-[var(--rule)]">
+              </pre>
+            </div>
+            <div className="mt-8 md:mt-[48px] pt-6 md:pt-[32px] border-t border-[var(--rule)]">
               <div className="mono text-[11px] tracking-[.16em] uppercase opacity-55 mb-[20px]">
                 Curation bonus values
               </div>
@@ -133,7 +135,7 @@ export default function Page() {
       <section className="pt-[40px] pb-[96px]">
         <div className="wrap">
           <SectionHeader eyebrow="Worked example" title="Worked example from current #1" />
-          <div className="grid grid-cols-[1fr_1fr] gap-[64px] items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-10 lg:gap-[64px] items-start">
             <div>
               <div className="aspect-[4/5] bg-[var(--tile)] overflow-hidden">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -191,7 +193,7 @@ export default function Page() {
       <section className="py-[80px] bg-[var(--cream)] rule-top rule-bot">
         <div className="wrap">
           <SectionHeader title="Principles" eyebrow="Why we built it this way" />
-          <div className="grid grid-cols-[1fr_1fr_1fr] gap-[56px]">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10 lg:gap-[56px]">
             <Principle
               n="01"
               title="โปร่งใส"

@@ -87,10 +87,10 @@ export default function PhotographerProfilePage({ params }: { params: { username
         maxHeight={560}
       />
       {/* Identity header — typography-first, no cover image */}
-      <section className="pt-[64px] pb-[48px] border-b border-rule">
+      <section className="pt-8 md:pt-[64px] pb-6 md:pb-[48px] border-b border-rule">
         <div className="wrap">
           {/* Top eyebrow row */}
-          <div className="flex justify-between items-center mb-[48px]">
+          <div className="flex flex-wrap justify-between items-center gap-3 mb-6 md:mb-[48px]">
             <div className="flex items-center gap-[10px]">
               {photographer.isAmbassador && (
                 <span className="inline-flex items-center gap-[6px] px-[11px] py-[5px] bg-[#b08e54] text-white text-[10.5px] tracking-[.16em] uppercase font-medium">
@@ -111,9 +111,9 @@ export default function PhotographerProfilePage({ params }: { params: { username
           </div>
 
           {/* Big name + avatar composition */}
-          <div className="grid gap-[48px] items-end grid-cols-[1fr_auto]">
+          <div className="grid gap-6 md:gap-[48px] items-end grid-cols-[1fr_auto]">
             <div>
-              <h1 className="th font-light m-0 leading-[.92] text-[clamp(72px,8.4vw,128px)] tracking-[-0.035em]">
+              <h1 className="th font-light m-0 leading-[.92] text-[clamp(40px,9vw,128px)] tracking-[-0.035em]">
                 {photographer.name}
               </h1>
               <div className="mt-6 flex gap-[28px] items-center caps">
@@ -124,7 +124,7 @@ export default function PhotographerProfilePage({ params }: { params: { username
                 <span className="opacity-65">{photographer.cameras[0]}</span>
               </div>
             </div>
-            <div className="w-[140px] h-[140px] rounded-full overflow-hidden bg-tile shrink-0">
+            <div className="w-[96px] h-[96px] md:w-[140px] md:h-[140px] rounded-full overflow-hidden bg-tile shrink-0">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={photographer.avatar} // runtime: photographer.avatar from data
@@ -146,7 +146,7 @@ export default function PhotographerProfilePage({ params }: { params: { username
       <section>
         <div className="wrap">
           {/* Stat strip */}
-          <div className="grid grid-cols-5 gap-8 py-8 border-b border-rule mono">
+          <div className="grid grid-cols-3 md:grid-cols-5 gap-6 md:gap-8 py-6 md:py-8 border-b border-rule mono">
             <ProfileStat label="Photos" val={photographer.photos} />
             <ProfileStat label="Followers" val={photographer.followers.toLocaleString()} />
             <ProfileStat label="Following" val="142" />
@@ -184,7 +184,7 @@ export default function PhotographerProfilePage({ params }: { params: { username
 
               {/* Galleries tab */}
               <TabsContent value="galleries">
-                <div className="grid grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
                   {galleryItems.map((g, i) => (
                     <div key={i} className="cursor-pointer">
                       <div className="aspect-[4/3] bg-tile overflow-hidden">
@@ -221,7 +221,7 @@ export default function PhotographerProfilePage({ params }: { params: { username
               <TabsContent value="about">
                 <div>
                   {photographer.isCustomer && (
-                    <div className="p-[32px_36px] bg-cream border border-rule mb-[48px] grid gap-[48px] items-center grid-cols-[1.5fr_1fr]">
+                    <div className="p-6 md:p-[32px_36px] bg-cream border border-rule mb-8 md:mb-[48px] grid gap-8 md:gap-[48px] items-center grid-cols-1 md:grid-cols-[1.5fr_1fr]">
                       <div>
                         <div className="caps opacity-55 mb-3 flex items-center gap-2">
                           <VoyageurMark size={9} /> Voyageur
@@ -256,7 +256,7 @@ export default function PhotographerProfilePage({ params }: { params: { username
                     </div>
                   )}
 
-                  <div className="grid grid-cols-2 gap-[80px] pt-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-[80px] pt-4">
                     <div>
                       <h3 className="th text-[24px] font-normal tracking-[-0.015em] m-0 mb-5">
                         เกี่ยวกับ {photographer.name}

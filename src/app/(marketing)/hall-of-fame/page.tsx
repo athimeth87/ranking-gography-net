@@ -43,9 +43,9 @@ export default function Page() {
       />
 
       {/* Cashback program ribbon */}
-      <section className="py-[48px] bg-[var(--cream)] rule-top rule-bot">
+      <section className="py-8 md:py-[48px] bg-[var(--cream)] rule-top rule-bot">
         <div className="wrap">
-          <div className="grid grid-cols-[1fr_1fr_1fr] gap-[48px]">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-12 lg:gap-[48px]">
             <CashbackTier rank="1" label="Best Photo" detail="Voucher 50,000 THB ต่อหมวด" />
             <CashbackTier rank="2–3" label="Cashback 15%" detail="ส่วนลดทริปครั้งถัดไป" />
             <CashbackTier rank="4–10" label="Cashback 3–10%" detail="ส่วนลดทริปครั้งถัดไป" />
@@ -61,16 +61,16 @@ export default function Page() {
       <section className="py-[80px]">
         <div className="wrap">
           {seasons.map((season, idx) => (
-            <div key={season.id} className="mb-[80px]">
+            <div key={season.id} className="mb-12 md:mb-20 lg:mb-[80px]">
               <div
-                className="flex justify-between items-baseline pb-[24px] mb-[32px] border-b border-[var(--fg)]"
+                className="flex flex-wrap justify-between items-baseline gap-3 pb-4 md:pb-6 mb-6 md:mb-8 border-b border-[var(--fg)]"
               >
-                <div className="flex items-baseline gap-[24px]">
+                <div className="flex items-baseline gap-3 md:gap-[24px] flex-wrap">
                   <span className="mono text-[11px] tracking-[.16em] uppercase opacity-55">
                     {String(idx + 1).padStart(2, '0')}
                   </span>
                   <h2
-                    className="text-[56px] font-normal tracking-[-0.025em] m-0 leading-[1]"
+                    className="text-[clamp(28px,6.5vw,56px)] font-normal tracking-[-0.025em] m-0 leading-[1]"
                   >
                     {season.name}
                   </h2>
@@ -94,7 +94,7 @@ export default function Page() {
                   </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-[1fr_1fr_1fr] gap-[32px]">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-[32px]">
                   {(Object.entries(season.winners) as [string, { photoId: string; voucher: string }][]).map(
                     ([cat, w]) => {
                       const photo = getPhoto(w.photoId);

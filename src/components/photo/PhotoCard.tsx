@@ -92,6 +92,12 @@ export function PhotoCard({
           )}
         </div>
       )}
+      {photo.voyageurOnly && (
+        <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-md text-[#d4af37] border border-[#d4af37]/30 text-[9px] tracking-widest font-medium uppercase px-2 py-1 rounded-sm flex items-center gap-1.5 z-10 shadow-lg pointer-events-none">
+          <span className="text-[10px]">👑</span>
+          Voyageur Only
+        </div>
+      )}
     </div>
   );
 }

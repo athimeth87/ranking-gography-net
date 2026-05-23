@@ -4,11 +4,12 @@ import { useRouter } from 'next/navigation';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getPhoto, getPhotographer, getCommentsFor, getPhotos } from '@/lib/data';
-import type { Photo, Comment, Photographer } from '@/lib/types';
+import type { Photo, Comment, Photographer, Category } from '@/lib/types';
 import { PhotoGrid } from '@/components/photo/PhotoGrid';
 import { Footer } from '@/components/layout/Footer';
 import { PickBadge } from '@/components/icons';
 import { Lightbox } from '@/components/photo/Lightbox';
+import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 
 // ===== Single photo detail page — /photo/[id] =====
 // Large image + sidebar (photographer, EXIF, pulse/stats, comments), like/favorite toggles, lightbox.
@@ -90,48 +91,144 @@ function LikeButton({ photoId: _photoId, baseLikes }: LikeButtonProps) {
 // ---------------------------------------------------------------------------
 
 export default function PhotoDetailPage({ params }: { params: { id: string } }) {
-  const photo = getPhoto(params.id);
-  if (!photo) notFound();
-
-  const photographer: Photographer | undefined = getPhotographer(photo.by);
-  const comments: Comment[] = getCommentsFor(photo.id);
-  const allPhotos: Photo[] = getPhotos();
-
-  // More from same photographer (up to 4, excluding this photo)
-  const more: Photo[] = allPhotos.filter((p) => p.by === photo.by && p.id !== photo.id).slice(0, 4);
-  // Similar (same category, up to 6, excluding this photo)
-  const similar: Photo[] = allPhotos.filter((p) => p.cat === photo.cat && p.id !== photo.id).slice(0, 6);
-
   const router = useRouter();
+  const isUUID = params.id.includes('-');
+
+  const [photo, setPhoto] = useState<Photo | null>(null);
+  const [photographer, setPhotographer] = useState<Photographer | undefined>(undefined);
+  const [more, setMore] = useState<Photo[]>([]);
+  const [similar, setSimilar] = useState<Photo[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    const fetchPhoto = async () => {
+      if (!isUUID) {
+        // Fallback to mock data
+        const p = getPhoto(params.id);
+        if (!p) { setError(true); setLoading(false); return; }
+        setPhoto(p);
+        setPhotographer(getPhotographer(p.by));
+        
+        const allPhotos = getPhotos();
+        setMore(allPhotos.filter((x) => x.by === p.by && x.id !== p.id).slice(0, 4));
+        setSimilar(allPhotos.filter((x) => x.cat === p.cat && x.id !== p.id).slice(0, 6));
+        setLoading(false);
+        return;
+      }
+
+      // Fetch from Supabase
+      const supabase = getSupabaseBrowserClient();
+      const { data: pData } = await supabase.from('photos').select('*').eq('id', params.id).single();
+      
+      if (!pData) {
+        setError(true);
+        setLoading(false);
+        return;
+      }
+
+      const { data: uData } = await supabase.from('users').select('*').eq('id', pData.photographer_id).single();
+
+      const rawCat = pData.category as string;
+      const mappedCat = (rawCat === 'bw' ? 'BW' : rawCat.charAt(0).toUpperCase() + rawCat.slice(1)) as Category;
+      const ownerName = uData?.username || uData?.display_name || 'unknown';
+
+      const realPhoto: Photo = {
+        id: pData.id,
+        slug: pData.slug || pData.id,
+        title: pData.title,
+        by: ownerName,
+        cat: mappedCat,
+        w: pData.width || 4,
+        h: pData.height || 3,
+        src: pData.storage_url,
+        caption: pData.description || '',
+        exif: { camera: pData.camera || 'Unknown', lens: pData.lens || 'Unknown', iso: 100, shutter: '1/100', aperture: 'f/8', focal: '50mm' },
+        likes: pData.likes_count || 0,
+        likes24h: 0,
+        comments: pData.comments_count || 0,
+        favorites: pData.favorites_count || 0,
+        hours: 24,
+        picks: [],
+        date: pData.uploaded_at,
+        voyageurOnly: pData.voyageur_only,
+        pulse: (pData.likes_count || 0) + (pData.favorites_count || 0) * 2,
+        rank: 0
+      };
+
+      setPhoto(realPhoto);
+      
+      if (uData) {
+        setPhotographer({
+          username: ownerName,
+          name: uData.display_name || ownerName,
+          loc: 'Earth',
+          bio: uData.bio || '',
+          avatar: uData.avatar_url || '',
+          cover: '',
+          followers: 0,
+          photos: 0,
+          isAmbassador: uData.photographer_status === 'approved',
+          isCustomer: uData.is_customer,
+          joined: uData.created_at,
+          cameras: []
+        });
+      }
+
+      // We won't strictly fetch related photos from DB to save time, 
+      // but let's just show an empty grid or recent photos
+      const { data: moreData } = await supabase.from('photos').select('*').eq('photographer_id', pData.photographer_id).neq('id', pData.id).limit(4);
+      if (moreData) {
+        const mappedMore = moreData.map(md => ({
+          id: md.id,
+          slug: md.slug || md.id,
+          title: md.title,
+          by: ownerName,
+          cat: (md.category === 'bw' ? 'BW' : md.category.charAt(0).toUpperCase() + md.category.slice(1)) as Category,
+          w: md.width || 4,
+          h: md.height || 3,
+          src: md.storage_url,
+          caption: md.description || '',
+          exif: { camera: md.camera || 'Unknown', lens: md.lens || 'Unknown', iso: 100, shutter: '1/100', aperture: 'f/8', focal: '50mm' },
+          likes: md.likes_count || 0,
+          likes24h: 0,
+          comments: md.comments_count || 0,
+          favorites: md.favorites_count || 0,
+          hours: 24,
+          picks: [],
+          date: md.uploaded_at,
+          voyageurOnly: md.voyageur_only,
+          pulse: (md.likes_count || 0) + (md.favorites_count || 0) * 2,
+          rank: 0
+        }));
+        setMore(mappedMore);
+      }
+
+      setLoading(false);
+    };
+    
+    fetchPhoto();
+  }, [params.id, isUUID]);
 
   // Favorite toggle (local mock state)
   const [favorited, setFavorited] = useState(false);
-  // Favorite count changes based on favorited state (runtime-dynamic)
-  const favoriteCount = favorited ? photo.favorites + 1 : photo.favorites;
+  const favoriteCount = photo ? (favorited ? photo.favorites + 1 : photo.favorites) : 0;
 
   // Lightbox state
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
-  // J/K keyboard navigation between photos (source behavior)
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (lightboxOpen) return; // don't navigate while lightbox is open
-      const idx = allPhotos.findIndex((p) => p.id === photo.id);
-      if (e.key === 'j' || e.key === 'ArrowDown') {
-        const next = allPhotos[Math.min(idx + 1, allPhotos.length - 1)];
-        if (next) router.push(`/photo/${next.id}`);
-      }
-      if (e.key === 'k' || e.key === 'ArrowUp') {
-        const prev = allPhotos[Math.max(idx - 1, 0)];
-        if (prev) router.push(`/photo/${prev.id}`);
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [photo.id, allPhotos, router, lightboxOpen]);
-
   // Category slug for links
-  const catSlug = photo.cat.toLowerCase();
+  const catSlug = photo ? photo.cat.toLowerCase() : '';
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
+
+  if (error || !photo) {
+    return <div className="min-h-screen flex items-center justify-center">404 - Photo not found in database</div>;
+  }
+
+  const comments: Comment[] = isUUID ? [] : getCommentsFor(photo.id);
 
   return (
     <div className="page-fade">
@@ -156,7 +253,7 @@ export default function PhotoDetailPage({ params }: { params: { id: string } }) 
       <section className="py-12">
         <div className="wrap">
           {/* Two-column layout: main image/info + sidebar */}
-          <div className="grid gap-14 items-start grid-cols-[1fr_360px]">
+          <div className="grid gap-10 md:gap-14 items-start grid-cols-1 lg:grid-cols-[1fr_360px]">
 
             {/* ---- Main column ---- */}
             <div>
@@ -229,8 +326,8 @@ export default function PhotoDetailPage({ params }: { params: { id: string } }) 
               </div>
 
               {/* Pulse breakdown */}
-              <div className="mt-14 py-8 border-t border-rule border-b border-rule">
-                <div className="grid gap-8 items-baseline grid-cols-5">
+              <div className="mt-10 md:mt-14 py-6 md:py-8 border-t border-rule border-b border-rule">
+                <div className="grid gap-4 md:gap-8 items-baseline grid-cols-3 md:grid-cols-5">
                   <div>
                     <div className="caps opacity-55 mb-2">Pulse</div>
                     <div className="mono font-medium leading-[1] text-[48px] tracking-[-.02em]">
@@ -302,7 +399,7 @@ export default function PhotoDetailPage({ params }: { params: { id: string } }) 
             </div>
 
             {/* ---- Sidebar ---- */}
-            <aside className="sticky top-[100px]">
+            <aside className="sticky top-[100px] lg:block">
               {/* Photographer card */}
               <div className="py-7 border-t border-fg border-b border-rule">
                 {photographer ? (

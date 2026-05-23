@@ -18,7 +18,7 @@ export function HeroSection({ banner, top, bannerPhotographer, topPhotographer }
     <section className="relative">
       {/* Full-bleed banner */}
       <div
-        className="relative overflow-hidden bg-black h-[68vh] min-h-[520px] max-h-[760px]"
+        className="relative overflow-hidden bg-black h-[68vh] min-h-[460px] md:min-h-[520px] max-h-[760px]"
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={banner.src} alt={banner.title} className="w-full h-full object-cover" />
@@ -27,7 +27,7 @@ export function HeroSection({ banner, top, bannerPhotographer, topPhotographer }
           className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,.45)_0%,rgba(0,0,0,.08)_35%,rgba(0,0,0,.1)_65%,rgba(0,0,0,.65)_100%)]"
         />
         {/* Top bar */}
-        <div className="absolute top-8 left-10 right-10 flex justify-between items-baseline text-white">
+        <div className="absolute top-6 md:top-8 left-4 right-4 md:left-10 md:right-10 flex justify-between items-baseline text-white">
           <div className="mono text-[11px] tracking-[.22em] uppercase opacity-85">
             GOGRAPHY Photo Awards
           </div>
@@ -36,18 +36,18 @@ export function HeroSection({ banner, top, bannerPhotographer, topPhotographer }
           </div>
         </div>
         {/* Bottom copy */}
-        <div className="absolute left-10 right-10 bottom-12 text-white">
+        <div className="absolute left-4 right-4 md:left-10 md:right-10 bottom-6 md:bottom-12 text-white">
           <div className="wrap !p-0 !max-w-none">
             <h1
-              className="th font-light leading-[.92] text-white m-0 max-w-[14ch] text-[clamp(64px,8vw,128px)] tracking-[-.035em]"
+              className="th font-light leading-[.92] text-white m-0 max-w-[14ch] text-[clamp(44px,11vw,128px)] md:text-[clamp(64px,8vw,128px)] tracking-[-.035em]"
             >
               Photographs<br />that tell stories
             </h1>
-            <div className="mt-7 flex items-end justify-between gap-10">
-              <p className="th text-[16px] leading-[1.55] max-w-[460px] text-white/85 m-0">
+            <div className="mt-6 md:mt-7 flex flex-col md:flex-row items-start md:items-end justify-between gap-6 md:gap-10">
+              <p className="th text-[14px] md:text-[16px] leading-[1.55] max-w-[460px] text-white/85 m-0">
                 A photography ranking platform by photographers and travellers — vote, discover, and help choose the photo of the season.
               </p>
-              <div className="flex gap-[10px] shrink-0">
+              <div className="flex flex-col sm:flex-row gap-[10px] w-full md:w-auto shrink-0">
                 <button
                   onClick={() => router.push('/explore')}
                   className="px-[22px] py-3 bg-white text-black text-[11px] tracking-[.14em] uppercase font-medium cursor-pointer border-0"
@@ -56,7 +56,7 @@ export function HeroSection({ banner, top, bannerPhotographer, topPhotographer }
                 </button>
                 <button
                   onClick={() => router.push('/about-ranking')}
-                  className="px-[22px] py-3 text-[11px] tracking-[.14em] uppercase font-medium cursor-pointer bg-[rgba(255,255,255,.08)] text-white border border-[rgba(255,255,255,.45)]"
+                  className="px-[22px] py-3 text-[11px] tracking-[.14em] uppercase font-medium cursor-pointer bg-[rgba(255,255,255,.08)] text-white border border-[rgba(255,255,255,.45)] w-full sm:w-auto"
                 >
                   How Pulse works
                 </button>
@@ -65,7 +65,7 @@ export function HeroSection({ banner, top, bannerPhotographer, topPhotographer }
           </div>
         </div>
         {/* Banner credit */}
-        <div className="absolute bottom-3 right-10 text-white/55">
+        <div className="absolute bottom-3 right-4 md:right-10 text-white/55 hidden sm:block">
           <div className="mono text-[10px] tracking-[.18em] uppercase">
             Banner: &quot;{banner.title}&quot; by {bannerPhotographer?.name}
           </div>

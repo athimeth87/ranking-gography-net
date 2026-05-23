@@ -111,7 +111,7 @@ export default function Page() {
       {/* Reward summary */}
       <section className="pt-[40px] pb-[56px]">
         <div className="wrap">
-          <div className="grid grid-cols-[repeat(3,1fr)] border border-[var(--rule)]">
+          <div className="grid grid-cols-1 md:grid-cols-3 border border-[var(--rule)]">
             <RewardCell
               tag="Rank 01 · ต่อหมวด"
               big="50,000"
@@ -138,7 +138,7 @@ export default function Page() {
       <section className="pt-[24px] pb-[80px]">
         <div className="wrap">
           <div className="caps opacity-55 mb-[24px]">Rules at a glance</div>
-          <div className="grid grid-cols-[repeat(4,1fr)] border border-[var(--rule)]">
+          <div className="grid grid-cols-2 md:grid-cols-4 border border-[var(--rule)]">
             <RuleCell num="1/day" lab="Upload" sub="วันละ 1 ภาพต่อบัญชี รวมทุกหมวด" />
             <RuleCell
               num="∞"
@@ -155,7 +155,7 @@ export default function Page() {
       <section className="py-[80px] bg-[var(--cream)] rule-top rule-bot">
         <div className="wrap">
           <SectionHeader eyebrow="The path" title="The full path" />
-          <div className="grid grid-cols-[180px_1fr] gap-[56px] mt-[32px]">
+          <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] lg:grid-cols-[180px_1fr] gap-8 md:gap-10 lg:gap-[56px] mt-6 md:mt-[32px]">
             {PATH_STEPS.map((s) => (
               <Fragment key={s.n}>
                 <div
@@ -190,7 +190,7 @@ export default function Page() {
       {/* Verification — claim status */}
       <section id="verify" className="py-[96px]">
         <div className="wrap">
-          <div className="grid grid-cols-[1fr_1fr] gap-[80px]">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-14 lg:gap-[80px]">
             <div>
               <SectionHeader eyebrow="Already a customer?" title="Verify your status" />
               <p className="th text-[16px] leading-[1.7] text-[var(--fg-soft)]">
@@ -346,7 +346,7 @@ export default function Page() {
             <strong className="text-[var(--fg)] font-medium">Spring 2026</strong>{' '}
             เปิดรับภาพถึง 30 เมษายน 2569
           </p>
-          <div className="flex justify-center gap-[16px] mt-[32px]">
+          <div className="flex flex-col sm:flex-row justify-center gap-[16px] mt-[32px]">
             <LoginButton
               label="เริ่มต้น — Login with Gmail"
               to="/login"

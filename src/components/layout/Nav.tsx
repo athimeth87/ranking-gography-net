@@ -17,14 +17,13 @@ const LINKS: { to: string; label: string }[] = [
 export function Nav() {
   const pathname = usePathname();
   const router = useRouter();
-  const { userState, toggleSideMenu } = useApp();
+  const { authUser, toggleSideMenu } = useApp();
 
   const isActive = (to: string) =>
     pathname === to || (to !== '/' && pathname.startsWith(to));
 
-  const avatarSrc = getPhotographer(
-    userState === 'customer' ? 'pim.travels' : 'kanthorn'
-  )?.avatar;
+  const avatarSrc = authUser?.user_metadata?.avatar_url || '';
+  const displayName = authUser?.user_metadata?.full_name || authUser?.email || 'User';
 
   if (pathname?.startsWith('/admin')) {
     return null;
@@ -76,19 +75,23 @@ export function Nav() {
             <button className="nav-link" onClick={() => router.push('/search')}>
               Search
             </button>
-            {userState === 'guest' ? (
+            {!authUser ? (
               <Link href="/login" className="btn btn-sm ml-2">
                 Sign in
               </Link>
             ) : (
               <Link href="/me" className="ml-2 flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full bg-tile overflow-hidden">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={avatarSrc}
-                    alt=""
-                    className="w-full h-full object-cover"
-                  />
+                <div className="w-7 h-7 rounded-full bg-tile overflow-hidden flex items-center justify-center border border-rule">
+                  {avatarSrc ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={avatarSrc}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="caps text-[10px] opacity-65">{displayName.charAt(0)}</span>
+                  )}
                 </div>
               </Link>
             )}

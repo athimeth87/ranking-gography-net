@@ -1,4 +1,5 @@
 'use client';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/providers/AppProvider';
 import { PageCover } from '@/components/layout/PageCover';
@@ -7,14 +8,27 @@ import { PageCover } from '@/components/layout/PageCover';
 // Google OAuth UI (mock) — no real auth
 
 export default function LoginPage() {
-  const router = useRouter();
-  const { setUserState } = useApp();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  function handleSignIn() {
-    setUserState('user');
-    router.push('/');
+  async function handleSignIn() {
+    setError(null);
+    setBusy(true);
+    try {
+      const { getSupabaseBrowserClient } = await import('@/lib/supabase/client');
+      const supabase = getSupabaseBrowserClient();
+      if (!supabase) throw new Error('Supabase not configured');
+      
+      const { error: signInError } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: `${window.location.origin}/auth/callback?next=/` },
+      });
+      if (signInError) throw signInError;
+    } catch (e: any) {
+      setError(e?.message || 'Sign-in failed');
+      setBusy(false);
+    }
   }
-
   return (
     <div className="page-fade">
       <PageCover

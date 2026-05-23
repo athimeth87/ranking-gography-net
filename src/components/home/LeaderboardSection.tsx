@@ -18,7 +18,7 @@ export function LeaderboardSection({ allPhotos, voyageurUsernames }: Leaderboard
   let leaderboardSource: Photo[];
   if (leaderCat === 'All') leaderboardSource = allPhotos.slice();
   else if (leaderCat === 'Voyageurs')
-    leaderboardSource = allPhotos.filter((p) => voyageurUsernames.has(p.by));
+    leaderboardSource = allPhotos.filter((p) => p.voyageurOnly);
   else leaderboardSource = allPhotos.filter((p) => p.cat === leaderCat);
   const leaderboard = leaderboardSource.slice(0, 8);
 

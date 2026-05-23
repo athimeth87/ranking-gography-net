@@ -48,7 +48,7 @@ function SearchResults() {
 
   return (
     <div className="page-fade">
-      <section className="py-[64px]">
+      <section className="py-10 md:py-[64px]">
         <div className="wrap">
           <div className="caps opacity-55 mb-[24px]">Search</div>
 
@@ -59,7 +59,7 @@ function SearchResults() {
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="ค้นหาภาพ ช่างภาพ หรือสถานที่"
-              className="th font-thai flex-1 bg-transparent border-0 outline-none text-fg font-light tracking-[-.02em] text-[clamp(36px,5vw,64px)]"
+              className="th font-thai flex-1 bg-transparent border-0 outline-none text-fg font-light tracking-[-.02em] text-[clamp(24px,7vw,64px)]"
             />
             <span className="mono text-[11px] opacity-55">
               {q ? `${photoResults.length + photographerResults.length} results` : 'Type to search'}
@@ -80,7 +80,7 @@ function SearchResults() {
 
               <div className="mt-[64px]">
                 <div className="caps opacity-55 mb-[20px]">Trending photographers</div>
-                <div className="grid gap-[32px] grid-cols-4">
+                <div className="grid gap-4 md:gap-[32px] grid-cols-2 md:grid-cols-4">
                   {trendingPhotographers.map((p: Photographer) => (
                     <Link key={p.username} href={`/photographer/${p.username}`}>
                       {/* aspect-ratio 1/1 avatar tile */}
@@ -105,7 +105,7 @@ function SearchResults() {
                   <div className="caps opacity-55 mb-[20px]">
                     Photographers · {photographerResults.length}
                   </div>
-                  <div className="grid gap-[24px] grid-cols-3">
+                  <div className="grid gap-3 md:gap-[24px] grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
                     {photographerResults.map((p: Photographer) => (
                       <Link
                         key={p.username}

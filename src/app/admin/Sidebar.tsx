@@ -15,7 +15,8 @@ import {
   ChevronsUpDown,
   Command,
   Bell,
-  Megaphone
+  Megaphone,
+  ClipboardList
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -34,6 +35,7 @@ const navGroups = [
     items: [
       { name: 'Users & Roles', href: '/admin/users', icon: Users },
       { name: 'Admin Team', href: '/admin/admins', icon: ShieldCheck },
+      { name: 'Customer Whitelist', href: '/admin/customers', icon: ClipboardList },
       { name: 'Ads & Popups', href: '/admin/popups', icon: Megaphone, badge: 'Campaigns' },
     ]
   },

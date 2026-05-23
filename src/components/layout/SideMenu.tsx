@@ -35,7 +35,7 @@ const ABOUT: NavLink[] = [
 export function SideMenu() {
   const router = useRouter();
   const pathname = usePathname();
-  const { sideMenuOpen, setSideMenuOpen, theme, setTheme, userState } = useApp();
+  const { sideMenuOpen, setSideMenuOpen, theme, setTheme, authUser, signOut } = useApp();
 
   // Close on ESC + lock body scroll while open
   useEffect(() => {
@@ -57,10 +57,8 @@ export function SideMenu() {
 
   const isActive = (to: string) => to === '/' ? pathname === '/' : pathname.startsWith(to);
 
-  const avatarSrc =
-    userState === 'photographer'
-      ? getPhotographer('kanthorn')?.avatar
-      : getPhotographer('pim.travels')?.avatar;
+  const avatarSrc = authUser?.user_metadata?.avatar_url || '';
+  const displayName = authUser?.user_metadata?.full_name || authUser?.email || 'Registered User';
 
   if (pathname?.startsWith('/admin')) {
     return null;
@@ -103,35 +101,39 @@ export function SideMenu() {
 
           {/* Identity */}
           <div className="sidemenu-identity">
-            <div className="sidemenu-avatar">
-              {userState === 'guest' ? (
+            <div className="sidemenu-avatar" style={authUser && avatarSrc ? { backgroundImage: `url(${avatarSrc})`, backgroundSize: 'cover', backgroundPosition: 'center', border: '1px solid var(--rule)' } : {}}>
+              {!authUser ? (
                 <span className="caps text-[10px] opacity-65">G</span>
               ) : (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={avatarSrc} alt="" loading="lazy" />
+                !avatarSrc && <span className="caps text-[10px] opacity-65">{displayName.charAt(0)}</span>
               )}
             </div>
             <div className="sidemenu-identity-meta">
               <div className="sidemenu-identity-name">
-                {userState === 'guest' ? 'Guest' : userState === 'customer' ? 'Pim Asanachinda' : userState === 'photographer' ? 'Kanthorn Aroonrat' : 'Pim Asanachinda'}
+                {!authUser ? 'Guest' : displayName}
               </div>
               <div className="sidemenu-identity-sub mono">
-                {userState === 'guest' ? 'Not signed in' : userState === 'customer' ? '◇ VOYAGEUR' : userState === 'photographer' ? '★ PHOTOGRAPHER' : 'REGISTERED'}
+                {!authUser ? 'Not signed in' : 'AUTHENTICATED'}
               </div>
             </div>
           </div>
 
           {/* CTA — sign in or go to account */}
-          {userState === 'guest' ? (
+          {!authUser ? (
             <button className="sidemenu-cta" onClick={() => go('/login')}>
-              <span>Sign in with Gmail</span>
+              <span>Sign in with Google</span>
               <span className="arr">→</span>
             </button>
           ) : (
-            <button className="sidemenu-cta" onClick={() => go('/me')}>
-              <span>Open your dashboard</span>
-              <span className="arr">→</span>
-            </button>
+            <>
+              <button className="sidemenu-cta" onClick={() => go('/me')}>
+                <span>Open your dashboard</span>
+                <span className="arr">→</span>
+              </button>
+              <button className="sidemenu-cta" onClick={() => { signOut?.(); setSideMenuOpen(false); }} style={{ marginTop: 8, background: 'transparent', color: 'var(--fg)', border: '1px solid var(--rule)' }}>
+                <span>Sign out</span>
+              </button>
+            </>
           )}
 
           {/* Group: Primary */}

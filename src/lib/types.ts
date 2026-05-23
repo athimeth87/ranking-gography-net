@@ -33,6 +33,7 @@ export interface PhotoSeed {
   picks: PickKind[];
   date: string;
   tripContext?: string;
+  voyageurOnly?: boolean;
 }
 
 /** A photo with derived ranking fields. */

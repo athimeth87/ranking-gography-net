@@ -142,13 +142,13 @@ export default function ExploreCategoryPage({
         subtitle={coverSubtitle}
       />
       {/* Header */}
-      <section className="pt-[64px] pb-[40px]">
+      <section className="py-8 md:py-12 lg:py-16">
         <div className="wrap">
-          <div className="flex justify-between items-baseline pb-8">
+          <div className="flex flex-wrap justify-between items-baseline gap-4 pb-6 md:pb-8">
             <div>
-              <div className="caps opacity-55 mb-[14px]">Explore</div>
+              <div className="caps opacity-55 mb-3 md:mb-[14px]">Explore</div>
               <h1
-                className="display-hero text-[clamp(48px,5vw,72px)] m-0 tracking-[-.025em]"
+                className="display-hero text-[clamp(32px,8vw,72px)] m-0 tracking-[-.025em]"
               >
                 {headingLabel}
               </h1>
@@ -161,7 +161,7 @@ export default function ExploreCategoryPage({
           </div>
 
           {/* Category tabs */}
-          <div className="flex gap-7 border-b border-rule pb-0">
+          <div className="flex gap-5 md:gap-7 overflow-x-auto no-scrollbar border-b border-rule pb-0">
             {TABS.map((t) => {
               const active =
                 (catKey !== null && catKey.toLowerCase() === t.id) ||
@@ -183,8 +183,8 @@ export default function ExploreCategoryPage({
           </div>
 
           {/* Filter bar */}
-          <div className="flex justify-between items-center py-5 border-b border-rule">
-            <div className="flex gap-8 items-center">
+          <div className="flex flex-wrap justify-between items-center gap-3 py-4 md:py-5 border-b border-rule">
+            <div className="flex flex-wrap gap-5 md:gap-8 items-center">
               <FilterDropdown
                 label="Sort"
                 value={sort}
@@ -211,7 +211,7 @@ export default function ExploreCategoryPage({
                 Picks only
               </label>
             </div>
-            <div className="mono text-[11px] opacity-55">
+            <div className="mono text-[11px] opacity-55 hidden md:block">
               Press{' '}
               <span className="border border-rule px-[6px] py-[2px]">J</span>{' '}
               <span className="border border-rule px-[6px] py-[2px]">K</span>{' '}
