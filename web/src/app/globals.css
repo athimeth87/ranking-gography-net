@@ -18,6 +18,9 @@
   --rule-strong: rgba(0,0,0,.85);
   --cream: #FAFAF7;
   --tile: #f1efe9;
+  --sans: var(--font-inter), 'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif;
+  --thai: var(--font-noto-thai), var(--font-inter), sans-serif;
+  --mono: var(--font-plex-mono), ui-monospace, Menlo, monospace;
 }
 
 [data-theme="dark"] {
