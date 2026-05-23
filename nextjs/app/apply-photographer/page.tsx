@@ -8,6 +8,7 @@ import { PhotoCard, PhotoGrid } from '@/components/PhotoCard';
 import { Footer } from '@/components/Footer';
 import { VoyageurMark, CrownIcon, EditorIcon, RewardIcon, PickBadge } from '@/components/Icons';
 import { PageCover } from '@/components/PageCover';
+import { MobileApplyPhotographer } from '@/components/mobile/MobileMisc';
 
 // ===== Ported from pages/apply-photographer.jsx =====
 // Apply as Photographer — portfolio submission form
@@ -47,7 +48,9 @@ function PageApplyPhotographer() {
   }
 
   return (
-    <div className="page-fade">
+    <>
+    <div className="md:hidden"><MobileApplyPhotographer /></div>
+    <div className="page-fade hidden md:block">
       <PageCover
         photoId="p005"
         eyebrow="Apply"
@@ -194,6 +197,7 @@ function PageApplyPhotographer() {
 
       <Footer />
     </div>
+    </>
   );
 }
 

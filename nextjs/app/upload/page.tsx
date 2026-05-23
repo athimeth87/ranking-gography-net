@@ -9,6 +9,7 @@ import { Footer } from '@/components/Footer';
 import { VoyageurMark, CrownIcon, EditorIcon, RewardIcon, PickBadge } from '@/components/Icons';
 import { useApp } from '@/components/AppProvider';
 import { PageCover } from '@/components/PageCover';
+import { MobileUpload } from '@/components/mobile/MobileMisc';
 
 // ===== Ported from pages/upload.jsx =====
 // Upload page — single photo upload form with daily limit
@@ -52,7 +53,9 @@ function PageUpload({ userState }) {
   };
 
   return (
-    <div className="page-fade">
+    <>
+    <div className="md:hidden"><MobileUpload /></div>
+    <div className="page-fade hidden md:block">
       <PageCover
         photoId="p019"
         eyebrow="Upload"
@@ -221,6 +224,7 @@ function PageUpload({ userState }) {
 
       <Footer />
     </div>
+    </>
   );
 }
 

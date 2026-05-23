@@ -8,6 +8,7 @@ import { PhotoCard, PhotoGrid } from '@/components/PhotoCard';
 import { Footer } from '@/components/Footer';
 import { VoyageurMark, CrownIcon, EditorIcon, RewardIcon, PickBadge } from '@/components/Icons';
 import { PageCover } from '@/components/PageCover';
+import { MobileSearch } from '@/components/mobile/MobileMisc';
 
 // ===== Ported from pages/search.jsx =====
 // Search page — query input + filtered results
@@ -33,7 +34,9 @@ function PageSearch() {
   const suggestions = ['Patagonia', 'Doi Inthanon', 'Portrait', 'Leica', 'fog', 'Wattana', 'Black & White'];
 
   return (
-    <div className="page-fade">
+    <>
+    <div className="md:hidden"><MobileSearch /></div>
+    <div className="page-fade hidden md:block">
       <PageCover
         photoId="p007"
         eyebrow="Search"
@@ -134,6 +137,7 @@ function PageSearch() {
 
       <Footer />
     </div>
+    </>
   );
 }
 

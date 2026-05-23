@@ -7,6 +7,7 @@ import { PhotoCard, PhotoGrid } from '@/components/PhotoCard';
 import { Footer } from '@/components/Footer';
 import { VoyageurMark, CrownIcon, EditorIcon, RewardIcon, PickBadge } from '@/components/Icons';
 import { PageCover } from '@/components/PageCover';
+import { MobileAmbassadors } from '@/components/mobile/MobileMisc';
 
 // ===== Ported from pages/ambassadors.jsx =====
 // Ambassadors — list of trusted curators (invite-only)
@@ -14,7 +15,9 @@ import { PageCover } from '@/components/PageCover';
 function PageAmbassadors() {
   const router = useRouter();
   return (
-    <div className="page-fade">
+    <>
+    <div className="md:hidden"><MobileAmbassadors /></div>
+    <div className="page-fade hidden md:block">
       <PageCover
         photoId="p002"
         eyebrow="Curators"
@@ -78,6 +81,7 @@ function PageAmbassadors() {
 
       <Footer />
     </div>
+    </>
   );
 }
 

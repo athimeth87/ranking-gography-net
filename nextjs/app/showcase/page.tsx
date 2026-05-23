@@ -8,13 +8,16 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { PageCover } from '@/components/PageCover';
 import { Footer } from '@/components/Footer';
+import { MobileShowcase } from '@/components/mobile/MobileMisc';
 
 // Demo page for the shadcn/ui primitives wired into this project.
 // Reachable at /showcase. Will be removed once admin pages start consuming these.
 
 function PageShowcase() {
   return (
-    <div className="page-fade">
+    <>
+    <div className="md:hidden"><MobileShowcase /></div>
+    <div className="page-fade hidden md:block">
       <PageCover
         photoId="p018"
         eyebrow="Internal · shadcn/ui"
@@ -151,6 +154,7 @@ import { Card, CardHeader, CardContent } from '@/components/ui/card';
 
       <Footer />
     </div>
+    </>
   );
 }
 
