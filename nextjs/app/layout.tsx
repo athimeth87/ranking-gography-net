@@ -23,8 +23,8 @@ export default function RootLayout({ children }) {
         <AppProvider>
           <div className="hidden md:contents">
             <Nav />
-            <SideMenu />
           </div>
+          <SideMenu />
           <main>{children}</main>
         </AppProvider>
       </body>
