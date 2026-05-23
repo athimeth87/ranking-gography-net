@@ -28,6 +28,10 @@ export default function LandingPage() {
   useEffect(() => {
     const fetchData = async () => {
       const supabase = getSupabaseBrowserClient();
+      if (!supabase) {
+        setLoading(false);
+        return;
+      }
       
       const { data: usersData } = await supabase.from('users').select('*');
       const users = usersData || [];

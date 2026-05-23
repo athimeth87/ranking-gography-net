@@ -17,7 +17,7 @@ export function FeaturedPhotographersSection({
   const featured = photographers.filter((p) => !p.isCustomer).slice(0, 4);
 
   return (
-    <section className="py-10 pb-24">
+    <section className="py-10 pb-24 bg-black text-white">
       <div className="wrap">
         <SectionNumber n={3} label="Featured Photographers · Week 12" />
         <div className="flex justify-between items-baseline pb-7 mb-8 border-b border-[var(--rule)]">
