@@ -24,28 +24,36 @@ export function PhotoGrid({
   if (uniform) {
     return (
       <div
-        className="grid gap-6"
+        className="pgrid pgrid-stagger grid gap-6"
         style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}
       >
-        {photos.map((p) => (
-          <PhotoCard
-            key={p.id}
-            photo={p}
-            showRank={showRank}
-            showRankDelta={showRankDelta}
-            leaderTopScore={leaderTopScore}
-            uniform
-            pulseLabel={pulseLabel}
-          />
+        {photos.map((p, i) => (
+          <div key={p.id} style={{ '--i': i } as React.CSSProperties}>
+            <PhotoCard
+              photo={p}
+              showRank={showRank}
+              showRankDelta={showRankDelta}
+              leaderTopScore={leaderTopScore}
+              uniform
+              pulseLabel={pulseLabel}
+            />
+          </div>
         ))}
       </div>
     );
   }
 
   return (
-    <div className="gap-6" style={{ columnCount: cols }}>
-      {photos.map((p) => (
-        <div key={p.id} className="break-inside-avoid mb-8">
+    <div
+      className="pgrid pgrid-stagger gap-6"
+      style={{ columnCount: cols } as React.CSSProperties}
+    >
+      {photos.map((p, i) => (
+        <div
+          key={p.id}
+          className="break-inside-avoid mb-8"
+          style={{ '--i': i } as React.CSSProperties}
+        >
           <PhotoCard
             photo={p}
             showRank={showRank}

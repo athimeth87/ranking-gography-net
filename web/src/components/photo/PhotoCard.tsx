@@ -36,6 +36,23 @@ export function PhotoCard({
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={photo.src} alt={photo.title} loading="lazy" />
+        {/* Hover overlay: photo metadata fades in from bottom */}
+        <div className="pimg-overlay">
+          <div className="pimg-overlay-grad" />
+          <div className="pimg-overlay-content">
+            <div className="pimg-overlay-cat">{photo.cat}</div>
+            <div className="pimg-overlay-title">{photo.title}</div>
+            <div className="pimg-overlay-meta">
+              <span>{photographer ? photographer.name : photo.by}</span>
+              <span className="pimg-overlay-sep">·</span>
+              <span>{photo.exif.camera}</span>
+            </div>
+            <div className="pimg-overlay-pulse">
+              <span className="pimg-overlay-pulse-num">{photo.pulse.toFixed(0)}</span>
+              <span className="pimg-overlay-pulse-lab">PULSE</span>
+            </div>
+          </div>
+        </div>
       </div>
       <div className="pmeta">
         <div className="flex items-baseline gap-3 flex-1 min-w-0">
