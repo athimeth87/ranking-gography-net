@@ -12,6 +12,9 @@ const AppContext = createContext({
   setBannerPhotoId: () => {},
   heroPhotoId: 'auto',
   setHeroPhotoId: () => {},
+  sideMenuOpen: false,
+  setSideMenuOpen: () => {},
+  toggleSideMenu: () => {},
 });
 
 export function useApp() {
@@ -24,6 +27,8 @@ export function AppProvider({ children }) {
   const [userState, setUserState] = useState('guest');
   const [bannerPhotoId, setBannerPhotoId] = useState('p010');
   const [heroPhotoId, setHeroPhotoId] = useState('auto');
+  const [sideMenuOpen, setSideMenuOpen] = useState(false);
+  const toggleSideMenu = () => setSideMenuOpen((v) => !v);
 
   // Restore from localStorage on mount
   useEffect(() => {
@@ -49,7 +54,7 @@ export function AppProvider({ children }) {
   }, [theme, mode, userState, bannerPhotoId, heroPhotoId]);
 
   return (
-    <AppContext.Provider value={{ theme, setTheme, mode, setMode, userState, setUserState, bannerPhotoId, setBannerPhotoId, heroPhotoId, setHeroPhotoId }}>
+    <AppContext.Provider value={{ theme, setTheme, mode, setMode, userState, setUserState, bannerPhotoId, setBannerPhotoId, heroPhotoId, setHeroPhotoId, sideMenuOpen, setSideMenuOpen, toggleSideMenu }}>
       {children}
     </AppContext.Provider>
   );

@@ -1,5 +1,6 @@
 import './globals.css';
 import { Nav } from '@/components/Nav';
+import { SideMenu } from '@/components/SideMenu';
 import { AppProvider } from '@/components/AppProvider';
 
 export const metadata = {
@@ -21,6 +22,7 @@ export default function RootLayout({ children }) {
       <body>
         <AppProvider>
           <Nav />
+          <SideMenu />
           <main>{children}</main>
         </AppProvider>
       </body>
