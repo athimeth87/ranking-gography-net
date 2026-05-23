@@ -7,6 +7,7 @@ import { PhotoCard, PhotoGrid } from '@/components/PhotoCard';
 import { Footer } from '@/components/Footer';
 import { VoyageurMark, CrownIcon, EditorIcon, RewardIcon, PickBadge } from '@/components/Icons';
 import { PageCover } from '@/components/PageCover';
+import { MobileHallOfFame } from '@/components/mobile/MobileHallOfFame';
 
 // ===== Ported from pages/hall-of-fame.jsx =====
 // Hall of Fame — past Best Photo of Season winners
@@ -14,7 +15,9 @@ import { PageCover } from '@/components/PageCover';
 
 function PageHallOfFame() {
   return (
-    <div className="page-fade">
+    <>
+    <div className="md:hidden"><MobileHallOfFame /></div>
+    <div className="page-fade hidden md:block">
       <PageCover
         photoId="p010"
         eyebrow="Awards Archive"
@@ -103,6 +106,7 @@ function PageHallOfFame() {
 
       <Footer />
     </div>
+    </>
   );
 }
 
