@@ -8,6 +8,7 @@ import { PhotoCard, PhotoGrid } from '@/components/PhotoCard';
 import { Footer } from '@/components/Footer';
 import { VoyageurMark, CrownIcon, EditorIcon, RewardIcon, PickBadge } from '@/components/Icons';
 import { PageCover } from '@/components/PageCover';
+import { MobileExplore } from '@/components/mobile/MobileExplore';
 
 // ===== Ported from pages/explore.jsx =====
 // Explore page — masonry grid + filters (category, sort, time range)
@@ -46,7 +47,9 @@ function PageExplore({ category }) {
     : 'เลือกชมภาพถ่ายทั้งหมด — กรองตามหมวด เวลา และอันดับ';
 
   return (
-    <div className="page-fade">
+    <>
+    <div className="md:hidden"><MobileExplore /></div>
+    <div className="page-fade hidden md:block">
       <PageCover
         photoId={coverPhotoId}
         eyebrow={catKey ? 'Category' : 'Explore'}
@@ -139,6 +142,7 @@ function PageExplore({ category }) {
 
       <Footer />
     </div>
+    </>
   );
 }
 
