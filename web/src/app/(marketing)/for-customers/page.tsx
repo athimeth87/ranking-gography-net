@@ -2,6 +2,7 @@
 
 import { Fragment } from 'react';
 import Link from 'next/link';
+import { PageCover } from '@/components/layout/PageCover';
 import { Footer } from '@/components/layout/Footer';
 import { LoginButton } from './_components';
 
@@ -100,25 +101,12 @@ const PATH_STEPS = [
 export default function Page() {
   return (
     <div className="page-fade">
-      {/* Hero */}
-      <section className="pt-[80px] pb-[64px]">
-        <div className="wrap">
-          <div className="caps opacity-55 mb-[24px]">For Gography Customers</div>
-          <div className="grid grid-cols-[1.4fr_1fr] gap-[80px] items-end">
-            <h1 className="display-hero th text-[clamp(56px,6.6vw,96px)] m-0">
-              Your trip photos<br />
-              <em className="not-italic font-medium">are worth more</em>
-            </h1>
-            <p className="th text-[17px] leading-[1.65] text-[var(--fg-soft)] m-0">
-              ลูกค้าทุกคนที่เคยร่วมทริป Gography จะได้รับสถานะ{' '}
-              <strong className="text-[var(--fg)] font-medium">Voyageur</strong> —
-              มีสิทธิ์Submit a photoในหมวดพิเศษ{' '}
-              <strong className="text-[var(--fg)] font-medium">Voyageurs Awards</strong> —
-              แข่งกันเฉพาะลูกค้าด้วยกัน เพื่อชิงรางวัลสูงสุด 50,000 บาท ต่อฤดูกาล
-            </p>
-          </div>
-        </div>
-      </section>
+      <PageCover
+        photoId="p015"
+        eyebrow="For Voyageurs"
+        title={<>Your trip photos<br />are worth more</>}
+        subtitle="ลูกค้า GOGRAPHY ทุกคนได้สถานะ Voyageur — Submit ภาพในหมวดพิเศษ Voyageurs Awards — แข่งกันเฉพาะลูกค้าด้วยกัน รางวัลสูงสุด 50,000 บาท ต่อฤดูกาล"
+      />
 
       {/* Reward summary */}
       <section className="pt-[40px] pb-[56px]">

@@ -1,5 +1,6 @@
 // About — manifesto-style brand story page
 
+import { PageCover } from '@/components/layout/PageCover';
 import { Footer } from '@/components/layout/Footer';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
@@ -27,14 +28,12 @@ function BigStat({ n, l }: { n: string; l: string }) {
 export default function Page() {
   return (
     <div className="page-fade">
-      <section className="pt-[120px] pb-[96px]">
-        <div className="wrap-narrow">
-          <div className="caps opacity-55 mb-[24px] text-center">Gography Photo Awards</div>
-          <h1 className="display-hero th text-[clamp(48px,6vw,88px)] m-0 text-center">
-            A platform for photographers<br />who never stop travelling
-          </h1>
-        </div>
-      </section>
+      <PageCover
+        photoId="p013"
+        eyebrow="About"
+        title={<>A platform for photographers<br />who never stop travelling</>}
+        subtitle="GOGRAPHY Photo Awards — เวทีสำหรับช่างภาพและนักเดินทาง ภาพต้องหายใจได้ ไม่ใช่ภาพที่ algorithm จัดการ"
+      />
 
       <section className="pb-[96px]">
         <div className="wrap-narrow">

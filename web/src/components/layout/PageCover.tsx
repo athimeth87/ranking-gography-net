@@ -18,7 +18,7 @@ interface PageCoverProps {
   src?: string;
   credit?: string;
   eyebrow?: string;
-  title?: string;
+  title?: React.ReactNode;
   subtitle?: string;
   children?: React.ReactNode;
   height?: string;
@@ -57,7 +57,7 @@ export function PageCover({
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={imgSrc}
-          alt={photo?.title ?? title ?? ''}
+          alt={photo?.title ?? (typeof title === 'string' ? title : '') ?? ''}
           className="w-full h-full object-cover"
           loading="lazy"
         />

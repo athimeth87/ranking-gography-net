@@ -1,6 +1,7 @@
 // Hall of Fame — past Best Photo of Season winners
 
 import { getSeasons, getPhoto, getPhotographer } from '@/lib/data';
+import { PageCover } from '@/components/layout/PageCover';
 import { Footer } from '@/components/layout/Footer';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
@@ -34,21 +35,12 @@ export default function Page() {
 
   return (
     <div className="page-fade">
-      {/* Hero */}
-      <section className="pt-[80px] pb-[64px]">
-        <div className="wrap">
-          <div className="caps opacity-55 mb-[24px]">Awards Archive</div>
-          <div className="grid grid-cols-[2fr_1fr] gap-[80px] items-end">
-            <h1 className="display-hero th text-[clamp(64px,7vw,104px)] m-0">
-              Hall of Fame
-            </h1>
-            <p className="th text-[16px] leading-[1.7] text-[var(--fg-soft)] m-0">
-              Every four months, Gography selects the best photo of the season in each category.
-              Winners receive a 50,000 THB voucher and a permanent place in the Hall of Fame.
-            </p>
-          </div>
-        </div>
-      </section>
+      <PageCover
+        photoId="p010"
+        eyebrow="Awards Archive"
+        title="Hall of Fame"
+        subtitle="ทุก 4 เดือน GOGRAPHY คัดเลือกภาพแห่งฤดูกาลในแต่ละหมวด — ผู้ชนะรับ Voucher 50,000 THB และที่ใน Hall of Fame ตลอดไป"
+      />
 
       {/* Cashback program ribbon */}
       <section className="py-[48px] bg-[var(--cream)] rule-top rule-bot">

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { getPhotos, getPhotographer } from '@/lib/data';
+import { PageCover } from '@/components/layout/PageCover';
 import { Footer } from '@/components/layout/Footer';
 import type { PickKind } from '@/lib/types';
 
@@ -77,21 +78,12 @@ export default function Page() {
 
   return (
     <div className="page-fade">
-      {/* Hero */}
-      <section className="pt-[96px] pb-[64px]">
-        <div className="wrap">
-          <div className="caps opacity-55 mb-[24px]">Transparency</div>
-          <h1
-            className="display-hero th text-[clamp(60px,7vw,104px)] m-0 max-w-[14ch]"
-          >
-            How the ranking<br />is calculated
-          </h1>
-          <p className="th text-[18px] text-[var(--fg-soft)] max-w-[560px] mt-[32px] leading-[1.6]">
-            We believe every user should understand why one photo ranks above another. The formula
-            below is the entire algorithm we use — nothing hidden.
-          </p>
-        </div>
-      </section>
+      <PageCover
+        photoId="p001"
+        eyebrow="Pulse Score"
+        title={<>How the ranking<br />is calculated</>}
+        subtitle="ทุก user ควรเข้าใจว่าทำไมภาพหนึ่งจัดอันดับสูงกว่าอีกภาพ — Pulse score คือทั้งหมดที่เราใช้ ไม่มี algorithm ดำมืด"
+      />
 
       {/* The formula */}
       <section className="pt-[40px] pb-[96px]">

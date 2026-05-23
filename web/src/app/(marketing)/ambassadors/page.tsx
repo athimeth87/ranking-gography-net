@@ -1,6 +1,7 @@
 // Ambassadors — list of trusted curators (invite-only)
 
 import { getAmbassadors, getPhotos } from '@/lib/data';
+import { PageCover } from '@/components/layout/PageCover';
 import { Footer } from '@/components/layout/Footer';
 import type { Photographer } from '@/lib/types';
 import { ProfileButton, PhotoThumb } from './_components';
@@ -13,20 +14,12 @@ export default function Page() {
 
   return (
     <div className="page-fade">
-      <section className="pt-[80px] pb-[64px]">
-        <div className="wrap">
-          <div className="caps opacity-55 mb-[24px]">Curators</div>
-          <div className="grid grid-cols-[2fr_1fr] gap-[80px] items-end">
-            <h1 className="display-hero th text-[clamp(60px,7vw,104px)] m-0">
-              Ambassadors
-            </h1>
-            <p className="th text-[16px] leading-[1.7] text-[var(--fg-soft)] m-0">
-              ช่างภาพรับเชิญที่ Gography ไว้วางใจให้คัดเลือก &ldquo;Ambassador Pick&rdquo; —
-              เพิ่ม Pulse Score +50 ต่อภาพ
-            </p>
-          </div>
-        </div>
-      </section>
+      <PageCover
+        photoId="p002"
+        eyebrow="Curators"
+        title="Ambassadors"
+        subtitle="ช่างภาพรับเชิญที่ GOGRAPHY ไว้วางใจให้คัดเลือก Ambassador Pick — เพิ่ม Pulse Score +50 ต่อภาพ"
+      />
 
       <section className="pt-[40px] pb-[96px] rule-top">
         <div className="wrap">
