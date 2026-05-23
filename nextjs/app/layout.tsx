@@ -21,8 +21,10 @@ export default function RootLayout({ children }) {
       </head>
       <body>
         <AppProvider>
-          <Nav />
-          <SideMenu />
+          <div className="hidden md:contents">
+            <Nav />
+            <SideMenu />
+          </div>
           <main>{children}</main>
         </AppProvider>
       </body>

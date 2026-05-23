@@ -1153,6 +1153,22 @@ footer .colophon { display: flex; justify-content: space-between; align-items: c
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 
+/* Mobile marquee — used by components/mobile/MobileShared.tsx */
+@keyframes mobileMarquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* Mobile h-scroll — horizontal snap container for Voyageurs etc. */
+.mobile-h-scroll {
+  display: flex; gap: 12px;
+  overflow-x: auto; scroll-snap-type: x mandatory;
+  margin: 0 -16px; padding: 0 16px 8px;
+  -ms-overflow-style: none; scrollbar-width: none;
+}
+.mobile-h-scroll::-webkit-scrollbar { display: none; }
+.mobile-h-scroll > * { scroll-snap-align: start; flex: 0 0 auto; }
+
 /* Footer responsive — 5-col desktop, 2-col tablet, 1-col phone with brand on top */
 @media (max-width: 1023px) {
   footer { margin-top: 80px; padding: 48px 0 32px; }

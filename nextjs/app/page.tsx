@@ -12,6 +12,7 @@ import { SectionNumber } from '@/components/SectionNumber';
 import { PulseCountUp } from '@/components/PulseCountUp';
 import { TrendingPhotographers } from '@/components/TrendingPhotographers';
 import { useApp } from '@/components/AppProvider';
+import { MobileHome } from '@/components/mobile/MobileHome';
 
 function CategoryChips({ value, onChange, showVoyageurs = false }) {
   const router = useRouter();
@@ -138,7 +139,9 @@ export default function LandingPage() {
   const voyageurLeaderboard = (voyageurCat === 'All' ? allVoyageurPhotos : allVoyageurPhotos.filter(p => p.cat === voyageurCat)).slice(0, 4);
 
   return (
-    <div className="page-fade">
+    <>
+    <div className="md:hidden"><MobileHome /></div>
+    <div className="page-fade hidden md:block">
       {/* HERO — 2-tier */}
       <section style={{ position: 'relative' }}>
         <div style={{ position: 'relative', height: '68vh', minHeight: 520, maxHeight: 760, overflow: 'hidden', background: '#000' }}>
@@ -336,5 +339,6 @@ export default function LandingPage() {
 
       <Footer />
     </div>
+    </>
   );
 }
