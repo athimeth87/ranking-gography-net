@@ -4,6 +4,7 @@ import { Inter, IBM_Plex_Mono, Noto_Sans_Thai } from 'next/font/google';
 import { AppProvider } from '@/providers/AppProvider';
 import { Nav } from '@/components/layout/Nav';
 import { TweaksPanel } from '@/components/layout/TweaksPanel';
+import { SideMenu } from '@/components/layout/SideMenu';
 import { cn } from "@/lib/utils";
 
 const inter = Inter({ subsets: ['latin'], weight: ['300', '400', '500', '600', '700'], variable: '--font-inter', display: 'swap' });
@@ -22,6 +23,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AppProvider>
           <Nav />
           <main>{children}</main>
+          <SideMenu />
           <TweaksPanel />
         </AppProvider>
       </body>
