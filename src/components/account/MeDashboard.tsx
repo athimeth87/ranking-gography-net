@@ -1,4 +1,5 @@
 'use client';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { PhotoGrid } from '@/components/photo/PhotoGrid';
 import { VoyageurMark } from '@/components/icons';
@@ -6,6 +7,8 @@ import { DashStat, ActionCard } from './primitives';
 import { useNotifications } from '@/hooks/useNotifications';
 import { formatNotificationBody } from '@/lib/data/notifications';
 import type { Photographer, Photo } from '@/lib/types';
+
+const ACTIVITY_PAGE = 5;
 
 function timeAgoThai(iso: string): string {
   const ms = Date.now() - new Date(iso).getTime();
@@ -37,7 +40,9 @@ export function MeDashboard({ persona, isVoyageur, isPhotographer, myPhotos }: M
   const totalPulse = myPhotos.reduce((s, p) => s + p.pulse, 0);
   const editorPicks = myPhotos.filter((p) => p.picks.includes('editor')).length;
 
-  const recentActivity = notifications.slice(0, 7);
+  const [activityVisible, setActivityVisible] = useState(ACTIVITY_PAGE);
+  const visibleActivity = notifications.slice(0, activityVisible);
+  const hiddenActivity = Math.max(0, notifications.length - visibleActivity.length);
 
   return (
     <div>
@@ -135,23 +140,34 @@ export function MeDashboard({ persona, isVoyageur, isPhotographer, myPhotos }: M
       {/* Activity feed */}
       <div className="mt-14">
         <div className="caps opacity-55 mb-5">Recent activity</div>
-        {recentActivity.length === 0 ? (
+        {notifications.length === 0 ? (
           <div className="opacity-50 text-[13px] py-4">No recent activity yet.</div>
         ) : (
-          <ul className="list-none p-0 m-0 text-[14px] leading-[1.7]">
-            {recentActivity.map((n) => (
-              <li
-                key={n.id}
-                className="th grid gap-6 py-[14px] border-b border-rule grid-cols-[120px_1fr] cursor-pointer hover:opacity-80"
-                onClick={() => { if (n.related_url) router.push(n.related_url); }}
+          <>
+            <ul className="list-none p-0 m-0 text-[14px] leading-[1.7]">
+              {visibleActivity.map((n) => (
+                <li
+                  key={n.id}
+                  className="th grid gap-6 py-[14px] border-b border-rule grid-cols-[120px_1fr] cursor-pointer hover:opacity-80"
+                  onClick={() => { if (n.related_url) router.push(n.related_url); }}
+                >
+                  <span className="mono text-[11px] opacity-55 tracking-[.08em] pt-[2px]">
+                    {timeAgoThai(n.created_at).toUpperCase()}
+                  </span>
+                  <span>{formatNotificationBody(n)}</span>
+                </li>
+              ))}
+            </ul>
+            {hiddenActivity > 0 && (
+              <button
+                type="button"
+                className="mt-6 mx-auto block caps text-[11px] tracking-[0.12em] opacity-65 hover:opacity-100 border-b border-rule pb-[2px]"
+                onClick={() => setActivityVisible((c) => c + ACTIVITY_PAGE)}
               >
-                <span className="mono text-[11px] opacity-55 tracking-[.08em] pt-[2px]">
-                  {timeAgoThai(n.created_at).toUpperCase()}
-                </span>
-                <span>{formatNotificationBody(n)}</span>
-              </li>
-            ))}
-          </ul>
+                Read more ({hiddenActivity})
+              </button>
+            )}
+          </>
         )}
       </div>
     </div>
