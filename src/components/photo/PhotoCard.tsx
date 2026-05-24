@@ -51,7 +51,7 @@ export function PhotoCard({
               <span>{photo.exif?.camera || 'Unknown Camera'}</span>
             </div>
             <div className="pimg-overlay-pulse">
-              <span className="pimg-overlay-pulse-num">{photo.pulse.toFixed(0)}</span>
+              <span className="pimg-overlay-pulse-num">{(photo.pulse || 0).toFixed(0)}</span>
               <span className="pimg-overlay-pulse-lab">PULSE</span>
             </div>
           </div>
@@ -74,7 +74,7 @@ export function PhotoCard({
         </div>
         <div className="shrink-0 ml-4 text-right">
           <div className="pulse">
-            <span className="big">{photo.pulse.toFixed(0)}</span>
+            <span className="big">{(photo.pulse || 0).toFixed(0)}</span>
             <span className="lab">{pulseLabel}</span>
           </div>
           {delta !== null && (
@@ -84,14 +84,14 @@ export function PhotoCard({
           )}
         </div>
       </div>
-      {photo.picks.length > 0 && (
+      {(photo.picks?.length || 0) > 0 && (
         <div className="absolute top-3 right-3 flex gap-[6px]">
-          {photo.picks.includes('editor') && photo.picks.includes('ambassador') ? (
+          {photo.picks?.includes('editor') && photo.picks?.includes('ambassador') ? (
             <PickBadge kind="both" />
           ) : (
             <>
-              {photo.picks.includes('editor') && <PickBadge kind="editor" />}
-              {photo.picks.includes('ambassador') && <PickBadge kind="ambassador" />}
+              {photo.picks?.includes('editor') && <PickBadge kind="editor" />}
+              {photo.picks?.includes('ambassador') && <PickBadge kind="ambassador" />}
             </>
           )}
         </div>

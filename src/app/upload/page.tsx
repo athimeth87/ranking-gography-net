@@ -30,6 +30,8 @@ interface Draft {
   lens: string;
   file: DraftFile | null;
   actualFile: File | null;
+  width?: number;
+  height?: number;
 }
 
 interface DropZoneProps {
@@ -42,7 +44,35 @@ interface DropZoneProps {
 function DropZone({ draft, setDraft, dragOver, setDragOver }: DropZoneProps) {
   const handleFile = (f: File) => {
     const url = URL.createObjectURL(f);
-    setDraft((d) => ({ ...d, file: { name: f.name, size: f.size, url }, actualFile: f }));
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      
+      ctx.drawImage(img, 0, 0);
+      
+      // Convert to WebP
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        
+        // Replace old extension with .webp
+        const newName = f.name.replace(/\.[^/.]+$/, "") + ".webp";
+        const webpFile = new File([blob], newName, { type: 'image/webp' });
+        const webpUrl = URL.createObjectURL(webpFile);
+
+        setDraft((d) => ({
+          ...d,
+          file: { name: webpFile.name, size: webpFile.size, url: webpUrl },
+          actualFile: webpFile,
+          width: img.width,
+          height: img.height
+        }));
+      }, 'image/webp', 0.85); // 85% quality to save space while retaining good detail
+    };
+    img.src = url;
   };
 
   const onDrop = (e: React.DragEvent<HTMLDivElement>) => {
@@ -66,7 +96,7 @@ function DropZone({ draft, setDraft, dragOver, setDragOver }: DropZoneProps) {
   if (draft.file) {
     return (
       <div className="relative">
-        <div className="aspect-[4/3] overflow-hidden bg-tile">
+        <div className="aspect-square overflow-hidden bg-tile">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={draft.file.url} alt="" className="w-full h-full object-cover" />
         </div>
@@ -94,7 +124,7 @@ function DropZone({ draft, setDraft, dragOver, setDragOver }: DropZoneProps) {
       onDragLeave={() => setDragOver(false)}
       onDrop={onDrop}
       onClick={triggerPick}
-      className="aspect-[4/3] grid place-items-center cursor-pointer text-center p-10 transition-colors duration-150"
+      className="aspect-square grid place-items-center cursor-pointer text-center p-10 transition-colors duration-150"
       style={{
         border: `2px dashed ${dragOver ? 'var(--fg)' : 'var(--rule)'}`, // runtime: dragOver state
         background: dragOver ? 'var(--cream)' : 'transparent', // runtime: dragOver state
@@ -232,8 +262,8 @@ export default function UploadPage() {
       camera: draft.camera,
       lens: draft.lens,
       storage_url: publicUrlData.publicUrl,
-      width: 4, 
-      height: 3, 
+      width: draft.width || 4, 
+      height: draft.height || 3, 
       likes_count: 0,
       favorites_count: 0
     });
