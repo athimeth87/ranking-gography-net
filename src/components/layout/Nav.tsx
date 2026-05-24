@@ -4,6 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useApp } from '@/providers/AppProvider';
 import { getPhotographer } from '@/lib/data';
 import { RoleRibbon } from './RoleRibbon';
+import { NotificationsBell } from './NotificationsBell';
 
 const LINKS: { to: string; label: string }[] = [
   { to: '/', label: 'Home' },
@@ -85,6 +86,7 @@ export function Nav() {
             >
               <span className="nav-theme-toggle-knob" />
             </button>
+            {authUser && <NotificationsBell />}
             {!authUser ? (
               <Link href="/login" className="btn btn-sm ml-2">
                 Sign in

@@ -7,6 +7,8 @@ import { TweaksPanel } from '@/components/layout/TweaksPanel';
 import { SideMenu } from '@/components/layout/SideMenu';
 import { GlobalPopup } from '@/components/shared/GlobalPopup';
 import { CookieConsent } from '@/components/shared/CookieConsent';
+import { Toaster } from '@/components/layout/Toaster';
+import { NotificationsListener } from '@/components/layout/NotificationsListener';
 import { cn } from "@/lib/utils";
 
 const inter = Inter({ subsets: ['latin'], weight: ['300', '400', '500', '600', '700'], variable: '--font-inter', display: 'swap' });
@@ -28,6 +30,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <main>{children}</main>
           <SideMenu />
           <TweaksPanel />
+          <NotificationsListener />
+          <Toaster />
         </AppProvider>
         <GlobalPopup />
         <CookieConsent />
