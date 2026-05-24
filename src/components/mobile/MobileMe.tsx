@@ -22,8 +22,7 @@ export function MobileMe({
   profile,
   myPhotos = [],
   isVoyageur = false,
-  favoritesCount = 0,
-  galleriesCount = 0
+  favoritesCount = 0
 }: any) {
   const router = useRouter();
   const { theme, authUser, signOut } = useApp();
