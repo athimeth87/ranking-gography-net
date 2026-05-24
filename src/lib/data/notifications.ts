@@ -2,6 +2,7 @@ import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 
 export type NotificationType =
   | 'like_received'
+  | 'favorite_received'
   | 'comment_received'
   | 'comment_reply'
   | 'follow_received'
@@ -32,6 +33,7 @@ export interface NotificationRow {
 
 const FALLBACK: Partial<Record<NotificationType, string>> = {
   like_received: 'Someone liked your photo',
+  favorite_received: 'Someone favorited your photo',
   comment_received: 'Someone commented on your photo',
   comment_reply: 'Someone replied to your comment',
   follow_received: 'Someone started following you',

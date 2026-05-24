@@ -13,6 +13,7 @@ import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { LikeButton as DBLikeButton } from '@/components/photo/LikeButton';
 import { CommentSection } from '@/components/photo/CommentSection';
 import { useFollowState } from '@/hooks/useFollowState';
+import { useFavoriteState } from '@/hooks/useFavoriteState';
 import { usePathname } from 'next/navigation';
 
 // ===== Single photo detail page — /photo/[id] =====
@@ -135,7 +136,7 @@ export function PhotoDetailClient({ id }: { id: string }) {
         picks: [],
         date: pData.uploaded_at,
         voyageurOnly: pData.voyageur_only,
-        pulse: (pData.likes_count || 0) + (pData.favorites_count || 0) * 2,
+        pulse: pData.likes_count || 0,
         rank: 0
       };
 
@@ -182,7 +183,7 @@ export function PhotoDetailClient({ id }: { id: string }) {
           picks: [],
           date: md.uploaded_at,
           voyageurOnly: md.voyageur_only,
-          pulse: (md.likes_count || 0) + (md.favorites_count || 0) * 2,
+          pulse: md.likes_count || 0,
           rank: 0
         }));
         setMore(mappedMore);
@@ -218,7 +219,7 @@ export function PhotoDetailClient({ id }: { id: string }) {
               likes,
               comments,
               favorites,
-              pulse: likes + favorites * 2,
+              pulse: likes,
             };
           });
         }
@@ -228,9 +229,14 @@ export function PhotoDetailClient({ id }: { id: string }) {
     return () => { supabase.removeChannel(channel); };
   }, [isUUID, params.id]);
 
-  // Favorite toggle (local mock state)
-  const [favorited, setFavorited] = useState(false);
-  const favoriteCount = photo ? (favorited ? photo.favorites + 1 : photo.favorites) : 0;
+  const favoriteState = useFavoriteState(isUUID ? params.id : '');
+  const onFavoriteClick = async () => {
+    if (!isUUID) return;
+    const res = await favoriteState.toggle();
+    if (res.kind === 'unauth') {
+      router.push(`/login?next=${encodeURIComponent(pathname ?? '/')}`);
+    }
+  };
 
   // Lightbox state
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -327,18 +333,28 @@ export function PhotoDetailClient({ id }: { id: string }) {
                   </span>
                 )}
 
-                {/* Favorite button — runtime-dynamic class based on favorited state */}
-                <button
-                  className={`heart${favorited ? ' on' : ''}`}
-                  onClick={() => setFavorited((v) => !v)}
-                  aria-label={favorited ? 'Remove from favorites' : 'Add to favorites'}
-                  aria-pressed={favorited}
-                >
-                  <svg viewBox="0 0 24 24" fill={favorited ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" width="13" height="13">
-                    <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
-                  </svg>
-                  <span>{favoriteCount}</span>
-                </button>
+                {/* Favorite button — real DB toggle for UUID-keyed photos,
+                    read-only display for seed/mock IDs */}
+                {isUUID ? (
+                  <button
+                    className={`heart${favoriteState.favorited ? ' on' : ''}`}
+                    onClick={onFavoriteClick}
+                    aria-label={favoriteState.favorited ? 'Remove from favorites' : 'Add to favorites'}
+                    aria-pressed={favoriteState.favorited}
+                  >
+                    <svg viewBox="0 0 24 24" fill={favoriteState.favorited ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" width="13" height="13">
+                      <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
+                    </svg>
+                    <span>{favoriteState.count}</span>
+                  </button>
+                ) : (
+                  <span className="heart" aria-label="Favorites (read-only seed)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="13" height="13">
+                      <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
+                    </svg>
+                    <span>{photo.favorites}</span>
+                  </span>
+                )}
 
                 <button className="heart">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="13" height="13">

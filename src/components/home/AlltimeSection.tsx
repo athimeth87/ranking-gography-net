@@ -15,7 +15,7 @@ export function AlltimeSection({ allPhotos, voyageurUsernames }: AlltimeSectionP
   const router = useRouter();
   const [alltimeCat, setAlltimeCat] = useState('All');
 
-  const computeAlltime = (p: Photo): number => p.likes + p.favorites * 2;
+  const computeAlltime = (p: Photo): number => p.likes;
 
   let alltimeSource: Photo[];
   if (alltimeCat === 'All') alltimeSource = allPhotos.slice();
@@ -40,7 +40,7 @@ export function AlltimeSection({ allPhotos, voyageurUsernames }: AlltimeSectionP
               All-time
             </h2>
             <p className="th mt-[14px] text-[13px] text-[var(--fg-soft)] max-w-[540px] leading-[1.6]">
-              Photos older than 1 week — ranked by lifetime engagement (likes + favorites), without time decay
+              Photos older than 1 week — ranked by lifetime likes, without time decay
             </p>
           </div>
           <button

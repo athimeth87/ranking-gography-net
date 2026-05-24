@@ -75,7 +75,7 @@ export default function LandingPage() {
           picks: [],
           date: p.uploaded_at,
           voyageurOnly: p.voyageur_only,
-          pulse: (p.likes_count || 0) + (p.favorites_count || 0) * 2,
+          pulse: p.likes_count || 0,
           rank: 0
         };
       });
@@ -129,7 +129,7 @@ export default function LandingPage() {
               const likes = typeof next.likes_count === 'number' ? next.likes_count : p.likes;
               const favorites = typeof next.favorites_count === 'number' ? next.favorites_count : p.favorites;
               const comments = typeof next.comments_count === 'number' ? next.comments_count : p.comments;
-              return { ...p, likes, favorites, comments, pulse: likes + favorites * 2 };
+              return { ...p, likes, favorites, comments, pulse: likes };
             }),
           );
         },

@@ -17,12 +17,12 @@ const SECTIONS = [
 
 type SectionKey = typeof SECTIONS[number]['id'];
 
-export function MobileMe({ 
+export function MobileMe({
   section: initialSection = 'dashboard',
   profile,
   myPhotos = [],
   isVoyageur = false,
-  favoritesCount = 0
+  favoritesCount = 0,
 }: any) {
   const router = useRouter();
   const { theme, authUser, signOut } = useApp();

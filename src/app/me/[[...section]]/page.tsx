@@ -37,19 +37,9 @@ function mapPhoto(p: any, username: string, fallbackEmail?: string) {
     hours: 1,
     picks: [],
     date: p.uploaded_at,
-    pulse: likes + favorites * 2,
+    pulse: likes,
     rank: 0,
   };
-}
-
-function mapGalleries(rows: any[]): Gallery[] {
-  return rows.map((g: any) => ({
-    id: g.id,
-    title: g.name,
-    isPublic: g.is_public,
-    cover: g.photos?.storage_url || '',
-    count: g.gallery_photos?.[0]?.count || 0,
-  }));
 }
 
 export default function Page({ params }: PageProps) {
@@ -81,7 +71,6 @@ export default function Page({ params }: PageProps) {
   const [myPhotos, setMyPhotos] = useState<any[]>([]);
   const [favs, setFavs] = useState<any[]>([]);
   const [favIsPublic, setFavIsPublic] = useState(false);
-  const [galleries, setGalleries] = useState<Gallery[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchPhotos = async (profileUsername: string) => {
@@ -95,23 +84,6 @@ export default function Page({ params }: PageProps) {
     setMyPhotos((photos || []).map((p: any) => mapPhoto(p, profileUsername, authUser?.email)));
   };
 
-  const fetchGalleries = async () => {
-    if (!authUser?.id) return;
-    const supabase = getSupabaseBrowserClient();
-    const { data } = await supabase
-      .from('galleries')
-      .select(`
-        id,
-        name,
-        is_public,
-        photos ( storage_url ),
-        gallery_photos ( count )
-      `)
-      .eq('user_id', authUser.id)
-      .order('created_at', { ascending: false });
-    setGalleries(mapGalleries(data || []));
-  };
-
   useEffect(() => {
     if (!authUser?.id) {
       setLoading(false);
@@ -121,25 +93,14 @@ export default function Page({ params }: PageProps) {
     const fetchData = async () => {
       const supabase = getSupabaseBrowserClient();
 
-      const [profRes, photosRes, favsRes, galleriesRes] = await Promise.all([
+      const [profRes, photosRes, favsRes] = await Promise.all([
         supabase.from('users').select('*').eq('id', authUser.id).maybeSingle(),
         supabase.from('photos').select('*').eq('photographer_id', authUser.id).order('uploaded_at', { ascending: false }),
         supabase
           .from('favorites')
-          .select(`photo_id, photos (*)`)
+          .select(`photo_id, photos (*, users!photographer_id(username))`)
           .eq('user_id', authUser.id)
           .order('favorited_at', { ascending: false }),
-        supabase
-          .from('galleries')
-          .select(`
-            id,
-            name,
-            is_public,
-            photos ( storage_url ),
-            gallery_photos ( count )
-          `)
-          .eq('user_id', authUser.id)
-          .order('created_at', { ascending: false }),
       ]);
 
       const prof = profRes.data || {
@@ -154,11 +115,10 @@ export default function Page({ params }: PageProps) {
 
       const favPhotos = (favsRes.data || [])
         .map((row: any) => row.photos)
-        .filter(Boolean);
+        .filter(Boolean)
+        .map((p: any) => mapPhoto(p, p?.users?.username || ''));
       setFavs(favPhotos);
       setFavIsPublic(prof?.favorites_visibility === 'public');
-
-      setGalleries(mapGalleries(galleriesRes.data || []));
 
       setLoading(false);
     };
@@ -214,9 +174,48 @@ export default function Page({ params }: PageProps) {
               const likes = typeof next.likes_count === 'number' ? next.likes_count : p.likes;
               const favorites = typeof next.favorites_count === 'number' ? next.favorites_count : p.favorites;
               const comments = typeof next.comments_count === 'number' ? next.comments_count : p.comments;
-              return { ...p, likes, favorites, comments, pulse: likes + favorites * 2 };
+              return { ...p, likes, favorites, comments, pulse: likes };
             }),
           );
+        },
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [authUser?.id]);
+
+  // Realtime: keep /me/favorites in sync when the user favorites or
+  // unfavorites a photo from anywhere (photo detail page, another tab).
+  useEffect(() => {
+    if (!authUser?.id) return;
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) return;
+    const channel = supabase
+      .channel(`me-favorites-${authUser.id}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'favorites', filter: `user_id=eq.${authUser.id}` },
+        async (payload) => {
+          const row = payload.new as { photo_id: string };
+          const { data: photo } = await supabase
+            .from('photos')
+            .select('*, users!photographer_id(username)')
+            .eq('id', row.photo_id)
+            .maybeSingle();
+          if (!photo) return;
+          const mapped = mapPhoto(photo, (photo as any)?.users?.username || '');
+          setFavs((curr) => {
+            if (curr.some((p: any) => p?.id === mapped.id)) return curr;
+            return [mapped, ...curr];
+          });
+        },
+      )
+      .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'favorites', filter: `user_id=eq.${authUser.id}` },
+        (payload) => {
+          const removed = payload.old as { photo_id?: string };
+          if (!removed?.photo_id) return;
+          setFavs((curr) => curr.filter((p: any) => p?.id !== removed.photo_id));
         },
       )
       .subscribe();
@@ -289,7 +288,6 @@ export default function Page({ params }: PageProps) {
             myPhotos={myPhotos}
             isVoyageur={isVoyageur}
             favoritesCount={favs.length}
-            galleriesCount={galleries.length}
           />
         )}
       </div>
