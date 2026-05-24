@@ -1,12 +1,12 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useApp } from '@/providers/AppProvider';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import type { Photographer, Photo } from '@/lib/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 
-interface Gallery {
+export interface Gallery {
   id: string;
   title: string;
   count: number;
@@ -17,48 +17,15 @@ interface Gallery {
 interface MeGalleriesProps {
   persona: Photographer;
   myPhotos: Photo[];
+  galleries: Gallery[];
+  onGalleryCreated: () => Promise<void> | void;
 }
 
-export function MeGalleries({ myPhotos }: MeGalleriesProps) {
+export function MeGalleries({ galleries, onGalleryCreated }: MeGalleriesProps) {
   const { authUser } = useApp();
-  const [galleries, setGalleries] = useState<Gallery[]>([]);
-  const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newGalleryName, setNewGalleryName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const fetchGalleries = async () => {
-    if (!authUser?.id) return;
-    const supabase = getSupabaseBrowserClient();
-    
-    // Fetch galleries + cover photo + count of photos
-    const { data } = await supabase
-      .from('galleries')
-      .select(`
-        id,
-        name,
-        is_public,
-        photos ( storage_url ),
-        gallery_photos ( count )
-      `)
-      .eq('user_id', authUser.id)
-      .order('created_at', { ascending: false });
-
-    if (data) {
-      setGalleries(data.map((g: any) => ({
-        id: g.id,
-        title: g.name,
-        isPublic: g.is_public,
-        cover: g.photos?.storage_url || '',
-        count: g.gallery_photos[0]?.count || 0
-      })));
-    }
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    fetchGalleries();
-  }, [authUser]);
 
   const handleCreateGallery = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,8 +46,7 @@ export function MeGalleries({ myPhotos }: MeGalleriesProps) {
       setNewGalleryName('');
       setIsModalOpen(false);
       setIsSubmitting(false);
-      setLoading(true);
-      fetchGalleries();
+      await onGalleryCreated();
     }
   };
 
@@ -95,9 +61,7 @@ export function MeGalleries({ myPhotos }: MeGalleriesProps) {
       </div>
 
       <div className="mt-10">
-        {loading ? (
-          <div className="text-center py-10 opacity-50 caps">Loading galleries...</div>
-        ) : galleries.length > 0 ? (
+        {galleries.length > 0 ? (
           <div className="grid grid-cols-3 gap-6">
             {galleries.map((g) => (
               <div key={g.id} className="cursor-pointer">
@@ -142,16 +106,16 @@ export function MeGalleries({ myPhotos }: MeGalleriesProps) {
               />
             </div>
             <DialogFooter>
-              <button 
-                type="button" 
-                className="btn btn-ghost" 
+              <button
+                type="button"
+                className="btn btn-ghost"
                 onClick={() => setIsModalOpen(false)}
                 disabled={isSubmitting}
               >
                 Cancel
               </button>
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 className="btn btn-solid ml-2"
                 disabled={!newGalleryName.trim() || isSubmitting}
               >

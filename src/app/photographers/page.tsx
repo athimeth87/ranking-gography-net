@@ -1,6 +1,7 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { getPhotographers, getPhotos } from '@/lib/data';
 import type { Photographer } from '@/lib/types';
 import { PhotographerCard } from '@/components/home/PhotographerCard';
@@ -18,8 +19,68 @@ export default function PhotographersPage() {
   const [filter, setFilter] = useState<FilterValue>('all');
   const [sort, setSort] = useState<SortValue>('featured');
 
-  const allPhotographers = getPhotographers();
-  const allPhotos = getPhotos();
+  const [allPhotographers, setAllPhotographers] = useState<Photographer[]>([]);
+  const [allPhotos, setAllPhotos] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const supabase = getSupabaseBrowserClient();
+      if (!supabase) {
+        setAllPhotographers(getPhotographers());
+        setAllPhotos(getPhotos());
+        setLoading(false);
+        return;
+      }
+
+      const { data: usersData } = await supabase.from('users').select('*');
+      const users = usersData || [];
+
+      const { data: photosData } = await supabase.from('photos').select('*');
+      
+      const { data: followsData } = await supabase.from('follows').select('*');
+      const follows = followsData || [];
+
+      const mappedPhotographers: Photographer[] = users.map(u => ({
+        username: u.username || u.display_name || u.id,
+        name: u.display_name || u.username || 'User',
+        loc: u.location || '',
+        bio: u.bio || '',
+        avatar: u.avatar_url || '',
+        cover: u.cover_url || '',
+        followers: follows.filter(f => f.following_id === u.id).length,
+        photos: (photosData || []).filter(p => p.photographer_id === u.id).length,
+        isAmbassador: u.is_ambassador || false,
+        isCustomer: u.is_customer || false,
+        customerTrips: [],
+        joined: u.created_at || '',
+        cameras: []
+      }));
+
+      // Fake mapping for photos just enough to pass into PhotographerCard if needed
+      // Actually PhotographerCard doesn't need much, just to find recent photos
+      const mappedPhotos = (photosData || []).map(p => {
+        const owner = users.find(u => u.id === p.photographer_id);
+        const ownerName = owner?.username || owner?.display_name || 'unknown';
+        return {
+          id: p.id,
+          by: ownerName,
+          src: p.storage_url,
+          avatarUrl: owner?.avatar_url
+        };
+      });
+
+      if (mappedPhotographers.length > 0) {
+        setAllPhotographers(mappedPhotographers);
+        setAllPhotos(mappedPhotos);
+      } else {
+        setAllPhotographers(getPhotographers());
+        setAllPhotos(getPhotos());
+      }
+      setLoading(false);
+    };
+    fetchData();
+  }, []);
 
   let list: Photographer[] = allPhotographers.slice();
   if (filter === 'voyageurs') list = list.filter((p: Photographer) => p.isCustomer);
@@ -91,7 +152,11 @@ export default function PhotographersPage() {
       {/* Grid */}
       <section className="py-[56px] pb-[96px]">
         <div className="wrap">
-          {list.length === 0 ? (
+          {loading ? (
+            <div className="py-[120px] text-center text-fg-soft mono text-[12px] uppercase tracking-widest">
+              Loading Directory...
+            </div>
+          ) : list.length === 0 ? (
             <div className="py-[120px] text-center text-fg-soft th">ไม่พบช่างภาพในตัวกรองนี้</div>
           ) : (
             <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">

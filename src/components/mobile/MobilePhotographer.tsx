@@ -280,7 +280,6 @@ export function MobilePhotographer({ username }: { username: string }) {
 
       <div style={{ height: 28 }} />
       <MobileFooter />
-      <BottomNav active="profile" />
     </div>
   );
 }

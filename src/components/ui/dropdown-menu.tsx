@@ -73,17 +73,16 @@ function DropdownMenuLabel({
   )
 }
 
-function DropdownMenuItem({
-  className,
-  inset,
-  variant = "default",
-  ...props
-}: MenuPrimitive.Item.Props & {
-  inset?: boolean
-  variant?: "default" | "destructive"
-}) {
+const DropdownMenuItem = React.forwardRef<
+  React.ElementRef<typeof MenuPrimitive.Item>,
+  React.ComponentPropsWithoutRef<typeof MenuPrimitive.Item> & {
+    inset?: boolean
+    variant?: "default" | "destructive"
+  }
+>(({ className, inset, variant = "default", ...props }, ref) => {
   return (
     <MenuPrimitive.Item
+      ref={ref}
       data-slot="dropdown-menu-item"
       data-inset={inset}
       data-variant={variant}
@@ -94,7 +93,8 @@ function DropdownMenuItem({
       {...props}
     />
   )
-}
+})
+DropdownMenuItem.displayName = "DropdownMenuItem"
 
 function DropdownMenuSub({ ...props }: MenuPrimitive.SubmenuRoot.Props) {
   return <MenuPrimitive.SubmenuRoot data-slot="dropdown-menu-sub" {...props} />

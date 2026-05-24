@@ -4,6 +4,9 @@ import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useApp } from '@/providers/AppProvider';
 import { deleteComment, updateComment, createComment, type CommentRow } from '@/lib/data/comments-db';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
+
+const REPLIES_INITIAL = 2;
 
 export interface CommentItemProps {
   comment: CommentRow;
@@ -23,6 +26,8 @@ export function CommentItem({ comment, replies = [], photoId, onMutated }: Comme
   const [replying, setReplying] = useState(false);
   const [replyBody, setReplyBody] = useState('');
   const [busy, setBusy] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [repliesExpanded, setRepliesExpanded] = useState(false);
 
   const redirectIfNeeded = () => {
     router.push(`/login?next=${encodeURIComponent(pathname ?? '/')}`);
@@ -58,12 +63,17 @@ export function CommentItem({ comment, replies = [], photoId, onMutated }: Comme
     }
   };
 
-  const onDelete = async () => {
+  const onDeleteClick = () => {
     if (!authUser) { redirectIfNeeded(); return; }
-    if (!confirm('Delete this comment?')) return;
+    setConfirmDeleteOpen(true);
+  };
+
+  const onConfirmDelete = async () => {
+    if (!authUser) { redirectIfNeeded(); return; }
     setBusy(true);
     const res = await deleteComment(comment.id, authUser);
     setBusy(false);
+    setConfirmDeleteOpen(false);
     if (res.kind === 'unauth') { redirectIfNeeded(); return; }
     if (res.kind === 'ok') onMutated();
   };
@@ -108,9 +118,16 @@ export function CommentItem({ comment, replies = [], photoId, onMutated }: Comme
         )}
 
         <div className="mt-3 flex gap-4 text-[11px] uppercase tracking-[0.12em] opacity-65">
-          <button onClick={() => setReplying((v) => !v)}>Reply</button>
+          <button
+            onClick={() => {
+              if (!authUser) { redirectIfNeeded(); return; }
+              setReplying((v) => !v);
+            }}
+          >
+            Reply
+          </button>
           {isOwn && !editing && <button onClick={() => setEditing(true)}>Edit</button>}
-          {isOwn && <button onClick={onDelete}>Delete</button>}
+          {isOwn && <button onClick={onDeleteClick}>Delete</button>}
         </div>
 
         {replying && (
@@ -126,14 +143,39 @@ export function CommentItem({ comment, replies = [], photoId, onMutated }: Comme
           </div>
         )}
 
-        {replies.length > 0 && (
-          <div className="mt-6 pl-8 flex flex-col gap-6 border-l border-rule">
-            {replies.map((r) => (
-              <CommentItem key={r.id} comment={r} photoId={photoId} onMutated={onMutated} />
-            ))}
-          </div>
-        )}
+        {replies.length > 0 && (() => {
+          const visibleReplies = repliesExpanded ? replies : replies.slice(0, REPLIES_INITIAL);
+          const hiddenReplyCount = Math.max(0, replies.length - visibleReplies.length);
+          return (
+            <div className="mt-6 pl-8 flex flex-col gap-6 border-l border-rule">
+              {visibleReplies.map((r) => (
+                <CommentItem key={r.id} comment={r} photoId={photoId} onMutated={onMutated} />
+              ))}
+              {hiddenReplyCount > 0 && (
+                <button
+                  type="button"
+                  className="self-start caps text-[11px] tracking-[0.12em] opacity-65 hover:opacity-100 border-b border-rule pb-[2px]"
+                  onClick={() => setRepliesExpanded(true)}
+                >
+                  Read more ({hiddenReplyCount})
+                </button>
+              )}
+            </div>
+          );
+        })()}
       </div>
+
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        title="Delete this comment?"
+        body="This action cannot be undone."
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        destructive
+        busy={busy}
+        onConfirm={onConfirmDelete}
+        onCancel={() => setConfirmDeleteOpen(false)}
+      />
     </div>
   );
 }

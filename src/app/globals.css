@@ -36,7 +36,11 @@
 }
 
 * { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; }
+html, body {
+  margin: 0; padding: 0;
+  -ms-overflow-style: none; scrollbar-width: none;
+}
+html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 body {
   background: var(--bg);
   color: var(--fg);
@@ -485,9 +489,10 @@ img { display: block; max-width: 100%; }
     gap: 0;
     height: 100%;
     overflow-y: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
-  .sidemenu-inner::-webkit-scrollbar { width: 6px; }
-  .sidemenu-inner::-webkit-scrollbar-thumb { background: var(--rule); }
+  .sidemenu-inner::-webkit-scrollbar { display: none; }
 
   /* Top chrome */
   .sidemenu-chrome {

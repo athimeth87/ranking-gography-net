@@ -38,7 +38,7 @@ export function useLikeState(photoId: string): UseLikeState {
         (payload) => {
           const next = payload.new as { likes_count?: number };
           if (typeof next.likes_count === 'number') {
-            setState((s) => ({ ...s, count: next.likes_count! }));
+            setState((s) => ({ ...s, count: Math.max(0, next.likes_count!) }));
           }
         }
       )
@@ -51,9 +51,15 @@ export function useLikeState(photoId: string): UseLikeState {
 
   const toggle = useCallback(async (): Promise<ToggleResult> => {
     const prev = state;
-    setState((s) => ({ liked: !s.liked, count: s.count + (s.liked ? -1 : 1) }));
+    setState((s) => ({
+      liked: !s.liked,
+      count: Math.max(0, s.count + (s.liked ? -1 : 1)),
+    }));
     const result = await toggleLikeFn(photoId, authUser ?? null);
-    if (result.kind !== 'ok') {
+    if (result.kind === 'ok') {
+      // Sync liked to authoritative server state; count keeps tracking realtime.
+      setState((s) => ({ ...s, liked: result.liked }));
+    } else {
       setState(prev);
     }
     return result;

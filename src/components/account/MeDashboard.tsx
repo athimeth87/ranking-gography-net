@@ -1,33 +1,62 @@
 'use client';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { PhotoGrid } from '@/components/photo/PhotoGrid';
 import { VoyageurMark } from '@/components/icons';
 import { DashStat, ActionCard } from './primitives';
+import { useNotifications } from '@/hooks/useNotifications';
+import { formatNotificationBody } from '@/lib/data/notifications';
 import type { Photographer, Photo } from '@/lib/types';
+
+const ACTIVITY_PAGE = 5;
+
+function timeAgoThai(iso: string): string {
+  const ms = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(ms / 60000);
+  if (m < 1) return 'เมื่อสักครู่';
+  if (m < 60) return `${m} นาทีที่แล้ว`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h} ชม.ที่แล้ว`;
+  const d = Math.floor(h / 24);
+  if (d === 1) return 'เมื่อวาน';
+  if (d < 7) return `${d} วันก่อน`;
+  return new Date(iso).toLocaleDateString();
+}
 
 interface MeDashboardProps {
   persona: Photographer;
   isVoyageur: boolean;
   isPhotographer: boolean;
   myPhotos: Photo[];
+  followers: number;
+  following: number;
 }
 
-export function MeDashboard({ persona, isVoyageur, isPhotographer, myPhotos }: MeDashboardProps) {
+export function MeDashboard({ persona, isVoyageur, isPhotographer, myPhotos, followers, following }: MeDashboardProps) {
   const router = useRouter();
+  const { notifications } = useNotifications();
 
   const totalLikes = myPhotos.reduce((s, p) => s + p.likes, 0);
   const totalFav = myPhotos.reduce((s, p) => s + p.favorites, 0);
+  const totalComments = myPhotos.reduce((s, p) => s + p.comments, 0);
   const totalPulse = myPhotos.reduce((s, p) => s + p.pulse, 0);
   const editorPicks = myPhotos.filter((p) => p.picks.includes('editor')).length;
+
+  const [activityVisible, setActivityVisible] = useState(ACTIVITY_PAGE);
+  const visibleActivity = notifications.slice(0, activityVisible);
+  const hiddenActivity = Math.max(0, notifications.length - visibleActivity.length);
 
   return (
     <div>
       {/* Stat row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-0 border border-rule">
         <DashStat n={myPhotos.length} l="Photos" />
+        <DashStat n={followers.toLocaleString()} l="Followers" border />
         <DashStat n={totalLikes.toLocaleString()} l="Likes received" border />
-        <DashStat n={totalFav.toLocaleString()} l="Favorites" border />
-        <DashStat n={totalPulse.toFixed(0)} l="Total Pulse" border />
+        <DashStat n={totalPulse.toFixed(0)} l="Pulse" border />
+      </div>
+      <div className="mt-3 mono text-[11px] opacity-55 tracking-[.08em]">
+        FOLLOWING {following.toLocaleString()} · FAVORITES {totalFav.toLocaleString()}
       </div>
 
       {/* Voyageur eligibility card */}
@@ -80,7 +109,11 @@ export function MeDashboard({ persona, isVoyageur, isPhotographer, myPhotos }: M
         <div className="caps opacity-55 mb-5">Quick actions</div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           <ActionCard title="ส่งภาพใหม่" sub="อัพได้วันละ 1 ภาพ" onClick={() => router.push('/upload')} />
-          <ActionCard title="ตอบความเห็น" sub="3 ความเห็นรอตอบ" onClick={() => router.push('/me/photos')} />
+          <ActionCard
+            title="ตอบความเห็น"
+            sub={`${totalComments.toLocaleString()} ความเห็นทั้งหมด`}
+            onClick={() => router.push('/me/photos')}
+          />
           <ActionCard title="โหวต & favorite" sub="ค้นพบภาพใหม่" onClick={() => router.push('/explore')} />
         </div>
       </div>
@@ -104,32 +137,35 @@ export function MeDashboard({ persona, isVoyageur, isPhotographer, myPhotos }: M
       {/* Activity feed */}
       <div className="mt-14">
         <div className="caps opacity-55 mb-5">Recent activity</div>
-        <ul className="list-none p-0 m-0 text-[14px] leading-[1.7]">
-          {(
-            [
-              [
-                '12 นาทีที่แล้ว',
-                <>ภาพ <strong className="font-medium">&quot;Morning fog, Doi Inthanon&quot;</strong> ได้รับ 24 likes ใหม่</>,
-              ],
-              ['3 ชม.ที่แล้ว', <>Phimlapas Suwanlapa บันทึก My photos เป็น favorite</>],
-              [
-                'เมื่อวาน',
-                <>Rank Master: ภาพ <strong className="font-medium">&quot;His hands&quot;</strong> ติด Pulse #2</>,
-              ],
-              ['2 วันก่อน', <>Ambassador Kanthorn Aroonrat follow คุณ</>],
-            ] as [string, React.ReactNode][]
-          ).map(([time, body], i) => (
-            <li
-              key={i}
-              className="th grid gap-6 py-[14px] border-b border-rule grid-cols-[120px_1fr]"
-            >
-              <span className="mono text-[11px] opacity-55 tracking-[.08em] pt-[2px]">
-                {time.toUpperCase()}
-              </span>
-              <span>{body}</span>
-            </li>
-          ))}
-        </ul>
+        {notifications.length === 0 ? (
+          <div className="opacity-50 text-[13px] py-4">No recent activity yet.</div>
+        ) : (
+          <>
+            <ul className="list-none p-0 m-0 text-[14px] leading-[1.7]">
+              {visibleActivity.map((n) => (
+                <li
+                  key={n.id}
+                  className="th grid gap-6 py-[14px] border-b border-rule grid-cols-[120px_1fr] cursor-pointer hover:opacity-80"
+                  onClick={() => { if (n.related_url) router.push(n.related_url); }}
+                >
+                  <span className="mono text-[11px] opacity-55 tracking-[.08em] pt-[2px]">
+                    {timeAgoThai(n.created_at).toUpperCase()}
+                  </span>
+                  <span>{formatNotificationBody(n)}</span>
+                </li>
+              ))}
+            </ul>
+            {hiddenActivity > 0 && (
+              <button
+                type="button"
+                className="mt-6 mx-auto block caps text-[11px] tracking-[0.12em] opacity-65 hover:opacity-100 border-b border-rule pb-[2px]"
+                onClick={() => setActivityVisible((c) => c + ACTIVITY_PAGE)}
+              >
+                Read more ({hiddenActivity})
+              </button>
+            )}
+          </>
+        )}
       </div>
     </div>
   );

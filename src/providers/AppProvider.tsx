@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import type { Mode, Theme, UserState } from '@/lib/types';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
+import { GlobalUploadModal } from '@/components/shared/GlobalUploadModal';
 
 interface AppPrefs {
   theme: Theme;
@@ -23,6 +24,8 @@ interface AppContextValue extends AppPrefs {
   toggleSideMenu: () => void;
   authUser?: any;
   signOut?: () => void;
+  isUploadModalOpen: boolean;
+  setUploadModalOpen: (v: boolean) => void;
 }
 
 const DEFAULTS: AppPrefs = { theme: 'light', mode: 'atelier', userState: 'guest', bannerPhotoId: 'p010', heroPhotoId: 'auto' };
@@ -40,6 +43,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [sideMenuOpen, setSideMenuOpen] = useState<boolean>(false);
   const patch = (p: Partial<AppPrefs>) => setPrefs({ ...prefs, ...p });
   const [authUser, setAuthUser] = useState<any>(null);
+  const [isUploadModalOpen, setUploadModalOpen] = useState(false);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', prefs.theme);
@@ -85,9 +89,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         toggleSideMenu: () => setSideMenuOpen((v) => !v),
         authUser,
         signOut: handleSignOut,
+        isUploadModalOpen,
+        setUploadModalOpen,
       }}
     >
       {children}
+      <GlobalUploadModal />
     </AppContext.Provider>
   );
 }

@@ -78,7 +78,7 @@ export function SideMenu() {
         className={`sidemenu ${sideMenuOpen ? 'is-open' : ''}`}
         aria-hidden={!sideMenuOpen}
       >
-        <div className="sidemenu-inner">
+        <div className="sidemenu-inner no-scrollbar">
 
           {/* Top chrome — brand + close */}
           <div className="sidemenu-chrome">

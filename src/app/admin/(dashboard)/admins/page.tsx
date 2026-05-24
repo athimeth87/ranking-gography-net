@@ -26,6 +26,7 @@ export default function AdminStaffPage() {
   useEffect(() => {
     const fetchAdmins = async () => {
       const supabase = getSupabaseBrowserClient();
+      if (!supabase) return;
       const { data } = await supabase
         .from('users')
         .select('*')

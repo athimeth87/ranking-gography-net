@@ -3,9 +3,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { PHOTOS, PHOTOGRAPHERS, pulseScore, voyageurUsernames } from '@/lib/data';
 import { useApp } from '@/providers/AppProvider';
-import { MobileNav, MobileFooter, BottomNav } from './MobileShared';
+import { MobileFooter } from './MobileShared';
+import { MeSettings } from '../account/MeSettings';
 
 const SECTIONS = [
   { id: 'dashboard', label: 'Overview' },
@@ -17,19 +17,32 @@ const SECTIONS = [
 
 type SectionKey = typeof SECTIONS[number]['id'];
 
-export function MobileMe({ section: initialSection = 'dashboard' }: { section?: string }) {
+export function MobileMe({ 
+  section: initialSection = 'dashboard',
+  profile,
+  myPhotos = [],
+  isVoyageur = false,
+  favoritesCount = 0,
+  galleriesCount = 0
+}: any) {
   const router = useRouter();
   const { theme, authUser, signOut } = useApp();
   const dark = theme === 'dark';
-  const section = (SECTIONS.find(s => s.id === initialSection)?.id || 'dashboard') as SectionKey;
+  const [activeTab, setActiveTab] = useState<SectionKey>(
+    (SECTIONS.find(s => s.id === initialSection)?.id || 'dashboard') as SectionKey
+  );
 
-  // Treat first photographer as the "me" persona when signed in (mock until profile linking)
-  const persona = PHOTOGRAPHERS[0];
-  const myPhotos = PHOTOS.filter(p => p.by === persona.username);
-  const isVoyageur = voyageurUsernames.has(persona.username);
-  const totalLikes = myPhotos.reduce((s, p) => s + (p.likes || 0), 0);
-  const totalFav = myPhotos.reduce((s, p) => s + (p.favorites || 0), 0);
-  const totalPulse = Math.round(myPhotos.reduce((s, p) => s + pulseScore(p), 0));
+  const persona = {
+    username: profile?.username || '',
+    name: profile?.display_name || 'User',
+    loc: profile?.location || '',
+    avatar: profile?.avatar_url || '',
+    cover: profile?.cover_url || profile?.avatar_url || 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=800&auto=format&fit=crop',
+  };
+
+  const totalLikes = myPhotos.reduce((s: any, p: any) => s + (p.likes || 0), 0);
+  const totalFav = myPhotos.reduce((s: any, p: any) => s + (p.favorites || 0), 0);
+  const totalPulse = Math.round(myPhotos.reduce((s: any, p: any) => s + (p.pulse || 0), 0));
 
   return (
     <div className="gpa-mobile" style={{
@@ -38,34 +51,57 @@ export function MobileMe({ section: initialSection = 'dashboard' }: { section?: 
       color: dark ? '#fff' : '#000',
       fontFamily: "'Inter', system-ui, sans-serif",
     }}>
-      <MobileNav />
+
+      {/* Cover banner */}
+      {persona.cover && (
+        <div style={{ position: 'relative', width: '100%', height: 160, background: 'var(--tile)' }}>
+          <img src={persona.cover} alt="Cover" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: 'linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.5) 100%)',
+          }} />
+        </div>
+      )}
 
       {/* Header */}
-      <section style={{ padding: '24px 16px 0' }}>
-        <div style={{
-          fontFamily: "'IBM Plex Mono', monospace", fontSize: 11,
-          letterSpacing: '0.18em', color: 'var(--fg-soft)', textTransform: 'uppercase',
-        }}>Welcome back</div>
-        <h1 style={{
-          margin: '6px 0 0',
-          fontFamily: "'Playfair Display', serif", fontWeight: 400,
-          fontSize: 40, lineHeight: 1, letterSpacing: '-0.025em',
-        }}>{authUser?.email?.split('@')[0] || persona.name.split(' ')[0]}</h1>
-        {authUser?.email && (
+      <section style={{ padding: '0 16px 0', display: 'flex', alignItems: 'flex-end', gap: 16, marginTop: persona.cover ? -32 : 24, position: 'relative', zIndex: 10 }}>
+        {persona.avatar ? (
+          <img src={persona.avatar} alt="Profile" style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover', border: `3px solid ${dark ? '#0a0a0a' : '#fff'}` }} />
+        ) : (
+          <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--rule)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `3px solid ${dark ? '#0a0a0a' : '#fff'}` }}>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          </div>
+        )}
+        <div style={{ paddingBottom: 4 }}>
           <div style={{
             fontFamily: "'IBM Plex Mono', monospace", fontSize: 11,
-            letterSpacing: '0.1em', color: 'var(--fg-soft)', marginTop: 4,
-          }}>{authUser.email}</div>
-        )}
+            letterSpacing: '0.18em', color: 'var(--fg-soft)', textTransform: 'uppercase',
+          }}>Welcome back</div>
+          <h1 style={{
+            margin: '6px 0 0',
+            fontFamily: "'Playfair Display', serif", fontWeight: 400,
+            fontSize: 28, lineHeight: 1, letterSpacing: '-0.025em',
+            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px'
+          }}>{persona.name || authUser?.email?.split('@')[0]}</h1>
+        </div>
       </section>
 
       {/* Section tabs */}
-      <div className="mobile-h-scroll" style={{ marginTop: 24 }}>
+      <div style={{ 
+        marginTop: 24, 
+        padding: '0 16px', 
+        display: 'flex', 
+        flexWrap: 'wrap',
+        gap: 8 
+      }}>
         {SECTIONS.map(s => {
-          const active = section === s.id;
+          const active = activeTab === s.id;
           return (
-            <button key={s.id} onClick={() => router.push(s.id === 'dashboard' ? '/me' : `/me/${s.id}`)} style={{
-              height: 36, padding: '0 14px',
+            <button key={s.id} onClick={() => {
+              setActiveTab(s.id as SectionKey);
+              window.history.pushState(null, '', s.id === 'dashboard' ? '/me' : `/me/${s.id}`);
+            }} style={{
+              height: 36, padding: '0 16px', borderRadius: 4,
               border: `1px solid ${active ? (dark ? '#fff' : '#000') : 'var(--rule-strong)'}`,
               background: active ? (dark ? '#fff' : '#000') : 'transparent',
               color: active ? (dark ? '#000' : '#fff') : (dark ? '#fff' : '#000'),
@@ -77,7 +113,7 @@ export function MobileMe({ section: initialSection = 'dashboard' }: { section?: 
         })}
       </div>
 
-      {section === 'dashboard' && (
+      {activeTab === 'dashboard' && (
         <>
           {/* Stats 2x2 */}
           <section style={{ padding: '24px 16px 0' }}>
@@ -210,7 +246,7 @@ export function MobileMe({ section: initialSection = 'dashboard' }: { section?: 
         </>
       )}
 
-      {section === 'photos' && (
+      {activeTab === 'photos' && (
         <section style={{ padding: '24px 16px 0' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
             {myPhotos.map(p => (
@@ -226,13 +262,16 @@ export function MobileMe({ section: initialSection = 'dashboard' }: { section?: 
         </section>
       )}
 
-      {section === 'favorites' && (
+      {activeTab === 'favorites' && (
         <section style={{ padding: '24px 16px 0' }}>
-          <FavoritesList />
+          <div style={{ textAlign: 'center', color: 'var(--fg-soft)', padding: '40px 0' }}>
+            <p>You have {favoritesCount} favorites.</p>
+            <p className="text-xs mt-2">Mobile favorites view coming soon</p>
+          </div>
         </section>
       )}
 
-      {section === 'stats' && (
+      {activeTab === 'stats' && (
         <section style={{ padding: '24px 16px 0' }}>
           <div style={{
             fontFamily: "'IBM Plex Mono', monospace", fontSize: 11,
@@ -260,12 +299,21 @@ export function MobileMe({ section: initialSection = 'dashboard' }: { section?: 
         </section>
       )}
 
-      {section === 'settings' && (
+      {activeTab === 'settings' && (
         <section style={{ padding: '24px 16px 0' }}>
-          <SettingsRow label="Email" value={authUser?.email || 'not signed in'} />
-          <SettingsRow label="Display name" value={persona.name} />
-          <SettingsRow label="Location" value={persona.loc} />
-          <SettingsRow label="Voyageur status" value={isVoyageur ? 'Active' : '—'} />
+          <MeSettings 
+            persona={{
+              id: profile?.id || '',
+              username: profile?.username || '',
+              name: profile?.display_name || '',
+              avatar: profile?.avatar_url || '',
+              loc: profile?.location || 'Not set',
+              bio: profile?.bio || '',
+              website: profile?.portfolio_url || '',
+              isCustomer: profile?.is_customer
+            } as any} 
+            isVoyageur={isVoyageur} 
+          />
           {authUser && (
             <button onClick={signOut} style={{
               width: '100%', marginTop: 32, minHeight: 44, padding: '0 18px',
@@ -280,46 +328,6 @@ export function MobileMe({ section: initialSection = 'dashboard' }: { section?: 
 
       <div style={{ height: 64 }} />
       <MobileFooter />
-      <BottomNav active="profile" />
-    </div>
-  );
-}
-
-function FavoritesList() {
-  const router = useRouter();
-  // For now, show the same liked-set from localStorage (no DB filter).
-  let likedIds: string[] = [];
-  if (typeof window !== 'undefined') {
-    try {
-      const map = JSON.parse(localStorage.getItem('gpa-liked') || '{}');
-      likedIds = Object.entries(map).filter(([, v]) => v).map(([k]) => k);
-    } catch {}
-  }
-  const liked = PHOTOS.filter(p => likedIds.includes(p.id));
-  if (liked.length === 0) {
-    return (
-      <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--fg-soft)' }}>
-        <p style={{ fontSize: 14, lineHeight: 1.6 }}>ยังไม่มีภาพที่ถูกใจ</p>
-        <button onClick={() => router.push('/explore')} style={{
-          marginTop: 16, minHeight: 44, padding: '0 18px',
-          fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 500,
-          letterSpacing: '0.04em', textTransform: 'uppercase',
-          border: '1px solid currentColor', background: 'transparent', color: 'inherit', cursor: 'pointer',
-        }}>Open Explore</button>
-      </div>
-    );
-  }
-  return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-      {liked.map(p => (
-        <div
-          key={p.id}
-          onClick={() => router.push(`/photo/${p.id}`)}
-          style={{ aspectRatio: '1', background: 'var(--tile)', overflow: 'hidden', cursor: 'pointer' }}
-        >
-          <img src={p.src} alt={p.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
-        </div>
-      ))}
     </div>
   );
 }

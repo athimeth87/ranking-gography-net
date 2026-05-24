@@ -44,6 +44,7 @@ export interface Photo extends PhotoSeed {
 }
 
 export interface Photographer {
+  id?: string;
   username: string;
   name: string;
   loc: string;

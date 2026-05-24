@@ -75,10 +75,17 @@ export function NotificationsBell() {
                     setOpen(false);
                     if (n.related_url) router.push(n.related_url);
                   }}
-                  className={`block w-full text-left px-4 py-3 border-b border-rule hover:bg-tile ${n.is_read ? 'opacity-60' : ''}`}
+                  className={`block w-full text-left px-4 py-3 border-b border-rule hover:bg-tile flex gap-3 items-start ${n.is_read ? 'opacity-60' : ''}`}
                 >
-                  <div className="text-[13px] leading-[1.4]">{formatNotificationBody(n)}</div>
-                  <div className="mono text-[10px] opacity-50 mt-1">{timeAgo(n.created_at)} ago</div>
+                  {n.users?.avatar_url ? (
+                    <img src={n.users.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover shrink-0 border border-neutral-800" />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-neutral-900 border border-neutral-800 shrink-0" />
+                  )}
+                  <div className="flex-1">
+                    <div className="text-[13px] leading-[1.4]">{formatNotificationBody(n)}</div>
+                    <div className="mono text-[10px] opacity-50 mt-1">{timeAgo(n.created_at)} ago</div>
+                  </div>
                 </button>
               ))
             )}

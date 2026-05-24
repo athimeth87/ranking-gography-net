@@ -8,6 +8,7 @@ interface PhotoGridProps {
   showRankDelta?: boolean;
   uniform?: boolean;
   pulseLabel?: string;
+  showLike?: boolean;
 }
 
 export function PhotoGrid({
@@ -17,6 +18,7 @@ export function PhotoGrid({
   showRankDelta = false,
   uniform = false,
   pulseLabel = 'Pulse',
+  showLike = false,
 }: PhotoGridProps) {
   const leaderTopScore =
     showRankDelta && photos.length > 0 ? Math.max(...photos.map((p) => p.pulse)) : null;
@@ -48,6 +50,7 @@ export function PhotoGrid({
               leaderTopScore={leaderTopScore}
               uniform
               pulseLabel={pulseLabel}
+              showLike={showLike}
             />
           </div>
         ))}
@@ -71,6 +74,7 @@ export function PhotoGrid({
             showRankDelta={showRankDelta}
             leaderTopScore={leaderTopScore}
             pulseLabel={pulseLabel}
+            showLike={showLike}
           />
         </div>
       ))}

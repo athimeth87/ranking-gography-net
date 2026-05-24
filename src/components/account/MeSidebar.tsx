@@ -20,6 +20,7 @@ interface MeSidebarProps {
   sections: SectionItem[];
   activeSection: string;
   onAvatarUpdated?: (url: string) => void;
+  onNavigate: (id: string, path: string) => void;
 }
 
 export function MeSidebar({
@@ -29,6 +30,7 @@ export function MeSidebar({
   sections,
   activeSection,
   onAvatarUpdated,
+  onNavigate,
 }: MeSidebarProps) {
   const router = useRouter();
   const { authUser } = useApp();
@@ -154,7 +156,7 @@ export function MeSidebar({
           return (
             <button
               key={s.id}
-              onClick={() => router.push(s.path)}
+              onClick={() => onNavigate(s.id, s.path)}
               className="flex justify-between items-center py-3 px-4 -mx-4 cursor-pointer transition-colors duration-150 text-[13px]"
               style={{
                 background: active ? 'var(--cream)' : 'transparent', // runtime: active state

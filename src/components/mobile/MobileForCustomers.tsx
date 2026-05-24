@@ -153,7 +153,6 @@ export function MobileForCustomers() {
 
       <MobileMarquee text="★ Top 100 voters get a season tote ★ ฿800 print credit ★" />
       <MobileFooter />
-      <BottomNav />
     </div>
   );
 }

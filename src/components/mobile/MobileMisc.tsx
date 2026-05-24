@@ -171,7 +171,6 @@ export function MobileSearch() {
 
       <div style={{ height: 80 }} />
       <MobileFooter />
-      <BottomNav />
     </div>
   );
 }
@@ -248,7 +247,6 @@ export function MobileAmbassadors() {
 
       <div style={{ height: 64 }} />
       <MobileFooter />
-      <BottomNav />
     </div>
   );
 }
@@ -324,7 +322,6 @@ export function MobileApplyPhotographer() {
       </section>
 
       <MobileFooter />
-      <BottomNav />
     </div>
   );
 }
@@ -366,7 +363,6 @@ export function MobileShowcase() {
         }}>Back to home</button>
       </section>
       <MobileFooter />
-      <BottomNav />
     </div>
   );
 }
@@ -417,7 +413,6 @@ export function MobileUpload() {
         </div>
       </section>
       <MobileFooter />
-      <BottomNav />
     </div>
   );
 }

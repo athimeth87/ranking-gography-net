@@ -31,7 +31,7 @@ export async function listComments(photoId: string): Promise<CommentRow[]> {
     .select('*, author:users(id, username, display_name, avatar_url)')
     .eq('photo_id', photoId)
     .eq('is_hidden', false)
-    .order('created_at', { ascending: true });
+    .order('created_at', { ascending: false });
   if (error || !data) return [];
   return data as CommentRow[];
 }

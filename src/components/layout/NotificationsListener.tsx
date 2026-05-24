@@ -23,11 +23,36 @@ export function NotificationsListener() {
         { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` },
         (payload) => {
           const row = payload.new as NotificationRow;
-          toast(formatNotificationBody(row), {
-            action: row.related_url
-              ? { label: 'View', onClick: () => router.push(row.related_url!) }
-              : undefined,
-          });
+
+          const showToast = (avatarUrl?: string | null) => {
+            toast(
+              <div className="flex items-center gap-3">
+                {avatarUrl && (
+                  <img src={avatarUrl} alt="" className="w-8 h-8 rounded-full object-cover shrink-0 border border-neutral-800" />
+                )}
+                <span>{formatNotificationBody(row)}</span>
+              </div>,
+              {
+                action: row.related_url
+                  ? { label: 'View', onClick: () => router.push(row.related_url!) }
+                  : undefined,
+              }
+            );
+          };
+
+          if (row.related_user_id) {
+            supabase
+              .from('users')
+              .select('avatar_url')
+              .eq('id', row.related_user_id)
+              .single()
+              .then(({ data }) => {
+                showToast(data?.avatar_url);
+              })
+              .catch(() => showToast());
+          } else {
+            showToast();
+          }
         }
       )
       .subscribe();

@@ -10,15 +10,24 @@ import {
   FeedTabs, BottomNav, FeedCard,
 } from './MobileShared';
 
-export function MobileHome() {
+export function MobileHome({ 
+  realPhotos = [], 
+  realPhotographers = [] 
+}: { 
+  realPhotos?: any[]; 
+  realPhotographers?: any[];
+}) {
   const router = useRouter();
   const { theme } = useApp();
   const dark = theme === 'dark';
   const [tab, setTab] = useState('leaderboard');
 
-  const fresh = PHOTOS.slice().sort((a, b) => a.hours - b.hours).slice(0, 4);
+  const pList = realPhotos.length > 0 ? realPhotos : PHOTOS;
+  const photogList = realPhotographers.length > 0 ? realPhotographers : PHOTOGRAPHERS;
 
-  const voyageurs = PHOTOGRAPHERS
+  const fresh = pList.slice().sort((a, b) => (b.date ? new Date(b.date).getTime() : 0) - (a.date ? new Date(a.date).getTime() : 0)).slice(0, 4);
+
+  const voyageurs = photogList
     .filter(p => p.isAmbassador || p.isCustomer)
     .slice(0, 4)
     .map(p => ({
@@ -27,14 +36,14 @@ export function MobileHome() {
       tier: p.isAmbassador ? 'Ambassador' : 'Voyageur',
       region: p.loc,
       cover: p.cover,
-      pulse: Math.round(PHOTOS.filter(ph => ph.by === p.username).reduce((s, ph) => s + pulseScore(ph), 0)),
+      pulse: Math.round(pList.filter(ph => ph.by === p.username).reduce((s, ph) => s + (ph.pulse || pulseScore(ph)), 0)),
     }));
 
-  const leaderboard = PHOTOGRAPHERS
+  const leaderboard = photogList
     .map(p => ({
       username: p.username,
       name: p.name,
-      pulse: Math.round(PHOTOS.filter(ph => ph.by === p.username).reduce((s, ph) => s + pulseScore(ph), 0)),
+      pulse: Math.round(pList.filter(ph => ph.by === p.username).reduce((s, ph) => s + (ph.pulse || pulseScore(ph)), 0)),
     }))
     .sort((a, b) => b.pulse - a.pulse)
     .slice(0, 5)
@@ -96,8 +105,8 @@ export function MobileHome() {
         borderBottom: '1px solid var(--rule)',
       }}>
         {[
-          [String(PHOTOS.length).padStart(2, '0'), 'Frames'],
-          [String(PHOTOGRAPHERS.length).padStart(2, '0'), 'Photographers'],
+          [String(pList.length).padStart(2, '0'), 'Frames'],
+          [String(photogList.length).padStart(2, '0'), 'Photographers'],
           ['04', 'Seasons'],
           ['37', 'Days left'],
         ].map(([n, l], i) => (
@@ -158,15 +167,18 @@ export function MobileHome() {
         <div style={{ padding: '32px 16px 0' }}>
           <MobileSectionHeader num="02 / Voyageurs" title="On the road this season" link="All" href="/photographers/voyageurs" />
         </div>
-        <div className="mobile-h-scroll" style={{ marginTop: 18, padding: '0 16px 24px' }}>
+        <div style={{ 
+          marginTop: 18, padding: '0 16px 24px',
+          display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 
+        }}>
           {voyageurs.map((v) => (
             <article
               key={v.username}
               onClick={() => router.push(`/photographer/${v.username}`)}
               style={{
-                width: 240, background: dark ? '#0a0a0a' : 'var(--bg)',
+                width: '100%', background: dark ? '#0a0a0a' : 'var(--bg)',
                 border: `1px solid ${dark ? 'rgba(255,255,255,0.14)' : 'var(--rule)'}`,
-                padding: 14, cursor: 'pointer',
+                padding: 12, cursor: 'pointer',
               }}
             >
               <div style={{ aspectRatio: '4 / 5', background: 'var(--tile)', overflow: 'hidden' }}>
@@ -175,32 +187,34 @@ export function MobileHome() {
               <div style={{
                 marginTop: 12,
                 display: 'inline-flex', alignItems: 'center', gap: 6,
-                fontFamily: "'IBM Plex Mono', monospace", fontSize: 10,
+                fontFamily: "'IBM Plex Mono', monospace", fontSize: 9,
                 letterSpacing: '0.14em', textTransform: 'uppercase',
                 color: '#b08e54',
               }}>
-                <span style={{ width: 6, height: 6, background: '#b08e54', transform: 'rotate(45deg)' }} />
+                <span style={{ width: 5, height: 5, background: '#b08e54', transform: 'rotate(45deg)' }} />
                 {v.tier}
               </div>
               <h3 style={{
                 margin: '6px 0 2px',
                 fontFamily: "'Playfair Display', serif", fontWeight: 700,
-                fontSize: 18, letterSpacing: '-0.01em',
+                fontSize: 15, letterSpacing: '-0.01em',
+                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
               }}>{v.name}</h3>
               <div style={{
-                fontFamily: "'IBM Plex Mono', monospace", fontSize: 10,
+                fontFamily: "'IBM Plex Mono', monospace", fontSize: 9,
                 letterSpacing: '0.1em', color: 'var(--fg-soft)', textTransform: 'uppercase',
+                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
               }}>{v.region}</div>
               <div style={{
-                marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--rule)',
-                display: 'flex', justifyContent: 'space-between',
+                marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--rule)',
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center'
               }}>
                 <span style={{
-                  fontFamily: "'IBM Plex Mono', monospace", fontSize: 11,
+                  fontFamily: "'IBM Plex Mono', monospace", fontSize: 10,
                   letterSpacing: '0.12em', textTransform: 'uppercase',
                   color: 'var(--fg-soft)',
                 }}>Pulse</span>
-                <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 13 }}>{v.pulse}</span>
+                <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 12 }}>{v.pulse}</span>
               </div>
             </article>
           ))}

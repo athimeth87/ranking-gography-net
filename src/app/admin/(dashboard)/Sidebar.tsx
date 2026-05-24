@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
@@ -53,6 +53,22 @@ const navGroups = [
 export function Sidebar() {
   const pathname = usePathname();
   const [openCommand, setOpenCommand] = useState(false);
+  const [adminProfile, setAdminProfile] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const { getSupabaseBrowserClient } = await import('@/lib/supabase/client');
+      const supabase = getSupabaseBrowserClient();
+      if (!supabase) return;
+      
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase.from('users').select('*').eq('id', user.id).single();
+        if (data) setAdminProfile(data);
+      }
+    };
+    fetchProfile();
+  }, []);
 
   return (
     <aside className="fixed inset-y-0 left-0 z-20 flex w-72 flex-col bg-[#FDFDFD] border-r border-neutral-200/60 shadow-[4px_0_24px_rgba(0,0,0,0.02)] transition-all">
@@ -148,14 +164,20 @@ export function Sidebar() {
           <div className="flex items-center gap-3">
             <div className="relative">
               <Avatar className="h-9 w-9 border border-neutral-200 shadow-sm group-hover:border-neutral-300 transition-colors">
-                <AvatarImage src="https://ui.shadcn.com/avatars/01.png" alt="Admin" />
-                <AvatarFallback className="bg-neutral-900 text-white font-mono text-xs">AD</AvatarFallback>
+                <AvatarImage src={adminProfile?.avatar_url || "https://ui.shadcn.com/avatars/01.png"} alt={adminProfile?.display_name || "Admin"} />
+                <AvatarFallback className="bg-neutral-900 text-white font-mono text-xs">
+                  {adminProfile?.display_name ? adminProfile.display_name.substring(0,2).toUpperCase() : 'AD'}
+                </AvatarFallback>
               </Avatar>
               <div className="absolute bottom-0 right-0 h-2.5 w-2.5 bg-green-500 rounded-full border-2 border-white"></div>
             </div>
             <div className="flex flex-col text-left">
-              <span className="text-sm font-semibold text-neutral-900 leading-none">John Editor</span>
-              <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest mt-1">Superadmin</span>
+              <span className="text-sm font-semibold text-neutral-900 leading-none truncate max-w-[120px]">
+                {adminProfile?.display_name || adminProfile?.username || 'Admin User'}
+              </span>
+              <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest mt-1">
+                {adminProfile?.is_super_admin ? 'Superadmin' : 'Admin'}
+              </span>
             </div>
           </div>
           <ChevronsUpDown className="h-4 w-4 text-neutral-400 group-hover:text-neutral-600" />

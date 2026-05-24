@@ -293,7 +293,6 @@ export function MobilePhoto({ id }: { id: string }) {
 
       <div style={{ height: 56 }} />
       <MobileFooter />
-      <BottomNav />
     </div>
   );
 }

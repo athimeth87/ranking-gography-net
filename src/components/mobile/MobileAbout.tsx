@@ -170,7 +170,6 @@ export function MobileAbout() {
       <div style={{ height: 64 }} />
       <MobileMarquee text="◆ Since 2022 ◆ 4 seasons ◆ 1,047 photographers ◆ Bangkok · Chiang Mai ◆" />
       <MobileFooter />
-      <BottomNav />
     </div>
   );
 }

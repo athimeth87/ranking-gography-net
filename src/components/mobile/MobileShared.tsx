@@ -19,64 +19,9 @@ export function MobileNav() {
     ? authUser.email.slice(0, 2).toUpperCase()
     : 'GO';
   const onToggleTheme = () => setTheme(dark ? 'light' : 'dark');
-  return (
-    <header style={{
-      position: 'sticky', top: 0, zIndex: 30,
-      background: dark ? 'rgba(10,10,10,0.92)' : 'rgba(255,255,255,0.92)',
-      backdropFilter: 'blur(8px)',
-      borderBottom: `1px solid ${dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
-    }}>
-      <div style={{
-        height: 56, padding: '0 14px',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
-      }}>
-        <button onClick={toggleSideMenu} aria-label="Menu" style={{
-          width: 44, height: 44, padding: 0, background: 'transparent',
-          border: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer', marginLeft: -8, color: c,
-        }}>
-          <svg width="20" height="14" viewBox="0 0 20 14">
-            <rect y="0" width="20" height="1.5" fill={c} />
-            <rect y="6" width="20" height="1.5" fill={c} />
-            <rect y="12" width="14" height="1.5" fill={c} />
-          </svg>
-        </button>
-        <Link href="/" className="wordmark" style={{
-          fontFamily: "'Playfair Display', serif", fontWeight: 700,
-          fontSize: 20, letterSpacing: '-0.01em', color: c, textDecoration: 'none',
-        }}>GOGRAPHY</Link>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <button onClick={onToggleTheme} aria-label="Toggle theme" style={{
-            width: 44, height: 28, padding: 0,
-            border: `1px solid ${c}`, background: 'transparent',
-            display: 'inline-flex', position: 'relative', cursor: 'pointer',
-          }}>
-            <span style={{
-              position: 'absolute', top: 2, bottom: 2,
-              left: dark ? 'calc(50% + 1px)' : 2,
-              width: 'calc(50% - 4px)', background: c, transition: 'left .2s',
-            }} />
-            <span style={{
-              flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-              color: dark ? c : '#fff', fontSize: 10, zIndex: 1,
-            }}>☀</span>
-            <span style={{
-              flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-              color: dark ? '#000' : c, fontSize: 9, zIndex: 1,
-            }}>☾</span>
-          </button>
-          <Link href={authUser ? '/me' : '/login'} style={{
-            width: 32, height: 32, marginLeft: 4,
-            background: dark ? '#222' : '#f1efe9',
-            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, fontWeight: 600,
-            color: c, border: `1px solid ${dark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)'}`,
-            textDecoration: 'none',
-          }}>{initials}</Link>
-        </div>
-      </div>
-    </header>
-  );
+  
+  // Return null to hide this mobile version since there's already a global Nav
+  return null;
 }
 
 export function MobileFooter() {
@@ -263,7 +208,7 @@ function BottomNavIcon({ name, size = 22 }: { name: string; size?: number }) {
 export function BottomNav({ active }: { active?: 'home' | 'explore' | 'pulse' | 'profile' }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { theme, authUser } = useApp();
+  const { theme, authUser, setUploadModalOpen } = useApp();
   const dark = theme === 'dark';
   const c = dark ? '#fff' : '#000';
   const muted = dark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)';
@@ -281,18 +226,17 @@ export function BottomNav({ active }: { active?: 'home' | 'explore' | 'pulse' | 
       : undefined);
 
   return (
-    <nav style={{
-      position: 'sticky', bottom: 0, left: 0, right: 0, zIndex: 40,
+    <nav className="md:hidden grid grid-cols-5" style={{
+      position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 40,
       background: bg, backdropFilter: 'blur(12px)',
       borderTop: `1px solid ${dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-      display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)',
       paddingTop: 8, paddingBottom: 10,
       fontFamily: "'Inter', sans-serif",
     }}>
       <NavBtn item={items[0]} on={resolvedActive === 'home'} c={c} muted={muted} onClick={() => router.push(items[0].href)} />
       <NavBtn item={items[1]} on={resolvedActive === 'explore'} c={c} muted={muted} onClick={() => router.push(items[1].href)} />
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-        <button onClick={() => alert('Submit · Coming soon')} aria-label="Submit a frame" style={{
+      <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <button onClick={() => setUploadModalOpen(true)} aria-label="Upload a frame" style={{
           width: 52, height: 52, padding: 0,
           background: c, color: dark ? '#000' : '#fff',
           border: 0, cursor: 'pointer',
@@ -304,14 +248,16 @@ export function BottomNav({ active }: { active?: 'home' | 'explore' | 'pulse' | 
           position: 'relative',
         }}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 19V5M5 12l7-7 7 7" />
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" y1="3" x2="12" y2="15" />
           </svg>
           <span style={{
             position: 'absolute', bottom: -16, left: '50%', transform: 'translateX(-50%)',
             fontFamily: "'IBM Plex Mono', monospace", fontSize: 9,
             letterSpacing: '0.12em', textTransform: 'uppercase',
             color: c, whiteSpace: 'nowrap',
-          }}>Submit</span>
+          }}>Upload</span>
         </button>
       </div>
       <NavBtn item={{ id: 'pulse', icon: 'pulse', label: 'Pulse', href: '/explore' }} on={resolvedActive === 'pulse'} c={c} muted={muted} onClick={() => router.push('/explore')} />
@@ -331,7 +277,7 @@ function NavBtn({ item, on, c, muted, onClick }: { item: { icon: string; label: 
       letterSpacing: '0.1em', textTransform: 'uppercase',
       minHeight: 44,
     }}>
-      <BottomNavIcon name={item.icon} />
+      <BottomNavIcon name={item.icon} size={20} />
       <span style={{ fontWeight: on ? 600 : 400 }}>{item.label}</span>
     </button>
   );
