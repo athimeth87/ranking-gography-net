@@ -17,6 +17,7 @@ export function MeDashboard({ persona, isVoyageur, isPhotographer, myPhotos }: M
 
   const totalLikes = myPhotos.reduce((s, p) => s + p.likes, 0);
   const totalFav = myPhotos.reduce((s, p) => s + p.favorites, 0);
+  const totalComments = myPhotos.reduce((s, p) => s + p.comments, 0);
   const totalPulse = myPhotos.reduce((s, p) => s + p.pulse, 0);
   const editorPicks = myPhotos.filter((p) => p.picks.includes('editor')).length;
 
@@ -28,11 +29,12 @@ export function MeDashboard({ persona, isVoyageur, isPhotographer, myPhotos }: M
       </h1>
 
       {/* Stat row */}
-      <div className="grid grid-cols-4 gap-0 mt-12 border border-rule">
+      <div className="grid grid-cols-5 gap-0 mt-12 border border-rule">
         <DashStat n={myPhotos.length} l="Photos" />
         <DashStat n={totalLikes.toLocaleString()} l="Likes received" border />
+        <DashStat n={totalComments.toLocaleString()} l="Comments" border />
         <DashStat n={totalFav.toLocaleString()} l="Favorites" border />
-        <DashStat n={totalPulse.toFixed(0)} l="Total Pulse" border />
+        <DashStat n={totalPulse.toFixed(0)} l="Pulse" border />
       </div>
 
       {/* Voyageur eligibility card */}
@@ -88,7 +90,11 @@ export function MeDashboard({ persona, isVoyageur, isPhotographer, myPhotos }: M
         <div className="caps opacity-55 mb-5">Quick actions</div>
         <div className="grid grid-cols-3 gap-4">
           <ActionCard title="ส่งภาพใหม่" sub="อัพได้วันละ 1 ภาพ" onClick={() => router.push('/upload')} />
-          <ActionCard title="ตอบความเห็น" sub="3 ความเห็นรอตอบ" onClick={() => router.push('/me/photos')} />
+          <ActionCard
+            title="ตอบความเห็น"
+            sub={`${totalComments.toLocaleString()} ความเห็นทั้งหมด`}
+            onClick={() => router.push('/me/photos')}
+          />
           <ActionCard title="โหวต & favorite" sub="ค้นพบภาพใหม่" onClick={() => router.push('/explore')} />
         </div>
       </div>

@@ -30,27 +30,31 @@ export default function Page({ params }: PageProps) {
     const supabase = getSupabaseBrowserClient();
     const { data: photos } = await supabase.from('photos').select('*').eq('photographer_id', authUser.id).order('uploaded_at', { ascending: false });
     
-    const mappedPhotos = (photos || []).map((p: any) => ({
-      id: p.id,
-      slug: p.id,
-      title: p.title,
-      by: profileUsername || authUser.email?.split('@')[0] || 'Unknown',
-      cat: p.category,
-      w: p.width || 4,
-      h: p.height || 3,
-      src: p.storage_url,
-      caption: p.caption || '',
-      exif: { camera: 'Unknown', lens: 'Unknown', iso: 100, shutter: '1/100', aperture: 'f/8', focal: '50mm' },
-      likes: p.likes_count || 0,
-      likes24h: 0,
-      comments: 0,
-      favorites: p.favorites_count || 0,
-      hours: 1,
-      picks: [],
-      date: p.uploaded_at,
-      pulse: p.pulse_score || 0,
-      rank: 0
-    }));
+    const mappedPhotos = (photos || []).map((p: any) => {
+      const likes = p.likes_count || 0;
+      const favorites = p.favorites_count || 0;
+      return {
+        id: p.id,
+        slug: p.id,
+        title: p.title,
+        by: profileUsername || authUser.email?.split('@')[0] || 'Unknown',
+        cat: p.category,
+        w: p.width || 4,
+        h: p.height || 3,
+        src: p.storage_url,
+        caption: p.caption || '',
+        exif: { camera: 'Unknown', lens: 'Unknown', iso: 100, shutter: '1/100', aperture: 'f/8', focal: '50mm' },
+        likes,
+        likes24h: 0,
+        comments: p.comments_count || 0,
+        favorites,
+        hours: 1,
+        picks: [],
+        date: p.uploaded_at,
+        pulse: likes + favorites * 2,
+        rank: 0,
+      };
+    });
 
     setMyPhotos(mappedPhotos);
   };
