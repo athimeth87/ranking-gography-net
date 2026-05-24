@@ -240,7 +240,7 @@ export default function PhotographerProfilePage({ params }: { params: { username
             <ProfileStat label="Followers" val={photographer.followers.toLocaleString()} />
             <ProfileStat label="Following" val="142" />
             <ProfileStat label="Pulse avg" val={avgPulse} />
-            <ProfileStat label="Editor picks" val={editorPickCount} />
+            <ProfileStat label="Rank Master" val={editorPickCount} />
           </div>
 
           {/* Tabs — shadcn Tabs with underline look */}

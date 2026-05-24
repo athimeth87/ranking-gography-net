@@ -25,7 +25,7 @@ export function FeaturedPhotographersSection({
         <div className="flex justify-between items-baseline pb-7 mb-8 border-b border-[var(--rule)]">
           <div>
             <h2
-              className="th font-normal m-0 leading-none text-[clamp(36px,4.2vw,56px)] tracking-[-.025em]"
+              className="font-normal m-0 leading-none text-[clamp(36px,4.2vw,56px)] tracking-[-.025em]"
             >
               Top Photographers
             </h2>

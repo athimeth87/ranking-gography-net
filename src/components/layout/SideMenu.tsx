@@ -23,6 +23,7 @@ const CATEGORIES: NavLink[] = [
 
 const CURATION: NavLink[] = [
   { to: '/ambassadors', label: 'Ambassadors' },
+  { to: '/about-ranking', label: 'Ranking' },
 ];
 
 const ABOUT: NavLink[] = [

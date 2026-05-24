@@ -166,7 +166,7 @@ export function MeSettings({ persona, isVoyageur }: MeSettingsProps) {
           onChange={(v) => set('email_likes', v)}
         />
         <ToggleRow
-          label="Email — Editor's Pick"
+          label="Email — Rank Master"
           sub="ส่งทันทีเมื่อภาพคุณถูกเลือก"
           value={form.email_picks !== false}
           onChange={(v) => set('email_picks', v)}

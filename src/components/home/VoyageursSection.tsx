@@ -92,8 +92,8 @@ export function VoyageursSection({ featuredPhoto }: VoyageursSectionProps) {
         >
           {/* Left: copy */}
           <div>
-            <h2 
-              className="th font-normal m-0 leading-[1.05] text-[clamp(40px,4.6vw,64px)] tracking-[-.025em] mb-7" 
+            <h2
+              className="font-normal m-0 leading-[1.05] text-[clamp(40px,4.6vw,64px)] tracking-[-.025em] mb-7"
               dangerouslySetInnerHTML={{ __html: content.title.replace(/\\n|\n/g, '<br />') }}
             ></h2>
           

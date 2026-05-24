@@ -79,12 +79,12 @@ function PageShowcase() {
               {/* Card 1 */}
               <div className="border border-rule p-6">
                 <div className="mb-3">
-                  <div className="text-base font-medium leading-none mb-1">Editor&apos;s Pick</div>
+                  <div className="text-base font-medium leading-none mb-1">Rank Master</div>
                   <div className="text-sm text-[var(--fg-soft)]">คัดเลือกโดยทีม GOGRAPHY editorial — เพิ่ม Pulse +50</div>
                 </div>
                 <div className="mb-4">
                   <p className="text-[14px] text-[var(--fg-soft)] leading-[1.6]">
-                    ภาพที่ได้ Editor&apos;s Pick จะปรากฏใน Cover of the week และมีโอกาสได้ขึ้น Hall of Fame ในฤดูกาลนั้น
+                    ภาพที่ได้ Rank Master จะปรากฏใน Cover of the week และมีโอกาสได้ขึ้น Hall of Fame ในฤดูกาลนั้น
                   </p>
                 </div>
                 <div>

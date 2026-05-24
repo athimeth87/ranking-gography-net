@@ -156,6 +156,7 @@ export default function Page({ params }: PageProps) {
           isPhotographer={isPhotographer}
           sections={sections}
           activeSection={section}
+          onAvatarUpdated={(url) => setProfile((p: any) => ({ ...p, avatar_url: url }))}
         />
 
         <main>

@@ -93,7 +93,7 @@ export default function Page() {
             Ambassador programme is invite-only by the GOGRAPHY team
           </h2>
           <p className="th text-[15px] text-[var(--fg-soft)] mt-[24px] leading-[1.7]">
-            หากคุณมีผลงานต่อเนื่องและได้รับ Editor&apos;s Pick มากกว่า 3 ครั้ง
+            หากคุณมีผลงานต่อเนื่องและได้รับ Rank Master มากกว่า 3 ครั้ง
             คุณอาจได้รับคำเชิญในฤดูกาลถัดไป
           </p>
         </div>

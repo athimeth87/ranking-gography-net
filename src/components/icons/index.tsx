@@ -48,9 +48,9 @@ export function RewardIcon({ kind = 'voucher', size = 18 }: { kind?: 'voucher' |
 
 export function PickBadge({ kind = 'editor' }: { kind?: 'editor' | 'ambassador' | 'both' }) {
   const config = {
-    editor: { bg: 'var(--fg)', fg: 'var(--bg)', label: "Editor's Pick", icon: <EditorIcon /> },
+    editor: { bg: '#c0c0c0', fg: '#1a1a1a', label: 'Rank Master', icon: <CrownIcon /> },
     ambassador: { bg: '#b08e54', fg: '#fff', label: "Ambassador's Pick", icon: <CrownIcon /> },
-    both: { bg: '#b08e54', fg: '#fff', label: "Editor's + Ambassador's Pick", icon: <CrownIcon withStar /> },
+    both: { bg: '#b08e54', fg: '#fff', label: "Rank Master + Ambassador's Pick", icon: <CrownIcon withStar /> },
   };
   const cfg = config[kind];
   return (
@@ -73,7 +73,6 @@ export function PickBadge({ kind = 'editor' }: { kind?: 'editor' | 'ambassador' 
       <span
         className="pickbadge-label"
         style={{
-          maxWidth: 0,
           overflow: 'hidden',
           whiteSpace: 'nowrap',
           fontSize: 10.5,

@@ -102,6 +102,7 @@ img { display: block; max-width: 100%; }
     font-weight: 700; font-size: 19px; letter-spacing: 0;
     display: flex; align-items: center; gap: 10px;
   }
+  .logo span { letter-spacing: 0.3em; }
   .logo .mark {
     width: 24px; height: 24px; border-radius: 50%;
     border: 1.5px solid var(--fg);
@@ -292,8 +293,20 @@ img { display: block; max-width: 100%; }
   /* Cream */
   .crm { background: var(--cream); }
 
+  /* Dark panel section — alternating dark band that works in both themes */
+  .section-alt {
+    background: #0d0c0a;
+    color: #ffffff;
+    --fg: #ffffff;
+    --fg-soft: rgba(255,255,255,.65);
+    --fg-faint: rgba(255,255,255,.32);
+    --rule: rgba(255,255,255,.14);
+    --cream: #1a1a18;
+  }
+
   /* Curation pick badge */
   .pickbadge { cursor: default; }
+  .pickbadge-label { max-width: 0; padding-left: 0; }
   .pickbadge:hover .pickbadge-label { max-width: 240px; padding-left: 14px; }
   .pcard:hover .pickbadge .pickbadge-label { max-width: 240px; padding-left: 14px; }
 

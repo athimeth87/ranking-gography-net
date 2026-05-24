@@ -25,11 +25,11 @@ export function LeaderboardSection({ allPhotos, voyageurUsernames }: Leaderboard
   return (
     <section className="py-10 pb-20">
       <div className="wrap">
-        <SectionNumber n={1} label="Pulse Leaderboard · This week" />
+        <SectionNumber n={1} label="Leaderboard · This week" />
         <div className="flex justify-between items-end pb-6 mb-6 border-b border-[var(--rule)]">
           <div>
-            <h2 className="th text-[48px] font-normal leading-none m-0 tracking-[-.025em]">
-              Pulse Leaderboard
+            <h2 className="text-[48px] font-normal leading-none m-0 tracking-[-.025em]">
+              Leaderboard
             </h2>
           </div>
           <button

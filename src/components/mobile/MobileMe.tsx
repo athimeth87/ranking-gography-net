@@ -285,7 +285,7 @@ export function MobileMe({
               ['Total favorites', totalFav.toLocaleString()],
               ['Total pulse', totalPulse],
               ['Avg pulse/photo', myPhotos.length ? Math.round(totalPulse / myPhotos.length) : 0],
-              ["Editor's picks", myPhotos.filter(p => p.picks?.includes('editor')).length],
+              ['Rank Master', myPhotos.filter(p => p.picks?.includes('editor')).length],
             ].map(([k, v]) => (
               <div key={k as string} style={{
                 display: 'flex', justifyContent: 'space-between',

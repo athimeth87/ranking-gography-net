@@ -7,8 +7,8 @@ interface TrendsNowSectionProps {
 }
 
 export function TrendsNowSection({ photos }: TrendsNowSectionProps) {
-  const top5 = photos.slice(0, 5);
-  if (top5.length === 0) return null;
+  const top9 = photos.slice(0, 9);
+  if (top9.length === 0) return null;
 
   return (
     <section className="py-[64px] border-t border-rule">
@@ -19,7 +19,7 @@ export function TrendsNowSection({ photos }: TrendsNowSectionProps) {
               Trends Now
             </h2>
             <span className="mono text-[11px] tracking-[.18em] uppercase opacity-55 hidden sm:inline">
-              Past Week · Top 5
+              Past Week · Top 9
             </span>
           </div>
           <Link href="/explore" className="caps border-b border-current pb-1 whitespace-nowrap">
@@ -27,11 +27,11 @@ export function TrendsNowSection({ photos }: TrendsNowSectionProps) {
           </Link>
         </div>
 
-        <ol className="grid grid-cols-1 lg:grid-cols-2 gap-x-[48px] gap-y-[2px] max-w-[1100px]">
-          {top5.map((photo, i) => {
+        <ol className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-[48px] gap-y-[2px]">
+          {top9.map((photo, i) => {
             const photographer = getPhotographer(photo.by);
             return (
-              <li key={photo.id} className="border-t border-rule first:border-t-0 lg:[&:nth-child(2)]:border-t-0">
+              <li key={photo.id} className="border-t border-rule first:border-t-0 md:[&:nth-child(2)]:border-t-0 lg:[&:nth-child(3)]:border-t-0">
                 <Link
                   href={`/photo/${photo.id}`}
                   className="grid grid-cols-[40px_76px_1fr] gap-[18px] items-center py-[16px] group"

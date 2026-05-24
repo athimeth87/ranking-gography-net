@@ -96,9 +96,9 @@ export function MeDashboard({ persona, isVoyageur, isPhotographer, myPhotos }: M
       {isPhotographer && editorPicks > 0 && (
         <div className="mt-8 px-7 py-6 bg-cream border border-rule flex justify-between items-center">
           <div>
-            <div className="caps opacity-55 mb-2">★ Editorial recognition</div>
+            <div className="caps opacity-55 mb-2">★ Rank Master recognition</div>
             <div className="th text-[17px] font-medium">
-              คุณได้รับ Editor&apos;s Pick {editorPicks} ครั้งในฤดูกาลนี้ — ติดอันดับ Top 10 ของ Pulse Leaderboard
+              คุณได้รับ Rank Master {editorPicks} ครั้งในฤดูกาลนี้ — ติดอันดับ Top 10 ของ Leaderboard
             </div>
           </div>
           <button onClick={() => router.push('/me/stats')} className="btn btn-sm">

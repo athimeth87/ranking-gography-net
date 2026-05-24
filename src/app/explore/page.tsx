@@ -128,8 +128,8 @@ export default function ExplorePage() {
               Explore · {photos.length * 7} photos
             </div>
             {/* title */}
-            <h1 className="th text-white font-light text-[clamp(40px,8vw,88px)] leading-[.92] tracking-[-.035em] m-0">
-              Every photo
+            <h1 className="text-white font-light text-[clamp(40px,8vw,88px)] leading-[.92] tracking-[-.035em] m-0">
+              Explore
             </h1>
             <p className="th text-white/70 text-[15px] leading-[1.6] mt-4 mb-0 max-w-[440px]">
               เลือกชมภาพถ่ายทั้งหมด — กรองตามหมวด เวลา และอันดับ

@@ -1,7 +1,10 @@
 import React from 'react';
-import { getPhoto, getPhotographer, getPhotos } from '@/lib/data';
+import { getPhoto, getPhotographer } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import type { Photo, Photographer } from '@/lib/types';
+
+const DEFAULT_COVER_SRC =
+  'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=2400&q=85&auto=format&fit=crop';
 
 /**
  * Full-width cinematic page hero. White text over darkened image.
@@ -42,8 +45,8 @@ export function PageCover({
 }: PageCoverProps) {
   const photo: Photo | undefined = photoId ? getPhoto(photoId) : undefined;
   const photographer: Photographer | undefined = photo ? getPhotographer(photo.by) : undefined;
-  // The data layer guarantees at least one photo; non-null assertion is safe here.
-  const imgSrc = src ?? photo?.src ?? getPhotos()[0]!.src;
+  // Uniform cover image across the site unless caller passes an explicit src.
+  const imgSrc = src ?? DEFAULT_COVER_SRC;
   const creditLine =
     credit ?? (photo && photographer ? `"${photo.title}" by ${photographer.name}` : null);
 
@@ -93,7 +96,7 @@ export function PageCover({
             {title && (
               <h1
                 className={cn(
-                  'th text-[clamp(34px,8vw,96px)] md:text-[clamp(48px,6.5vw,96px)] font-light tracking-[-.03em] leading-[.95] text-white m-0',
+                  'text-[clamp(20px,4.5vw,54px)] md:text-[clamp(28px,3.6vw,54px)] font-normal tracking-[-.015em] leading-[1.05] text-white m-0',
                   align === 'center' ? 'max-w-[20ch]' : 'max-w-[16ch]',
                 )}
               >

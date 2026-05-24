@@ -1,6 +1,9 @@
 'use client';
+import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { VoyageurMark } from '@/components/icons';
+import { useApp } from '@/providers/AppProvider';
+import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import type { Photographer } from '@/lib/types';
 
 interface SectionItem {
@@ -16,6 +19,7 @@ interface MeSidebarProps {
   isPhotographer: boolean;
   sections: SectionItem[];
   activeSection: string;
+  onAvatarUpdated?: (url: string) => void;
 }
 
 export function MeSidebar({
@@ -24,22 +28,103 @@ export function MeSidebar({
   isPhotographer,
   sections,
   activeSection,
+  onAvatarUpdated,
 }: MeSidebarProps) {
   const router = useRouter();
+  const { authUser } = useApp();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [localAvatar, setLocalAvatar] = useState<string | null>(null);
+  const avatarSrc = localAvatar ?? persona.avatar;
+
+  const handleAvatarClick = () => {
+    if (uploading) return;
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !authUser?.id) {
+      e.target.value = '';
+      return;
+    }
+    if (!file.type.startsWith('image/')) {
+      alert('กรุณาเลือกไฟล์รูปภาพ');
+      e.target.value = '';
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert('ไฟล์ใหญ่เกิน 5MB');
+      e.target.value = '';
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const supabase = getSupabaseBrowserClient();
+      const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const fileName = `avatars/${authUser.id}-${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('photos')
+        .upload(fileName, file, { upsert: true });
+      if (uploadError) {
+        alert('อัปโหลดไม่สำเร็จ: ' + uploadError.message);
+        return;
+      }
+
+      const { data: pub } = supabase.storage.from('photos').getPublicUrl(fileName);
+      const publicUrl = pub.publicUrl;
+
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({ avatar_url: publicUrl })
+        .eq('id', authUser.id);
+      if (updateError) {
+        alert('บันทึกไม่สำเร็จ: ' + updateError.message);
+        return;
+      }
+
+      setLocalAvatar(publicUrl);
+      onAvatarUpdated?.(publicUrl);
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
+  };
 
   return (
     <aside className="sticky top-[96px] self-start">
       {/* Identity card */}
       <div className="pb-6 border-b border-rule mb-6">
-        <div className="w-16 h-16 rounded-full bg-tile overflow-hidden mb-[14px]">
+        <button
+          type="button"
+          onClick={handleAvatarClick}
+          disabled={uploading}
+          className="relative w-16 h-16 rounded-full bg-tile overflow-hidden mb-[14px] block group cursor-pointer disabled:cursor-wait p-0 border-0"
+          title="คลิกเพื่อเปลี่ยนรูปโปรไฟล์"
+        >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={persona.avatar}
+            src={avatarSrc}
             alt=""
             className="w-full h-full object-cover"
             loading="lazy"
           />
-        </div>
+          <span
+            className="absolute inset-0 flex items-center justify-center text-white text-[9px] tracking-[.14em] uppercase font-medium bg-black/55 opacity-0 group-hover:opacity-100 transition-opacity"
+            aria-hidden
+          >
+            {uploading ? 'Uploading…' : 'Change'}
+          </span>
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          className="hidden"
+        />
         <div className="flex flex-col gap-[6px] mb-3">
           {isVoyageur && (
             <span className="inline-flex items-center gap-[5px] px-[7px] py-[3px] bg-[#b08e54] text-white text-[9.5px] tracking-[.14em] uppercase font-medium self-start">

@@ -11,6 +11,7 @@ const LINKS: { to: string; label: string }[] = [
   { to: '/explore', label: 'Explore' },
   { to: '/hall-of-fame', label: 'Hall of Fame' },
   { to: '/for-customers', label: 'For Voyageurs' },
+  { to: '/about-ranking', label: 'Ranking' },
   { to: '/about', label: 'About' },
 ];
 
@@ -62,7 +63,6 @@ export function Nav() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo-white.png" alt="" aria-hidden className="logo-img" />
             <span>GOGRAPHY</span>
-            <small>Photo Awards</small>
           </Link>
           <div className="nav-right">
             {LINKS.slice(3).map((l) => (

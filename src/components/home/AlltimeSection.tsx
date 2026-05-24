@@ -36,7 +36,7 @@ export function AlltimeSection({ allPhotos, voyageurUsernames }: AlltimeSectionP
         <SectionNumber n={2} label="All-time · Beyond this week" />
         <div className="flex justify-between items-end pb-6 mb-6 border-b border-[var(--rule)]">
           <div>
-            <h2 className="th text-[48px] font-normal leading-none m-0 tracking-[-.025em]">
+            <h2 className="text-[48px] font-normal leading-none m-0 tracking-[-.025em]">
               All-time
             </h2>
             <p className="th mt-[14px] text-[13px] text-[var(--fg-soft)] max-w-[540px] leading-[1.6]">

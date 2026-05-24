@@ -70,6 +70,12 @@ export function HeroSection({ banner, top, bannerPhotographer, topPhotographer }
                 >
                   Explore the gallery
                 </button>
+                <button
+                  onClick={() => router.push('/about-ranking')}
+                  className="px-[22px] py-3 text-[11px] tracking-[.14em] uppercase font-medium cursor-pointer bg-[rgba(255,255,255,.08)] text-white border border-[rgba(255,255,255,.45)] w-full sm:w-auto"
+                >
+                  How ranking works
+                </button>
               </div>
             </div>
           </div>
@@ -102,7 +108,7 @@ export function HeroSection({ banner, top, bannerPhotographer, topPhotographer }
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={top.src}
+              src="/cover-of-the-week.jpg"
               alt={top.title}
               loading="lazy"
               className="w-full max-h-[80vh] object-cover"

@@ -123,7 +123,7 @@ export default function Page() {
                           <div className="mt-[20px]">
                             <div className="caps opacity-55 mb-[8px]">Winner</div>
                             <h3
-                              className="th text-[24px] font-normal tracking-[-0.015em] m-0"
+                              className="text-[24px] font-normal tracking-[-0.015em] m-0"
                             >
                               {photo.title}
                             </h3>
