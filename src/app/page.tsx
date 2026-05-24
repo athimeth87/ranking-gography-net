@@ -88,6 +88,7 @@ export default function LandingPage() {
       const follows = followsData || [];
 
       const mappedPhotographers: Photographer[] = users.map(u => ({
+        id: u.id,
         username: u.username || u.display_name || u.id,
         name: u.display_name || u.username || 'User',
         loc: u.location || '',

@@ -2,6 +2,7 @@
 import { useRouter } from 'next/navigation';
 import type { Photographer, Photo } from '@/lib/types';
 import { VoyageurMark } from '@/components/icons';
+import { useFollowState } from '@/hooks/useFollowState';
 
 interface PhotographerCardProps {
   photographer: Photographer;
@@ -15,6 +16,7 @@ export function PhotographerCard({
   photos,
 }: PhotographerCardProps) {
   const router = useRouter();
+  const follow = useFollowState(photographer.id ?? null);
   
   // Use their first photo as the cover image
   const theirPhotos = photos.filter((p) => p.by === photographer.username);
@@ -47,7 +49,6 @@ export function PhotographerCard({
 
       {/* Content Section */}
       <div className="relative px-6 pb-6 flex flex-col flex-1">
-        {/* Avatar & Follow Button Row */}
         <div className="flex justify-between items-end -mt-12 mb-3 relative z-10">
           <div className="w-[84px] h-[84px] rounded-full overflow-hidden border-[3px] border-[#0a0a0a] bg-neutral-900 shadow-md">
             <img
@@ -56,15 +57,33 @@ export function PhotographerCard({
               className="w-full h-full object-cover"
             />
           </div>
-          <button
-            className="bg-white text-black px-5 py-1.5 rounded-full text-[13px] font-medium hover:bg-neutral-200 transition-colors mb-2 tracking-tight"
-            onClick={(e) => {
-              e.stopPropagation();
-              router.push(`/photographer/${photographer.username}`);
-            }}
-          >
-            {variant === 'voyageur' ? 'Collection' : 'Follow'}
-          </button>
+          {follow.isSelf && variant !== 'voyageur' ? (
+            <button className="bg-neutral-800 text-white/50 px-5 py-1.5 rounded-full text-[13px] font-medium mb-2 tracking-tight" disabled>You</button>
+          ) : (
+            <button
+              className={`px-5 py-1.5 rounded-full text-[13px] font-medium transition-colors mb-2 tracking-tight ${
+                variant === 'voyageur' 
+                  ? 'bg-white text-black hover:bg-neutral-200'
+                  : follow.following 
+                    ? 'bg-transparent text-white border border-white/30 hover:bg-white/10'
+                    : 'bg-white text-black hover:bg-neutral-200'
+              }`}
+              onClick={async (e) => {
+                e.stopPropagation();
+                if (variant === 'voyageur') {
+                  router.push(`/photographer/${photographer.username}`);
+                  return;
+                }
+                const res = await follow.toggle();
+                if (res.kind === 'unauth') {
+                  router.push(`/login`);
+                }
+              }}
+              disabled={follow.loading}
+            >
+              {variant === 'voyageur' ? 'Collection' : (follow.following ? 'Following' : 'Follow')}
+            </button>
+          )}
         </div>
 
         {/* Name and Username */}
@@ -85,7 +104,7 @@ export function PhotographerCard({
         {/* Stats */}
         <div className="flex gap-5 mt-5 text-[14px] tracking-tight">
           <div className="text-white/60">
-            <span className="font-bold text-white mr-1.5">{photographer.followers.toLocaleString()}</span>
+            <span className="font-bold text-white mr-1.5">{follow.followersCount > 0 ? follow.followersCount.toLocaleString() : photographer.followers.toLocaleString()}</span>
             Followers
           </div>
           <div className="text-white/60">
