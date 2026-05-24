@@ -290,8 +290,8 @@ img { display: block; max-width: 100%; }
 
   /* Curation pick badge */
   .pickbadge { cursor: default; }
-  .pickbadge:hover .pickbadge-label { max-width: 240px; padding-right: 14px; }
-  .pcard:hover .pickbadge .pickbadge-label { max-width: 240px; padding-right: 14px; }
+  .pickbadge:hover .pickbadge-label { max-width: 240px; padding-left: 14px; }
+  .pcard:hover .pickbadge .pickbadge-label { max-width: 240px; padding-left: 14px; }
 
   /* Loading skeleton */
   .skel { background: linear-gradient(90deg, var(--tile) 0%, color-mix(in oklab, var(--tile) 60%, var(--bg)) 50%, var(--tile) 100%); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; }

@@ -63,6 +63,7 @@ export function PickBadge({ kind = 'editor' }: { kind?: 'editor' | 'ambassador' 
         background: cfg.bg,
         color: cfg.fg,
         display: 'inline-flex',
+        flexDirection: 'row-reverse',
         alignItems: 'center',
         overflow: 'hidden',
         transition: 'min-width .25s ease, padding .25s ease',

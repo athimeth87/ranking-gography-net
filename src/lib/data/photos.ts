@@ -1,7 +1,7 @@
 import type { PhotoSeed } from '@/lib/types';
 
-const u = (seed: string, w = 1200, h?: number): string =>
-  `https://picsum.photos/seed/${seed}/${w}/${h ?? Math.round(w * 1.25)}`;
+const u = (seed: string, w: number, h: number): string =>
+  `https://picsum.photos/seed/${seed}/${w}/${h}`;
 
 const RAW: PhotoSeed[] = [
   { id: 'p001', slug: 'morning-fog-doi-inthanon', title: 'Morning fog, Doi Inthanon', by: 'kanthorn', cat: 'Landscape', w: 1600, h: 2000, src: u('doi-inthanon-fog', 1400, 1750), caption: 'ม่านหมอกห่มผืนป่า — 5:42 น. 1,200 ม. เหนือระดับน้ำทะเล', exif: { camera: 'Sony A7R V', lens: '24-70mm f/2.8 GM II', iso: 100, shutter: '1/60', aperture: 'f/8.0', focal: '35mm' }, likes: 1284, likes24h: 218, comments: 24, favorites: 412, hours: 32, picks: ['editor'], date: '2026.03.18' },

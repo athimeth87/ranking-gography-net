@@ -34,6 +34,7 @@ export interface PhotoSeed {
   date: string;
   tripContext?: string;
   voyageurOnly?: boolean;
+  avatarUrl?: string;
 }
 
 /** A photo with derived ranking fields. */

@@ -1,7 +1,7 @@
 import type { Photographer } from '@/lib/types';
 
-const u = (seed: string, w = 1200, h?: number): string =>
-  `https://picsum.photos/seed/${seed}/${w}/${h ?? Math.round(w * 1.25)}`;
+const u = (seed: string, w: number, h: number): string =>
+  `https://picsum.photos/seed/${seed}/${w}/${h}`;
 
 export const PHOTOGRAPHERS: Photographer[] = [
   { username: 'kanthorn', name: 'Kanthorn Aroonrat', loc: 'Chiang Mai, TH', bio: 'Long-form landscape photographer. Currently chasing fog through the Mae Hong Son loop.', avatar: u('av-kanthorn', 240, 240), cover: u('mountain-mist-cover', 1800, 800), followers: 2840, photos: 47, isAmbassador: true, joined: '2024.03', cameras: ['Sony A7R V', 'Hasselblad 907X'] },

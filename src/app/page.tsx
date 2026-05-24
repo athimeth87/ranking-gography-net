@@ -59,6 +59,7 @@ export default function LandingPage() {
           slug: p.slug || p.id,
           title: p.title,
           by: ownerName,
+          avatarUrl: owner?.avatar_url,
           cat: mappedCat,
           w: p.width || 4,
           h: p.height || 3,
@@ -112,14 +113,19 @@ export default function LandingPage() {
           bannerPhotographer={bannerPhotographer}
           topPhotographer={topPhotographer}
         />
-        {/* Marquee — top-12 photos ticker */}
+        {/* Marquee — top-12 photos ticker with real user profiles */}
         <Marquee
           speedSec={70}
-          items={mockAllPhotos.slice(0, 12).map((p, i) => ({
-            num: String(i + 1).padStart(2, '0'),
-            title: p.title,
-            by: (getMockPhotographer(p.by)?.name ?? p.by).toUpperCase(),
-          }))}
+          items={(realAllPhotos.length > 0 ? realAllPhotos : mockAllPhotos).slice(0, 12).map((p, i) => {
+            const photographer = getMockPhotographer(p.by);
+            return {
+              num: String(i + 1).padStart(2, '0'),
+              title: p.title,
+              by: (photographer?.name ?? p.by).toUpperCase(),
+              avatar: p.avatarUrl ?? photographer?.avatar, // Use real avatar if available
+              href: `/photo/${p.slug}` // Make it clickable
+            };
+          })}
         />
         <TrendsNowSection photos={mockAllPhotos} />
         <LeaderboardSection allPhotos={mockAllPhotos} voyageurUsernames={mockVoyageurUsernames} />

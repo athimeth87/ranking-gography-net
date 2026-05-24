@@ -59,20 +59,34 @@ export default function AdminContentPage() {
       const fileExt = imageFile.name.split('.').pop();
       const fileName = `voyageur-featured-${Date.now()}.${fileExt}`;
       const { error } = await supabase.storage.from('photos').upload(fileName, imageFile);
-      if (!error) {
-        const { data } = supabase.storage.from('photos').getPublicUrl(fileName);
-        finalSettings.image_url = data.publicUrl;
+      if (error) {
+        alert('Failed to upload Voyageurs image: ' + error.message);
+        setIsSaving(false);
+        return;
       }
+      const { data } = supabase.storage.from('photos').getPublicUrl(fileName);
+      finalSettings.image_url = data.publicUrl;
+    } else if (voySettings.image_url && voySettings.image_url.startsWith('blob:')) {
+      alert("Error: Missing file for image upload.");
+      setIsSaving(false);
+      return;
     }
 
     if (heroImageFile) {
       const fileExt = heroImageFile.name.split('.').pop();
       const fileName = `hero-banner-${Date.now()}.${fileExt}`;
       const { error } = await supabase.storage.from('photos').upload(fileName, heroImageFile);
-      if (!error) {
-        const { data } = supabase.storage.from('photos').getPublicUrl(fileName);
-        finalHeroSettings.image_url = data.publicUrl;
+      if (error) {
+        alert('Failed to upload Hero image: ' + error.message);
+        setIsSaving(false);
+        return;
       }
+      const { data } = supabase.storage.from('photos').getPublicUrl(fileName);
+      finalHeroSettings.image_url = data.publicUrl;
+    } else if (heroSettings.image_url && heroSettings.image_url.startsWith('blob:')) {
+      alert("Error: Missing file for Hero image upload.");
+      setIsSaving(false);
+      return;
     }
 
     await supabase.from('site_settings').upsert([
