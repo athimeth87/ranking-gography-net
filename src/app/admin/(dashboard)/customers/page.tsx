@@ -24,7 +24,11 @@ export default function CustomerWhitelistPage() {
   const [newEmail, setNewEmail] = useState('');
   const [newRole, setNewRole] = useState('voyageur');
   const [isImporting, setIsImporting] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const ITEMS_PER_PAGE = 20;
 
   const fetchWhitelist = async () => {
     setIsLoading(true);
@@ -111,6 +115,16 @@ export default function CustomerWhitelistPage() {
   const registered = whitelist.filter(w => w.status === 'registered').length;
   const pending = whitelist.filter(w => w.status === 'pending').length;
 
+  // Filter and paginate
+  const filteredWhitelist = whitelist.filter(item => 
+    item.email.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  const totalPages = Math.ceil(filteredWhitelist.length / ITEMS_PER_PAGE) || 1;
+  const paginatedWhitelist = filteredWhitelist.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE, 
+    currentPage * ITEMS_PER_PAGE
+  );
+
   return (
     <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500 pb-12">
       
@@ -180,6 +194,11 @@ export default function CustomerWhitelistPage() {
           <input 
             type="text" 
             placeholder="Search emails..." 
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1); // Reset to first page on search
+            }}
             className="w-full pl-9 pr-4 py-2 text-sm border border-neutral-200 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent transition-all"
           />
         </div>
@@ -211,9 +230,9 @@ export default function CustomerWhitelistPage() {
             <tbody className="divide-y divide-neutral-100">
               {isLoading ? (
                 <tr><td colSpan={5} className="px-6 py-8 text-center text-neutral-500 font-mono text-xs uppercase tracking-widest">Loading...</td></tr>
-              ) : whitelist.length === 0 ? (
-                <tr><td colSpan={5} className="px-6 py-8 text-center text-neutral-500 font-mono text-xs uppercase tracking-widest">No emails whitelisted yet.</td></tr>
-              ) : whitelist.map((item) => (
+              ) : paginatedWhitelist.length === 0 ? (
+                <tr><td colSpan={5} className="px-6 py-8 text-center text-neutral-500 font-mono text-xs uppercase tracking-widest">No emails found.</td></tr>
+              ) : paginatedWhitelist.map((item) => (
                 <tr key={item.id} className="hover:bg-neutral-50/50 transition-colors group">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
@@ -259,6 +278,34 @@ export default function CustomerWhitelistPage() {
             </tbody>
           </table>
         </div>
+        
+        {/* Pagination Controls */}
+        {!isLoading && filteredWhitelist.length > 0 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between px-6 py-4 border-t border-neutral-200 bg-white gap-4">
+            <div className="text-sm text-neutral-500 font-mono">
+              Showing <span className="font-medium text-neutral-900">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> to <span className="font-medium text-neutral-900">{Math.min(currentPage * ITEMS_PER_PAGE, filteredWhitelist.length)}</span> of <span className="font-medium text-neutral-900">{filteredWhitelist.length}</span> entries
+            </div>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1.5 text-sm border border-neutral-200 rounded-md hover:bg-neutral-50 disabled:opacity-50 transition-colors"
+              >
+                Previous
+              </button>
+              <div className="text-sm font-mono px-3">
+                Page {currentPage} of {totalPages}
+              </div>
+              <button 
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1.5 text-sm border border-neutral-200 rounded-md hover:bg-neutral-50 disabled:opacity-50 transition-colors"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Add Email Modal (Mock) */}
