@@ -20,7 +20,7 @@ export function MobileHome({
   const router = useRouter();
   const { theme } = useApp();
   const dark = theme === 'dark';
-  const [tab, setTab] = useState('foryou');
+  const [tab, setTab] = useState('leaderboard');
 
   const pList = realPhotos.length > 0 ? realPhotos : PHOTOS;
   const photogList = realPhotographers.length > 0 ? realPhotographers : PHOTOGRAPHERS;

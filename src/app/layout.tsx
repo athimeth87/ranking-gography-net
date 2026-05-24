@@ -76,8 +76,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AppProvider>
           <Nav />
           <main>{children}</main>
+          <div className="md:hidden fixed bottom-0 left-0 right-0 z-40">
+            <BottomNav />
+          </div>
           <SideMenu />
-          <BottomNav />
           <NotificationsListener />
           <Toaster />
         </AppProvider>

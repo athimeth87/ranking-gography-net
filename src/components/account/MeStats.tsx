@@ -31,7 +31,7 @@ export function MeStats({ myPhotos }: MeStatsProps) {
       <div className="caps opacity-55 mb-[14px]">Analytics</div>
       <h1 className="th text-[56px] font-normal tracking-[-0.025em] m-0 leading-none">Stats</h1>
 
-      <div className="grid grid-cols-4 gap-0 mt-10 border border-rule">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-0 mt-10 border border-rule">
         <DashStat n={myPhotos.length} l="Photos" />
         <DashStat n={totalLikes.toLocaleString()} l="Likes (90d)" border />
         <DashStat n={totalFav.toLocaleString()} l="Favorites" border />

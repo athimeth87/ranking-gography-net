@@ -1,8 +1,9 @@
 // @ts-nocheck
 'use client';
-import { PHOTOS } from '@/lib/data';
+import { PHOTOS, pulseScore } from '@/lib/data';
 import { useApp } from '@/providers/AppProvider';
 import { MobileNav, MobileFooter, MobileMarquee, MobileSectionHeader, BottomNav } from './MobileShared';
+import { MasonryTile } from './MobileExplore';
 
 const seasons = [
   { s: '04', y: '2026', winner: 'Anuwat Phon',       title: 'Mae Hong Son, blue hour', pulse: 1240, seed: 'maehongson-bluehour' },
@@ -192,6 +193,18 @@ export function MobileHallOfFame() {
           })}
         </div>
       </section>
+
+      {/* Winners gallery — masonry */}
+      <section style={{ padding: '56px 16px 0' }}>
+        <MobileSectionHeader num="03 / Gallery" title="Winning frames" />
+      </section>
+      <div style={{ padding: '16px 6px 0' }}>
+        <div style={{ columnCount: 3, columnGap: 6 }}>
+          {PHOTOS.slice().sort((a, b) => pulseScore(b) - pulseScore(a)).slice(0, 18).map((p) => (
+            <MasonryTile key={p.id} photo={p} />
+          ))}
+        </div>
+      </div>
 
       <div style={{ height: 48 }} />
       <MobileMarquee text="◆ 4 seasons ◆ 4 winners ◆ ฿1.2M cashback paid ◆" />

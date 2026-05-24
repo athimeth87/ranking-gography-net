@@ -293,6 +293,22 @@ img { display: block; max-width: 100%; }
   /* Cream */
   .crm { background: var(--cream); }
 
+  /* Mobile horizontal scroll container (cards/chips that scroll sideways) */
+  .mobile-h-scroll {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+  }
+  .mobile-h-scroll::-webkit-scrollbar { display: none; }
+  .mobile-h-scroll > * {
+    flex-shrink: 0;
+    scroll-snap-align: start;
+  }
+
   /* Dark panel section — alternating dark band that works in both themes */
   .section-alt {
     background: #0d0c0a;

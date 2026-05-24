@@ -3,6 +3,7 @@
 import { getSeasons, getPhoto, getPhotographer } from '@/lib/data';
 import { PageCover } from '@/components/layout/PageCover';
 import { Footer } from '@/components/layout/Footer';
+import { MobileHallOfFame } from '@/components/mobile/MobileHallOfFame';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -34,7 +35,11 @@ export default function Page() {
   const seasons = getSeasons();
 
   return (
-    <div className="page-fade">
+    <>
+      <div className="md:hidden">
+        <MobileHallOfFame />
+      </div>
+    <div className="page-fade hidden md:block">
       <PageCover
         photoId="p010"
         eyebrow="Awards Archive"
@@ -147,5 +152,6 @@ export default function Page() {
 
       <Footer />
     </div>
+    </>
   );
 }

@@ -139,8 +139,8 @@ export function FeedTabs({ active, onChange }: { active: string; onChange: (id: 
   const c = dark ? '#fff' : '#000';
   const muted = dark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)';
   const tabs = [
-    { id: 'foryou', label: 'For You' },
-    { id: 'following', label: 'Following' },
+    { id: 'leaderboard', label: 'Leaderboard' },
+    { id: 'trendsnow', label: 'Trends Now' },
   ];
   return (
     <div style={{

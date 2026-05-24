@@ -6,6 +6,7 @@ import type { Photo } from '@/lib/types';
 import type { SortKey } from '@/lib/data';
 import { PhotoGrid } from '@/components/photo/PhotoGrid';
 import { Footer } from '@/components/layout/Footer';
+import { MobileExplore } from '@/components/mobile/MobileExplore';
 
 // ===== Explore page (/explore) =====
 // Masonry grid + filters (sort, time range, picks only)
@@ -107,7 +108,11 @@ export default function ExplorePage() {
   if (showPicksOnly) photos = photos.filter((p: Photo) => p.picks.length > 0);
 
   return (
-    <div className="page-fade">
+    <>
+      <div className="md:hidden">
+        <MobileExplore />
+      </div>
+    <div className="page-fade hidden md:block">
       {/* ── Cinematic Hero Header ── */}
       <section className="relative overflow-hidden bg-black" style={{ height: '42vh', minHeight: 340, maxHeight: 520 }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -253,5 +258,6 @@ export default function ExplorePage() {
 
       <Footer />
     </div>
+    </>
   );
 }
