@@ -25,7 +25,7 @@ function mapPublicPhoto(p: any, username: string) {
     cat: p.category || 'General',
     w: p.width || 4,
     h: p.height || 3,
-    caption: p.caption || '',
+    caption: p.description || '',
     exif: { camera: 'Unknown', lens: 'Unknown', iso: 100, shutter: '1/100', aperture: 'f/8', focal: '50mm' },
     likes,
     likes24h: 0,
@@ -143,7 +143,7 @@ export function PhotographerClient({ username }: { username: string }) {
       // Fetch favorites
       const { data: favsData } = await supabase
         .from('favorites')
-        .select('photos ( id, title, storage_url, category, likes_count, favorites_count, comments_count, uploaded_at, width, height, caption, users ( username ) )')
+        .select('photos ( id, title, storage_url, category, likes_count, favorites_count, comments_count, uploaded_at, width, height, description, users:users!photos_photographer_id_fkey(username) )')
         .eq('user_id', userData.id)
         .order('created_at', { ascending: false });
         

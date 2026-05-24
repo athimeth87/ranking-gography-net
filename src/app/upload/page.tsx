@@ -8,7 +8,7 @@ import { useApp } from '@/providers/AppProvider';
 import { PageCover } from '@/components/layout/PageCover';
 import type { Category } from '@/lib/types';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
-import { convertToWebP, MAX_UPLOAD_BYTES, formatBytes } from '@/lib/imageConvert';
+import { MAX_UPLOAD_BYTES, formatBytes } from '@/lib/imageConvert';
 
 // ---------------------------------------------------------------------------
 // Upload page — single photo upload form with daily limit
@@ -31,6 +31,8 @@ interface Draft {
   lens: string;
   file: DraftFile | null;
   actualFile: File | null;
+  width?: number;
+  height?: number;
 }
 
 interface DropZoneProps {
@@ -47,7 +49,35 @@ function DropZone({ draft, setDraft, dragOver, setDragOver }: DropZoneProps) {
       return;
     }
     const url = URL.createObjectURL(f);
-    setDraft((d) => ({ ...d, file: { name: f.name, size: f.size, url }, actualFile: f }));
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      
+      ctx.drawImage(img, 0, 0);
+      
+      // Convert to WebP
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        
+        // Replace old extension with .webp
+        const newName = f.name.replace(/\.[^/.]+$/, "") + ".webp";
+        const webpFile = new File([blob], newName, { type: 'image/webp' });
+        const webpUrl = URL.createObjectURL(webpFile);
+
+        setDraft((d) => ({
+          ...d,
+          file: { name: webpFile.name, size: webpFile.size, url: webpUrl },
+          actualFile: webpFile,
+          width: img.width,
+          height: img.height
+        }));
+      }, 'image/webp', 0.85); // 85% quality to save space while retaining good detail
+    };
+    img.src = url;
   };
 
   const onDrop = (e: React.DragEvent<HTMLDivElement>) => {
@@ -71,7 +101,7 @@ function DropZone({ draft, setDraft, dragOver, setDragOver }: DropZoneProps) {
   if (draft.file) {
     return (
       <div className="relative">
-        <div className="aspect-[4/3] overflow-hidden bg-tile">
+        <div className="aspect-square overflow-hidden bg-tile">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={draft.file.url} alt="" className="w-full h-full object-cover" />
         </div>
@@ -99,7 +129,7 @@ function DropZone({ draft, setDraft, dragOver, setDragOver }: DropZoneProps) {
       onDragLeave={() => setDragOver(false)}
       onDrop={onDrop}
       onClick={triggerPick}
-      className="aspect-[4/3] grid place-items-center cursor-pointer text-center p-10 transition-colors duration-150"
+      className="aspect-square grid place-items-center cursor-pointer text-center p-10 transition-colors duration-150"
       style={{
         border: `2px dashed ${dragOver ? 'var(--fg)' : 'var(--rule)'}`, // runtime: dragOver state
         background: dragOver ? 'var(--cream)' : 'transparent', // runtime: dragOver state
@@ -208,27 +238,12 @@ export default function UploadPage() {
 
     const supabase = getSupabaseBrowserClient();
 
-    // 1. Convert JPEG/PNG → WebP (client-side, preserves dimensions)
-    let webpFile: File;
-    let imgWidth = 4;
-    let imgHeight = 3;
-    try {
-      const result = await convertToWebP(draft.actualFile, { quality: 0.85 });
-      webpFile = result.file;
-      imgWidth = result.width;
-      imgHeight = result.height;
-    } catch (err) {
-      alert('Image conversion failed: ' + (err instanceof Error ? err.message : 'unknown'));
-      setIsUploading(false);
-      return;
-    }
-
-    // 2. Upload WebP to Storage
+    // draft.actualFile is already converted to WebP in handleFile()
     const fileName = `${authUser.id}/${Date.now()}.webp`;
 
     const { error: uploadError } = await supabase.storage
       .from('photos')
-      .upload(fileName, webpFile, { contentType: 'image/webp' });
+      .upload(fileName, draft.actualFile, { contentType: 'image/webp' });
 
     if (uploadError) {
       alert('Upload failed: ' + uploadError.message);
@@ -236,7 +251,6 @@ export default function UploadPage() {
       return;
     }
 
-    // 3. Insert record to public.photos
     const { data: publicUrlData } = supabase.storage.from('photos').getPublicUrl(fileName);
 
     const slug = `${draft.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now()}`;
@@ -251,8 +265,8 @@ export default function UploadPage() {
       camera: draft.camera,
       lens: draft.lens,
       storage_url: publicUrlData.publicUrl,
-      width: imgWidth,
-      height: imgHeight,
+      width: draft.width || 4,
+      height: draft.height || 3,
       likes_count: 0,
       favorites_count: 0
     });
