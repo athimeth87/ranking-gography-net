@@ -39,7 +39,7 @@ export function CookieConsent() {
           <div className="flex-1">
             <h3 className="font-semibold text-neutral-900 mb-1.5 text-[15px]">We value your privacy</h3>
             <p className="text-sm text-neutral-500 leading-relaxed mb-5">
-              We use cookies to enhance your browsing experience, serve personalized content, and analyze our traffic. By clicking "Accept All", you consent to our use of cookies.
+              We use cookies to enhance your browsing experience, serve personalized content, and analyze our traffic. By clicking &quot;Accept All&quot;, you consent to our use of cookies.
             </p>
             <div className="flex gap-3">
               <Button 
