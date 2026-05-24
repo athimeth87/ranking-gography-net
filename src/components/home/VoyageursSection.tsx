@@ -68,6 +68,7 @@ export function VoyageursSection({ featuredPhoto }: VoyageursSectionProps) {
   useEffect(() => {
     const fetchContent = async () => {
       const supabase = getSupabaseBrowserClient();
+      if (!supabase) return;
       const { data } = await supabase.from('site_settings').select('value').eq('id', 'voyageurs_section').single();
       if (data?.value) {
         setContent({ ...content, ...data.value });
@@ -83,7 +84,7 @@ export function VoyageursSection({ featuredPhoto }: VoyageursSectionProps) {
           <div className="caps opacity-55 flex items-center gap-2">
             <VoyageurMark size={9} /> The Voyageurs Programme
           </div>
-          <div className="mono text-[11px] opacity-55">EXCLUSIVE · CUSTOMERS ONLY</div>
+          <div className="mono text-[11px] opacity-55">EXCLUSIVE · VOYAGEURS ONLY</div>
         </div>
 
         <div
