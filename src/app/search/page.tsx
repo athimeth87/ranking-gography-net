@@ -38,10 +38,10 @@ function SearchResults() {
           username: p.username,
           name: p.display_name || p.username,
           avatar: p.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + p.username,
-          loc: p.location || 'EARTH',
-          followers: 0,
+          loc: p.location || '',
+          followers: p.followers_count || 0,
           photos: 0
-        })));
+        })) as unknown as Photographer[]);
       }
     };
     fetchTrending();
@@ -78,10 +78,10 @@ function SearchResults() {
             username: p.username,
             name: p.display_name || p.username,
             avatar: p.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + p.username,
-            loc: p.location || 'EARTH',
-            followers: 0,
+            loc: p.location || '',
+            followers: p.followers_count || 0,
             photos: 0
-          })));
+          })) as unknown as Photographer[]);
         } else {
           setPhotographerResults([]);
         }
@@ -98,14 +98,14 @@ function SearchResults() {
             id: p.id,
             src: p.image_url,
             title: p.title,
-            by: p.users?.username || 'unknown',
-            cat: p.category || 'General',
-            pulse: 0,
+            by: p.users?.username || 'Unknown',
+            cat: p.category,
+            pulse: p.likes_count || 0,
             camera: p.camera || 'Unknown',
             lens: p.lens || 'Unknown',
             date: p.uploaded_at,
-            voyageurOnly: p.voyageur_only
-          })));
+            voyageurOnly: p.voyageur_only || false
+          })) as unknown as Photo[]);
         } else {
           setPhotoResults([]);
         }

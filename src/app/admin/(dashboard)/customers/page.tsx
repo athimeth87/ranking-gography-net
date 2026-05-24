@@ -70,11 +70,13 @@ export default function CustomerWhitelistPage() {
         const text = event.target?.result as string;
         const rows = text.split('\n').map(row => row.trim()).filter(row => row.length > 0);
         
-        const startIndex = rows[0].toLowerCase().includes('email') ? 1 : 0;
+        const startIndex = rows[0]?.toLowerCase().includes('email') ? 1 : 0;
         const inserts = [];
         
         for (let i = startIndex; i < rows.length; i++) {
-          const cols = rows[i].split(',').map(c => c.trim().replace(/^"|"$/g, ''));
+          const row = rows[i];
+          if (!row) continue;
+          const cols = row.split(',').map(c => c.trim().replace(/^"|"$/g, ''));
           const email = cols[0];
           const role = cols.length > 1 && cols[1] ? cols[1].toLowerCase() : 'voyageur';
           

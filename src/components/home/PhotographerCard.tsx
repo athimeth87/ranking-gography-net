@@ -20,7 +20,7 @@ export function PhotographerCard({
   
   // Prioritize uploaded cover image, then fallback to first photo, then default
   const theirPhotos = photos.filter((p) => p.by === photographer.username);
-  const coverImg = photographer.cover || (theirPhotos.length > 0 ? theirPhotos[0].src : 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop');
+  const coverImg = photographer.cover || (theirPhotos.length > 0 ? theirPhotos[0]!.src : 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop');
 
   const lastTrip = photographer.customerTrips?.[0];
 
