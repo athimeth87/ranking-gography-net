@@ -108,14 +108,6 @@ export default function PhotographerProfilePage({ params }: { params: { username
     fetchProfile();
   }, [params.username]);
 
-  if (isLoading) return <div className="page-fade py-32 text-center text-neutral-500 font-mono text-xs uppercase tracking-widest">Loading Profile...</div>;
-  if (!photographer) return notFound();
-
-  const avgPulse = myPhotos.length
-    ? (myPhotos.reduce((s: number, p: Photo) => s + p.pulse, 0) / myPhotos.length).toFixed(0)
-    : '—';
-  const editorPickCount = myPhotos.filter((p: Photo) => p.picks.includes('editor')).length;
-
   const follow = useFollowState(photographer?.id ?? null);
 
   const onFollowClick = async () => {
@@ -124,6 +116,14 @@ export default function PhotographerProfilePage({ params }: { params: { username
       router.push(`/login?next=${encodeURIComponent(pathname ?? '/')}`);
     }
   };
+
+  if (isLoading) return <div className="page-fade py-32 text-center text-neutral-500 font-mono text-xs uppercase tracking-widest">Loading Profile...</div>;
+  if (!photographer) return notFound();
+
+  const avgPulse = myPhotos.length
+    ? (myPhotos.reduce((s: number, p: Photo) => s + p.pulse, 0) / myPhotos.length).toFixed(0)
+    : '—';
+  const editorPickCount = myPhotos.filter((p: Photo) => p.picks.includes('editor')).length;
 
   const eyebrowParts = [
     photographer.isAmbassador ? 'Ambassador' : null,
