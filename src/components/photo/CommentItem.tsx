@@ -6,6 +6,8 @@ import { useApp } from '@/providers/AppProvider';
 import { deleteComment, updateComment, createComment, type CommentRow } from '@/lib/data/comments-db';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 
+const REPLIES_INITIAL = 2;
+
 export interface CommentItemProps {
   comment: CommentRow;
   replies?: CommentRow[];
@@ -25,6 +27,7 @@ export function CommentItem({ comment, replies = [], photoId, onMutated }: Comme
   const [replyBody, setReplyBody] = useState('');
   const [busy, setBusy] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [repliesExpanded, setRepliesExpanded] = useState(false);
 
   const redirectIfNeeded = () => {
     router.push(`/login?next=${encodeURIComponent(pathname ?? '/')}`);
@@ -133,13 +136,26 @@ export function CommentItem({ comment, replies = [], photoId, onMutated }: Comme
           </div>
         )}
 
-        {replies.length > 0 && (
-          <div className="mt-6 pl-8 flex flex-col gap-6 border-l border-rule">
-            {replies.map((r) => (
-              <CommentItem key={r.id} comment={r} photoId={photoId} onMutated={onMutated} />
-            ))}
-          </div>
-        )}
+        {replies.length > 0 && (() => {
+          const visibleReplies = repliesExpanded ? replies : replies.slice(0, REPLIES_INITIAL);
+          const hiddenReplyCount = Math.max(0, replies.length - visibleReplies.length);
+          return (
+            <div className="mt-6 pl-8 flex flex-col gap-6 border-l border-rule">
+              {visibleReplies.map((r) => (
+                <CommentItem key={r.id} comment={r} photoId={photoId} onMutated={onMutated} />
+              ))}
+              {hiddenReplyCount > 0 && (
+                <button
+                  type="button"
+                  className="self-start caps text-[11px] tracking-[0.12em] opacity-65 hover:opacity-100 border-b border-rule pb-[2px]"
+                  onClick={() => setRepliesExpanded(true)}
+                >
+                  Read more ({hiddenReplyCount})
+                </button>
+              )}
+            </div>
+          );
+        })()}
       </div>
 
       <ConfirmDialog
