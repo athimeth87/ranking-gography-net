@@ -64,3 +64,4 @@ export function getVoyageurUsernames(): Set<string> {
 export * from './likes';
 export * from './comments-db';
 export * from './notifications';
+export * from './follows';

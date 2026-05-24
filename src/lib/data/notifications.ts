@@ -4,6 +4,7 @@ export type NotificationType =
   | 'like_received'
   | 'comment_received'
   | 'comment_reply'
+  | 'follow_received'
   | 'editor_pick'
   | 'ambassador_pick'
   | 'season_winner'
@@ -32,6 +33,7 @@ const FALLBACK: Partial<Record<NotificationType, string>> = {
   like_received: 'Someone liked your photo',
   comment_received: 'Someone commented on your photo',
   comment_reply: 'Someone replied to your comment',
+  follow_received: 'Someone started following you',
 };
 
 export function formatNotificationBody(n: NotificationRow): string {

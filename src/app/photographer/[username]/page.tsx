@@ -1,5 +1,5 @@
 'use client';
-import { notFound } from 'next/navigation';
+import { notFound, usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import type { Photo, Photographer } from '@/lib/types';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
@@ -8,6 +8,7 @@ import { Footer } from '@/components/layout/Footer';
 import { VoyageurMark, CrownIcon } from '@/components/icons';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { PageCover } from '@/components/layout/PageCover';
+import { useFollowState } from '@/hooks/useFollowState';
 
 // ===== Photographer profile — /photographer/[username] =====
 // Cover-less typography-first profile; tabs: Photos / Galleries / Favorites / About
@@ -45,6 +46,8 @@ function ProfileEmpty({ msg }: ProfileEmptyProps) {
 // ---------------------------------------------------------------------------
 
 export default function PhotographerProfilePage({ params }: { params: { username: string } }) {
+  const router = useRouter();
+  const pathname = usePathname();
   const [photographer, setPhotographer] = useState<any>(null);
   const [myPhotos, setMyPhotos] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -66,6 +69,7 @@ export default function PhotographerProfilePage({ params }: { params: { username
       }
       
       setPhotographer({
+        id: userData.id,
         username: userData.username,
         name: userData.display_name || userData.username,
         bio: userData.bio || 'No bio yet.',
@@ -74,7 +78,8 @@ export default function PhotographerProfilePage({ params }: { params: { username
         cover: userData.cover_url || 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=2938&auto=format&fit=crop',
         isCustomer: userData.is_customer,
         isAmbassador: userData.is_ambassador,
-        followers: 0,
+        followers: userData.followers_count ?? 0,
+        following: userData.following_count ?? 0,
         joined: new Date(userData.created_at || Date.now()).getFullYear().toString(),
         cameras: ['Digital Camera'],
       });
@@ -111,6 +116,15 @@ export default function PhotographerProfilePage({ params }: { params: { username
     : '—';
   const editorPickCount = myPhotos.filter((p: Photo) => p.picks.includes('editor')).length;
 
+  const follow = useFollowState(photographer?.id ?? null);
+
+  const onFollowClick = async () => {
+    const res = await follow.toggle();
+    if (res.kind === 'unauth') {
+      router.push(`/login?next=${encodeURIComponent(pathname ?? '/')}`);
+    }
+  };
+
   const eyebrowParts = [
     photographer.isAmbassador ? 'Ambassador' : null,
     photographer.isCustomer ? 'Voyageur' : 'Photographer',
@@ -135,7 +149,7 @@ export default function PhotographerProfilePage({ params }: { params: { username
         eyebrow={eyebrowParts}
         title={photographer.name}
         subtitle={photographer.bio}
-        credit={`${photographer.loc} · ${myPhotos.length} photos · ${photographer.followers.toLocaleString()} followers`}
+        credit={`${photographer.loc} · ${myPhotos.length} photos · ${follow.followersCount.toLocaleString()} followers`}
         height="50vh"
         minHeight={380}
         maxHeight={560}
@@ -160,7 +174,17 @@ export default function PhotographerProfilePage({ params }: { params: { username
             </div>
             <div className="flex gap-[10px]">
               <button className="btn btn-sm">Message</button>
-              <button className="btn btn-sm btn-solid">Follow</button>
+              {follow.isSelf ? (
+                <button className="btn btn-sm" disabled>You</button>
+              ) : (
+                <button
+                  className={`btn btn-sm ${follow.following ? '' : 'btn-solid'}`}
+                  onClick={onFollowClick}
+                  disabled={follow.loading}
+                >
+                  {follow.following ? 'Following' : 'Follow'}
+                </button>
+              )}
             </div>
           </div>
 
@@ -201,9 +225,9 @@ export default function PhotographerProfilePage({ params }: { params: { username
         <div className="wrap">
           {/* Stat strip */}
           <div className="grid grid-cols-3 md:grid-cols-5 gap-6 md:gap-8 py-6 md:py-8 border-b border-rule mono">
-            <ProfileStat label="Photos" val={photographer.photos} />
-            <ProfileStat label="Followers" val={photographer.followers.toLocaleString()} />
-            <ProfileStat label="Following" val="142" />
+            <ProfileStat label="Photos" val={myPhotos.length} />
+            <ProfileStat label="Followers" val={follow.followersCount.toLocaleString()} />
+            <ProfileStat label="Following" val={(photographer.following ?? 0).toLocaleString()} />
             <ProfileStat label="Pulse avg" val={avgPulse} />
             <ProfileStat label="Editor picks" val={editorPickCount} />
           </div>
