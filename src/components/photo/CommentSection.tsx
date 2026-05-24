@@ -6,6 +6,8 @@ import { useComments } from '@/hooks/useComments';
 import { createComment, type CommentRow } from '@/lib/data/comments-db';
 import { CommentItem } from './CommentItem';
 
+const PAGE_SIZE = 5;
+
 export interface CommentSectionProps {
   photoId: string;
 }
@@ -18,6 +20,7 @@ export function CommentSection({ photoId }: CommentSectionProps) {
 
   const [body, setBody] = useState('');
   const [busy, setBusy] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   const { roots, repliesByParent } = useMemo(() => {
     const roots: CommentRow[] = [];
@@ -31,8 +34,12 @@ export function CommentSection({ photoId }: CommentSectionProps) {
         repliesByParent.set(c.parent_id, arr);
       }
     }
+    roots.sort((a, b) => b.created_at.localeCompare(a.created_at));
     return { roots, repliesByParent };
   }, [comments]);
+
+  const visibleRoots = roots.slice(0, visibleCount);
+  const hiddenCount = Math.max(0, roots.length - visibleCount);
 
   const onPost = async () => {
     if (!authUser) {
@@ -80,7 +87,7 @@ export function CommentSection({ photoId }: CommentSectionProps) {
         {roots.length === 0 && !loading && (
           <div className="opacity-50 text-[13px]">No comments yet. Be the first.</div>
         )}
-        {roots.map((c) => (
+        {visibleRoots.map((c) => (
           <CommentItem
             key={c.id}
             comment={c}
@@ -90,6 +97,16 @@ export function CommentSection({ photoId }: CommentSectionProps) {
           />
         ))}
       </div>
+
+      {hiddenCount > 0 && (
+        <button
+          type="button"
+          className="mt-8 mx-auto block caps text-[11px] tracking-[0.12em] opacity-65 hover:opacity-100 border-b border-rule pb-[2px]"
+          onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
+        >
+          Read more ({hiddenCount})
+        </button>
+      )}
     </div>
   );
 }
