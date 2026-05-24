@@ -3,7 +3,6 @@ import type { Metadata } from 'next';
 import { Inter, IBM_Plex_Mono, Noto_Sans_Thai, Playfair_Display } from 'next/font/google';
 import { AppProvider } from '@/providers/AppProvider';
 import { Nav } from '@/components/layout/Nav';
-import { TweaksPanel } from '@/components/layout/TweaksPanel';
 import { SideMenu } from '@/components/layout/SideMenu';
 import { GlobalPopup } from '@/components/shared/GlobalPopup';
 import { CookieConsent } from '@/components/shared/CookieConsent';
@@ -29,7 +28,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Nav />
           <main>{children}</main>
           <SideMenu />
-          <TweaksPanel />
           <NotificationsListener />
           <Toaster />
         </AppProvider>
