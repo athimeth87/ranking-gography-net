@@ -18,9 +18,9 @@ export function PhotographerCard({
   const router = useRouter();
   const follow = useFollowState(photographer.id ?? null);
   
-  // Use their first photo as the cover image
+  // Prioritize uploaded cover image, then fallback to first photo, then default
   const theirPhotos = photos.filter((p) => p.by === photographer.username);
-  const coverImg = theirPhotos.length > 0 ? theirPhotos[0].src : photographer.cover || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop';
+  const coverImg = photographer.cover || (theirPhotos.length > 0 ? theirPhotos[0].src : 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop');
 
   const lastTrip = photographer.customerTrips?.[0];
 
