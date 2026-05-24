@@ -5,6 +5,7 @@ import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import type { Photo, Photographer, Category } from '@/lib/types';
 import { getPhotos, getPhoto, getPhotographer, getPhotographers, getVoyageurUsernames } from '@/lib/data';
 import { HeroSection } from '@/components/home/HeroSection';
+import { TrendsNowSection } from '@/components/home/TrendsNowSection';
 import { LeaderboardSection } from '@/components/home/LeaderboardSection';
 import { AlltimeSection } from '@/components/home/AlltimeSection';
 import { FeaturedPhotographersSection } from '@/components/home/FeaturedPhotographersSection';
@@ -120,6 +121,7 @@ export default function LandingPage() {
             by: (getMockPhotographer(p.by)?.name ?? p.by).toUpperCase(),
           }))}
         />
+        <TrendsNowSection photos={mockAllPhotos} />
         <LeaderboardSection allPhotos={mockAllPhotos} voyageurUsernames={mockVoyageurUsernames} />
         
         {dbErrorMsg && (

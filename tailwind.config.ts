@@ -65,7 +65,8 @@ const config: Config = {
         sans: ['var(--font-inter)', 'Helvetica Neue', 'Arial', 'system-ui', 'sans-serif'],
         thai: ['var(--font-noto-thai)', 'var(--font-inter)', 'sans-serif'],
         mono: ['var(--font-plex-mono)', 'ui-monospace', 'Menlo', 'monospace'],
-        heading: ['var(--font-inter)', 'Helvetica Neue', 'Arial', 'system-ui', 'sans-serif'],
+        serif: ['var(--font-playfair)', 'var(--font-noto-thai)', 'Georgia', 'serif'],
+        heading: ['var(--font-playfair)', 'var(--font-noto-thai)', 'Georgia', 'serif'],
       },
       maxWidth: { wrap: '1360px', 'wrap-narrow': '880px' },
       borderRadius: {

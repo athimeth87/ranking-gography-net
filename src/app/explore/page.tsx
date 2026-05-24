@@ -6,7 +6,6 @@ import type { Photo } from '@/lib/types';
 import type { SortKey } from '@/lib/data';
 import { PhotoGrid } from '@/components/photo/PhotoGrid';
 import { Footer } from '@/components/layout/Footer';
-import { PageCover } from '@/components/layout/PageCover';
 
 // ===== Explore page (/explore) =====
 // Masonry grid + filters (sort, time range, picks only)
@@ -109,85 +108,124 @@ export default function ExplorePage() {
 
   return (
     <div className="page-fade">
-      <PageCover
-        photoId="p013"
-        eyebrow="Explore"
-        title="Every photo"
-        subtitle="เลือกชมภาพถ่ายทั้งหมด — กรองตามหมวด เวลา และอันดับ"
-      />
-      {/* Header */}
-      <section className="py-8 md:py-12 lg:py-16">
-        <div className="wrap">
-          <div className="flex flex-wrap justify-between items-baseline gap-4 pb-6 md:pb-8">
-            <div>
-              <div className="caps opacity-55 mb-3 md:mb-[14px]">Explore</div>
-              <h1
-                className="display-hero text-[clamp(32px,8vw,72px)] m-0 tracking-[-.025em]"
-              >
-                Every photo
-              </h1>
-            </div>
-            <div className="mono text-[11px] opacity-55 text-right leading-[1.7]">
-              {photos.length * 7} PHOTOS<br />
-              SORTED BY {sort.toUpperCase()}<br />
-              {timeRange.toUpperCase()}
-            </div>
-          </div>
+      {/* ── Cinematic Hero Header ── */}
+      <section className="relative overflow-hidden bg-black" style={{ height: '42vh', minHeight: 340, maxHeight: 520 }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={photos[0]?.src ?? '/placeholder.jpg'}
+          alt="Explore"
+          className="w-full h-full object-cover opacity-60"
+          loading="eager"
+        />
+        {/* gradient overlay */}
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,.25)_0%,rgba(0,0,0,.1)_30%,rgba(0,0,0,.55)_100%)]" />
 
-          {/* Category tabs */}
-          <div className="flex gap-5 md:gap-7 overflow-x-auto no-scrollbar border-b border-rule pb-0">
+        {/* content overlay */}
+        <div className="absolute inset-0 flex flex-col justify-end">
+          <div className="wrap pb-10 md:pb-14">
+            {/* eyebrow */}
+            <div className="mono text-[10px] tracking-[.28em] uppercase text-white/60 mb-4">
+              Explore · {photos.length * 7} photos
+            </div>
+            {/* title */}
+            <h1 className="th text-white font-light text-[clamp(40px,8vw,88px)] leading-[.92] tracking-[-.035em] m-0">
+              Every photo
+            </h1>
+            <p className="th text-white/70 text-[15px] leading-[1.6] mt-4 mb-0 max-w-[440px]">
+              เลือกชมภาพถ่ายทั้งหมด — กรองตามหมวด เวลา และอันดับ
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Category Tabs + Filter Bar ── */}
+      <section className="sticky top-0 z-30 bg-[var(--bg)] border-b border-[var(--rule)]">
+        <div className="wrap">
+          {/* Category Tabs */}
+          <div className="flex items-center gap-0 overflow-x-auto no-scrollbar">
             {TABS.map((t) => {
               const active = t.id === null;
               return (
                 <button
                   key={t.id ?? 'all'}
                   onClick={() => router.push(t.id ? `/explore/${t.id}` : '/explore')}
-                  className={`py-4 text-[13px] tracking-[.14em] uppercase border-b-2 -mb-px cursor-pointer font-medium ${
-                    active
-                      ? 'border-fg opacity-100'
-                      : 'border-transparent opacity-55'
-                  }`}
+                  className={`
+                    relative py-[18px] px-5 text-[12px] tracking-[.16em] uppercase cursor-pointer font-medium
+                    transition-all duration-200
+                    ${active
+                      ? 'opacity-100'
+                      : 'opacity-40 hover:opacity-70'
+                    }
+                  `}
                 >
                   {t.label}
+                  {/* active indicator */}
+                  {active && (
+                    <span className="absolute bottom-0 left-5 right-5 h-[2px] bg-[var(--fg)]" />
+                  )}
                 </button>
               );
             })}
+
+            {/* right-side metadata */}
+            <div className="ml-auto hidden md:flex items-center gap-6">
+              <div className="mono text-[10px] tracking-[.14em] uppercase opacity-40">
+                Sorted by {sort} · {timeRange}
+              </div>
+            </div>
           </div>
 
-          {/* Filter bar */}
-          <div className="flex flex-wrap justify-between items-center gap-3 py-4 md:py-5 border-b border-rule">
-            <div className="flex flex-wrap gap-5 md:gap-8 items-center">
+          {/* Filter Bar */}
+          <div className="flex flex-wrap items-center gap-3 py-3 border-t border-[var(--rule)]">
+            <div className="flex flex-wrap gap-2 items-center">
+              {/* Sort pill */}
               <FilterDropdown
                 label="Sort"
                 value={sort}
                 options={SORT_OPTIONS}
                 onChange={(v) => setSort(v as SortKey)}
               />
+              {/* divider */}
+              <span className="w-px h-4 bg-[var(--rule)] mx-1 hidden md:block" />
+              {/* Time pill */}
               <FilterDropdown
                 label="Time"
                 value={timeRange}
                 options={TIME_OPTIONS as unknown as { v: string; l: string }[]}
                 onChange={(v) => setTimeRange(v as TimeRange)}
               />
-              {/* opacity is runtime-dynamic: depends on showPicksOnly state */}
+              {/* divider */}
+              <span className="w-px h-4 bg-[var(--rule)] mx-1 hidden md:block" />
+              {/* Picks toggle */}
               <label
-                style={{ opacity: showPicksOnly ? 1 : 0.65 }}
-                className="flex items-center gap-2 cursor-pointer text-[12px] tracking-[.12em] uppercase"
+                className={`
+                  flex items-center gap-2 cursor-pointer text-[11px] tracking-[.14em] uppercase
+                  px-3 py-[6px] border border-[var(--rule)] rounded-none
+                  transition-all duration-150
+                  ${showPicksOnly
+                    ? 'bg-[var(--fg)] text-[var(--bg)] border-[var(--fg)]'
+                    : 'opacity-50 hover:opacity-80'
+                  }
+                `}
               >
                 <input
                   type="checkbox"
                   checked={showPicksOnly}
                   onChange={(e) => setShowPicksOnly(e.target.checked)}
-                  className="accent-fg"
+                  className="sr-only"
                 />
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M2 8.5L6 12.5L14 3.5" />
+                </svg>
                 Picks only
               </label>
             </div>
-            <div className="mono text-[11px] opacity-55 hidden md:block">
-              Press{' '}
-              <span className="border border-rule px-[6px] py-[2px]">J</span>{' '}
-              <span className="border border-rule px-[6px] py-[2px]">K</span>{' '}
-              to navigate
+
+            {/* keyboard hint */}
+            <div className="ml-auto mono text-[10px] opacity-35 hidden md:flex items-center gap-1">
+              <kbd className="border border-[var(--rule)] px-[5px] py-[1px] rounded-sm text-[9px]">J</kbd>
+              <kbd className="border border-[var(--rule)] px-[5px] py-[1px] rounded-sm text-[9px]">K</kbd>
+              <span className="ml-1">navigate</span>
             </div>
           </div>
         </div>

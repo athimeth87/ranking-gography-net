@@ -80,12 +80,12 @@ export function SideMenu() {
       >
         <div className="sidemenu-inner">
 
-          {/* Top chrome — 3 dots (decorative) + close */}
+          {/* Top chrome — brand + close */}
           <div className="sidemenu-chrome">
-            <div className="sidemenu-dots">
-              <span className="dot d1" />
-              <span className="dot d2" />
-              <span className="dot d3" />
+            <div className="logo">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo-white.png" alt="" aria-hidden className="logo-img" />
+              <span>GOGRAPHY</span>
             </div>
             <button
               className="sidemenu-close"

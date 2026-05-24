@@ -17,7 +17,8 @@ const LINKS: { to: string; label: string }[] = [
 export function Nav() {
   const pathname = usePathname();
   const router = useRouter();
-  const { authUser, toggleSideMenu } = useApp();
+  const { authUser, toggleSideMenu, theme, setTheme } = useApp();
+  const isDark = theme === 'dark';
 
   const isActive = (to: string) =>
     pathname === to || (to !== '/' && pathname.startsWith(to));
@@ -58,7 +59,8 @@ export function Nav() {
             ))}
           </div>
           <Link href="/" className="logo">
-            <span className="mark">G</span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo-white.png" alt="" aria-hidden className="logo-img" />
             <span>GOGRAPHY</span>
             <small>Photo Awards</small>
           </Link>
@@ -74,6 +76,14 @@ export function Nav() {
             ))}
             <button className="nav-link" onClick={() => router.push('/search')}>
               Search
+            </button>
+            <button
+              className={`nav-theme-toggle ${isDark ? 'is-dark' : ''}`}
+              onClick={() => setTheme(isDark ? 'light' : 'dark')}
+              aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+              title={isDark ? 'Light mode' : 'Dark mode'}
+            >
+              <span className="nav-theme-toggle-knob" />
             </button>
             {!authUser ? (
               <Link href="/login" className="btn btn-sm ml-2">

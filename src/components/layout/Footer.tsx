@@ -7,8 +7,8 @@ export function Footer() {
         <div className="fgrid">
           <div>
             <div className="logo mb-[18px]">
-              <span className="mark">G</span>
-              <span>GOGRAPHY</span>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo-white.png" alt="Gography" className="logo-img" />
               <small>Photo Awards</small>
             </div>
             <p className="th text-[13px] leading-[1.7] max-w-[360px] text-fg-soft">

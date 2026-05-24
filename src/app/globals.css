@@ -21,6 +21,7 @@
   --sans: var(--font-inter), 'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif;
   --thai: var(--font-noto-thai), var(--font-inter), sans-serif;
   --mono: var(--font-plex-mono), ui-monospace, Menlo, monospace;
+  --serif: var(--font-playfair), var(--font-noto-thai), Georgia, serif;
 }
 
 [data-theme="dark"] {
@@ -93,13 +94,22 @@ img { display: block; max-width: 100%; }
   .nav a.nav-link.active, .nav button.nav-link.active { opacity: 1; border-bottom: 1px solid var(--fg); padding-bottom: 4px; }
 
   .logo {
-    font-weight: 600; font-size: 17px; letter-spacing: .02em;
+    font-family: var(--serif);
+    font-weight: 700; font-size: 19px; letter-spacing: 0;
     display: flex; align-items: center; gap: 10px;
   }
   .logo .mark {
     width: 24px; height: 24px; border-radius: 50%;
     border: 1.5px solid var(--fg);
     display: grid; place-items: center; font-size: 10px; font-weight: 700; letter-spacing: 0;
+  }
+  .logo .logo-img {
+    width: 28px; height: 28px;
+    object-fit: contain;
+    filter: brightness(0);
+  }
+  [data-theme="dark"] .logo .logo-img {
+    filter: none;
   }
   .logo small { font-weight: 400; opacity: .55; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; }
 
@@ -188,6 +198,79 @@ img { display: block; max-width: 100%; }
 
   /* Page transitions */
   .page-fade { animation: pgfade .35s ease; }
+
+  /* Login — full-bleed dark with soft 3D orb behind content */
+  .login-page {
+    --bg: #000;
+    --fg: #ffffff;
+    --fg-soft: rgba(255,255,255,.62);
+    --fg-faint: rgba(255,255,255,.32);
+    --rule: rgba(255,255,255,.14);
+    --rule-strong: rgba(255,255,255,.85);
+    --cream: #0d0c0a;
+    --tile: #131210;
+
+    position: relative;
+    min-height: calc(100vh - 64px);
+    background: var(--bg);
+    color: var(--fg);
+    display: grid;
+    place-items: center;
+    padding: 64px 24px;
+    overflow: hidden;
+  }
+  .login-orb {
+    position: absolute;
+    top: 10%; left: 50%;
+    transform: translate(-50%, 0);
+    width: min(1300px, calc((100vh - 64px) * 1.3));
+    height: min(1300px, calc((100vh - 64px) * 1.3));
+    border-radius: 50%;
+    background:
+      radial-gradient(
+        circle at center,
+        rgba(255,255,255,.09) 0%,
+        rgba(255,255,255,.04) 35%,
+        rgba(255,255,255,.012) 62%,
+        rgba(0,0,0,.35) 88%,
+        rgba(0,0,0,0) 100%
+      );
+    box-shadow:
+      inset 0 0 60px rgba(255,255,255,.05),
+      inset 0 0 120px rgba(0,0,0,.35);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .login-content {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 360px;
+    padding: 0 16px;
+  }
+  .login-btn {
+    width: 100%;
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    padding: 16px 22px;
+    font-size: 11.5px; letter-spacing: .18em; text-transform: uppercase; font-weight: 500;
+    color: rgba(255,255,255,.55);
+    background: rgba(255,255,255,.035);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background .25s ease, color .25s ease, border-color .25s ease;
+  }
+  .login-btn:hover {
+    background: rgba(255,255,255,.07);
+    color: rgba(255,255,255,.88);
+    border-color: rgba(255,255,255,.18);
+  }
+  .login-btn:disabled { opacity: .55; cursor: default; }
+  .login-btn svg { opacity: .85; }
+  @media (max-width: 480px) {
+    .login-page { padding: 40px 16px; }
+    .login-orb { width: min(620px, 130vw); height: min(620px, 130vw); }
+  }
 
   /* Form */
   .input {
@@ -382,12 +465,6 @@ img { display: block; max-width: 100%; }
     display: flex; justify-content: space-between; align-items: center;
     margin-bottom: 28px;
   }
-  .sidemenu-dots { display: flex; gap: 8px; }
-  .sidemenu-dots .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
-  .sidemenu-dots .d1 { background: #ff5f57; }
-  .sidemenu-dots .d2 { background: #febc2e; }
-  .sidemenu-dots .d3 { background: #28c840; }
-  [data-theme="dark"] .sidemenu-dots .dot { opacity: .85; }
   .sidemenu-close {
     width: 28px; height: 28px;
     display: grid; place-items: center;
@@ -514,6 +591,31 @@ img { display: block; max-width: 100%; }
     font-size: 9.5px; letter-spacing: .22em; opacity: .4;
   }
 
+  /* Theme toggle pill in Nav */
+  .nav-theme-toggle {
+    position: relative;
+    width: 52px; height: 26px;
+    border-radius: 999px;
+    border: 1px solid var(--rule);
+    background: transparent;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background .2s ease, border-color .2s ease;
+  }
+  .nav-theme-toggle:hover { border-color: var(--fg); }
+  .nav-theme-toggle-knob {
+    position: absolute;
+    top: 50%; left: 3px;
+    transform: translateY(-50%);
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--fg);
+    transition: transform .25s cubic-bezier(.2,.7,.2,1);
+  }
+  .nav-theme-toggle.is-dark .nav-theme-toggle-knob {
+    transform: translateY(-50%) translateX(24px);
+  }
+
   /* Toggle button in Nav (hamburger) */
   .nav-toggle {
     width: 36px; height: 36px;
@@ -625,6 +727,9 @@ img { display: block; max-width: 100%; }
   html {
     @apply font-sans;
   }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--serif);
+  }
 }
 /* ============================================================
    MOBILE — class-based responsive overrides
@@ -642,8 +747,9 @@ img { display: block; max-width: 100%; }
   .nav-right .nav-link { display: none; }
   .nav-right { gap: 10px; }
   .logo small { display: none; }
-  .logo { font-size: 17px; gap: 8px; letter-spacing: .03em; }
+  .logo { font-size: 17px; gap: 8px; letter-spacing: 0; }
   .logo .mark { width: 22px; height: 22px; }
+  .logo .logo-img { width: 24px; height: 24px; }
   .nav-theme-toggle { width: 46px; height: 24px; }
   .nav-theme-toggle-knob { width: 18px; height: 18px; }
   .nav-theme-toggle.is-dark .nav-theme-toggle-knob {
@@ -655,6 +761,7 @@ img { display: block; max-width: 100%; }
   .nav-theme-toggle { display: none; }   /* available in SideMenu footer */
   .logo { font-size: 15px; }
   .logo .mark { width: 20px; height: 20px; }
+  .logo .logo-img { width: 22px; height: 22px; }
 }
 
 /* Hide scrollbar utility — for horizontally scrolling tabs / chip rows */
