@@ -279,11 +279,17 @@ export function BottomNav() {
 
   return (
     <nav
-      className="md:hidden fixed inset-x-3 z-40"
-      style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)' }}
+      className="md:hidden fixed inset-x-0 bottom-1 mx-4 z-40 rounded-md"
+      style={{
+        background: 'color-mix(in oklab, var(--bg) 32%, transparent)',
+        backdropFilter: 'saturate(180%) blur(32px)',
+        WebkitBackdropFilter: 'saturate(180%) blur(32px)',
+        borderColor: 'color-mix(in oklab, var(--fg) 10%, transparent)',
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+      }}
       aria-label="Primary navigation"
     >
-      <div className="grid grid-cols-5 h-[56px] bg-bg border border-rule">
+      <div className="grid grid-cols-5 h-[56px]">
         {slots.map((s) => {
           const isUpload = s.id === 'upload';
           const highlight = isUpload || s.active;
@@ -300,7 +306,7 @@ export function BottomNav() {
               </span>
               <span
                 className={`caps ${highlight ? 'font-semibold text-fg' : 'text-fg-soft'}`}
-                style={{ fontSize: 9 }}
+                style={{ fontSize: 8 }}
               >
                 {s.label}
               </span>

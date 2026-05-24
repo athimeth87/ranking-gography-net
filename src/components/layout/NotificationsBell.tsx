@@ -34,7 +34,7 @@ export function NotificationsBell() {
   return (
     <div ref={ref} className="relative">
       <button
-        className="nav-link relative"
+        className="nav-link nav-bell relative"
         onClick={() => setOpen((v) => !v)}
         aria-label="Notifications"
         aria-haspopup="menu"
