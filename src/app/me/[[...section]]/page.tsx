@@ -53,6 +53,53 @@ export default function Page({ params }: PageProps) {
     }
   }, []);
 
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !authUser?.id) {
+      e.target.value = '';
+      return;
+    }
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file');
+      e.target.value = '';
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size exceeds 5MB');
+      e.target.value = '';
+      return;
+    }
+
+    setUploadingCover(true);
+    try {
+      const supabase = getSupabaseBrowserClient();
+      const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const fileName = `covers/${authUser.id}-${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('photos')
+        .upload(fileName, file, { upsert: true });
+      if (uploadError) throw uploadError;
+
+      const { data: pub } = supabase.storage.from('photos').getPublicUrl(fileName);
+      const publicUrl = pub.publicUrl;
+
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({ cover_url: publicUrl })
+        .eq('id', authUser.id);
+      if (updateError) throw updateError;
+
+      setProfile((p: any) => ({ ...p, cover_url: publicUrl }));
+    } catch (err: any) {
+      alert('Upload failed: ' + err.message);
+    } finally {
+      setUploadingCover(false);
+      e.target.value = '';
+    }
+  };
+
   useEffect(() => {
     const onPopState = () => {
       const path = window.location.pathname;
@@ -259,9 +306,10 @@ export default function Page({ params }: PageProps) {
 
   return (
     <div className="page-fade">
-      <div className="hidden md:block">
+      <div className="hidden md:block relative group">
         <PageCover
-          photoId="p013"
+          photoId={profile?.cover_url ? undefined : "p013"}
+          src={profile?.cover_url || undefined}
           eyebrow="Your account"
           title="Your dashboard"
           subtitle="ภาพของคุณ คะแนน favorites ทริปกับ GOGRAPHY — รวมที่เดียว"
@@ -269,6 +317,10 @@ export default function Page({ params }: PageProps) {
           minHeight={300}
           maxHeight={420}
         />
+        <label className="absolute top-6 right-10 bg-black/50 text-white px-4 py-2 rounded text-[11px] tracking-[.1em] uppercase cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity z-20 hover:bg-black/80">
+          {uploadingCover ? 'Uploading...' : 'Change Cover'}
+          <input type="file" accept="image/*" className="hidden" disabled={uploadingCover} onChange={handleCoverUpload} />
+        </label>
       </div>
       <div className="md:hidden">
         {loading ? (
