@@ -8,7 +8,6 @@ import { MeSidebarSkeleton, MeContentSkeleton } from '@/components/account/MeSke
 import { MeDashboard } from '@/components/account/MeDashboard';
 import { MePhotos } from '@/components/account/MePhotos';
 import { MeFavorites } from '@/components/account/MeFavorites';
-import { MeGalleries, type Gallery } from '@/components/account/MeGalleries';
 import { MeStats } from '@/components/account/MeStats';
 import { MeSettings } from '@/components/account/MeSettings';
 import { MobileMe } from '@/components/mobile/MobileMe';
@@ -255,7 +254,6 @@ export default function Page({ params }: PageProps) {
     { id: 'dashboard', label: 'Dashboard', path: '/me' },
     { id: 'photos', label: 'My Photos', path: '/me/photos', count: myPhotos.length },
     { id: 'favorites', label: 'Favorites', path: '/me/favorites', count: favs.length },
-    { id: 'galleries', label: 'Galleries', path: '/me/galleries', count: galleries.length },
     { id: 'stats', label: 'Stats', path: '/me/stats' },
     { id: 'settings', label: 'Settings', path: '/me/settings' },
   ];
@@ -342,14 +340,6 @@ export default function Page({ params }: PageProps) {
                   favs={favs}
                   isPublic={favIsPublic}
                   onToggleVisibility={handleToggleFavVisibility}
-                />
-              )}
-              {section === 'galleries' && (
-                <MeGalleries
-                  persona={persona}
-                  myPhotos={myPhotos}
-                  galleries={galleries}
-                  onGalleryCreated={fetchGalleries}
                 />
               )}
               {section === 'stats' && <MeStats persona={persona} myPhotos={myPhotos} />}
