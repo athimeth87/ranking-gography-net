@@ -3,6 +3,7 @@ import { useRouter } from 'next/navigation';
 import type { Photo } from '@/lib/types';
 import { getPhotographer } from '@/lib/data';
 import { PickBadge } from '@/components/icons';
+import { CardLikeButton } from './CardLikeButton';
 
 interface PhotoCardProps {
   photo: Photo;
@@ -11,6 +12,7 @@ interface PhotoCardProps {
   leaderTopScore?: number | null;
   uniform?: boolean;
   pulseLabel?: string;
+  showLike?: boolean;
 }
 
 export function PhotoCard({
@@ -20,6 +22,7 @@ export function PhotoCard({
   leaderTopScore = null,
   uniform = false,
   pulseLabel = 'Pulse',
+  showLike = false,
 }: PhotoCardProps) {
   const router = useRouter();
   const photographer = getPhotographer(photo.by);
@@ -53,6 +56,7 @@ export function PhotoCard({
             </div>
           </div>
         </div>
+        {showLike && <CardLikeButton photoId={photo.id} />}
       </div>
       <div className="pmeta">
         <div className="flex items-baseline gap-3 flex-1 min-w-0">

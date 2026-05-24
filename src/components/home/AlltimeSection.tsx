@@ -27,7 +27,7 @@ export function AlltimeSection({ allPhotos, voyageurUsernames }: AlltimeSectionP
     .slice()
     .map((p) => ({ ...p, _allTimeScore: computeAlltime(p) }))
     .sort((a, b) => b._allTimeScore - a._allTimeScore)
-    .map((p, i) => ({ ...p, rank: i + 1, pulse: p._allTimeScore / 10 }))
+    .map((p, i) => ({ ...p, rank: i + 1, pulse: p._allTimeScore }))
     .slice(0, 8);
 
   return (
@@ -52,7 +52,7 @@ export function AlltimeSection({ allPhotos, voyageurUsernames }: AlltimeSectionP
         </div>
         <CategoryChips value={alltimeCat} onChange={setAlltimeCat} showVoyageurs />
         <div className="mt-8">
-          <PhotoGrid photos={alltimeBoard} cols={4} showRank showRankDelta uniform pulseLabel="Total" />
+          <PhotoGrid photos={alltimeBoard} cols={4} showRank showRankDelta uniform pulseLabel="Pulse" showLike />
         </div>
       </div>
     </section>

@@ -110,6 +110,33 @@ export default function LandingPage() {
     fetchData();
   }, []);
 
+  // Realtime: any photo row UPDATE (likes/comments/favorites counter)
+  // patches realAllPhotos so the All-time grid re-ranks live.
+  useEffect(() => {
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) return;
+    const channel = supabase
+      .channel('photos-home-listing')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'photos' },
+        (payload) => {
+          const next = payload.new as { id: string; likes_count?: number; comments_count?: number; favorites_count?: number };
+          setRealAllPhotos((curr) =>
+            curr.map((p) => {
+              if (p.id !== next.id) return p;
+              const likes = typeof next.likes_count === 'number' ? next.likes_count : p.likes;
+              const favorites = typeof next.favorites_count === 'number' ? next.favorites_count : p.favorites;
+              const comments = typeof next.comments_count === 'number' ? next.comments_count : p.comments;
+              return { ...p, likes, favorites, comments, pulse: likes + favorites * 2 };
+            }),
+          );
+        },
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, []);
+
   const getMockPhoto = (id: string) => mockAllPhotos.find(p => p.id === id);
   const getMockPhotographer = (by: string) => mockPhotographers.find(p => p.username === by);
 

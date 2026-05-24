@@ -208,13 +208,6 @@ export function MeSettings({ persona, isVoyageur }: MeSettingsProps) {
         />
       </SettingsBlock>
 
-      {/* Display */}
-      <SettingsBlock title="Display">
-        <div className="p-[14px_16px] bg-cream border border-rule text-[12px] leading-[1.6] th">
-          ตั้งค่า dark mode และ visual direction ได้ผ่าน <strong>Tweaks panel</strong> ที่มุมล่างขวา — ค่าจะ persist อัตโนมัติ
-        </div>
-      </SettingsBlock>
-
       {/* Danger zone */}
       <SettingsBlock title="Danger zone" danger>
         <div className="p-[18px_22px] border border-rule">

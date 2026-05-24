@@ -3,11 +3,12 @@ import type { Metadata } from 'next';
 import { Inter, IBM_Plex_Mono, Noto_Sans_Thai, Playfair_Display } from 'next/font/google';
 import { AppProvider } from '@/providers/AppProvider';
 import { Nav } from '@/components/layout/Nav';
-import { TweaksPanel } from '@/components/layout/TweaksPanel';
 import { SideMenu } from '@/components/layout/SideMenu';
 import { BottomNav } from '@/components/mobile/MobileShared';
 import { GlobalPopup } from '@/components/shared/GlobalPopup';
 import { CookieConsent } from '@/components/shared/CookieConsent';
+import { Toaster } from '@/components/layout/Toaster';
+import { NotificationsListener } from '@/components/layout/NotificationsListener';
 import { cn } from "@/lib/utils";
 
 const inter = Inter({ subsets: ['latin'], weight: ['300', '400', '500', '600', '700'], variable: '--font-inter', display: 'swap' });
@@ -28,8 +29,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Nav />
           <main>{children}</main>
           <SideMenu />
-          <TweaksPanel />
           <BottomNav />
+          <NotificationsListener />
+          <Toaster />
         </AppProvider>
         <GlobalPopup />
         <CookieConsent />

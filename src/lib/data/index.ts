@@ -59,3 +59,8 @@ export function getCommentsFor(photoId: string): Comment[] {
 export function getVoyageurUsernames(): Set<string> {
   return new Set(PHOTOGRAPHERS.filter((p) => p.isCustomer).map((p) => p.username));
 }
+
+// ─── DB-backed modules (real Supabase, used on UUID-id flows) ───────────────
+export * from './likes';
+export * from './comments-db';
+export * from './notifications';

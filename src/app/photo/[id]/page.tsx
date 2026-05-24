@@ -10,6 +10,8 @@ import { Footer } from '@/components/layout/Footer';
 import { PickBadge } from '@/components/icons';
 import { Lightbox } from '@/components/photo/Lightbox';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
+import { LikeButton as DBLikeButton } from '@/components/photo/LikeButton';
+import { CommentSection } from '@/components/photo/CommentSection';
 
 // ===== Single photo detail page — /photo/[id] =====
 // Large image + sidebar (photographer, EXIF, pulse/stats, comments), like/favorite toggles, lightbox.
@@ -58,31 +60,6 @@ function BreakdownStat({ label, val, mult }: BreakdownStatProps) {
         {mult && <span className="mono text-[11px] opacity-55">{mult}</span>}
       </div>
     </div>
-  );
-}
-
-interface LikeButtonProps {
-  photoId: string;
-  baseLikes: number;
-}
-
-function LikeButton({ photoId: _photoId, baseLikes }: LikeButtonProps) {
-  const [liked, setLiked] = useState(false);
-  // Runtime-dynamic: count changes based on liked state
-  const count = liked ? baseLikes + 1 : baseLikes;
-
-  return (
-    <button
-      className={`heart${liked ? ' on' : ''}`}
-      onClick={() => setLiked((v) => !v)}
-      aria-label={liked ? 'Unlike' : 'Like'}
-      aria-pressed={liked}
-    >
-      <svg viewBox="0 0 24 24" fill={liked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" width="13" height="13">
-        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-      </svg>
-      <span>{count.toLocaleString()}</span>
-    </button>
   );
 }
 
@@ -210,6 +187,40 @@ export default function PhotoDetailPage({ params }: { params: { id: string } }) 
     fetchPhoto();
   }, [params.id, isUUID]);
 
+  // Realtime counts: subscribe to the photo row so likes / comments /
+  // favorites / pulse update without reloading.
+  useEffect(() => {
+    if (!isUUID) return;
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) return;
+
+    const channel = supabase
+      .channel(`photo-detail-${params.id}`)
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'photos', filter: `id=eq.${params.id}` },
+        (payload) => {
+          const next = payload.new as { likes_count?: number; comments_count?: number; favorites_count?: number };
+          setPhoto((curr) => {
+            if (!curr) return curr;
+            const likes = typeof next.likes_count === 'number' ? next.likes_count : curr.likes;
+            const comments = typeof next.comments_count === 'number' ? next.comments_count : curr.comments;
+            const favorites = typeof next.favorites_count === 'number' ? next.favorites_count : curr.favorites;
+            return {
+              ...curr,
+              likes,
+              comments,
+              favorites,
+              pulse: likes + favorites * 2,
+            };
+          });
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [isUUID, params.id]);
+
   // Favorite toggle (local mock state)
   const [favorited, setFavorited] = useState(false);
   const favoriteCount = photo ? (favorited ? photo.favorites + 1 : photo.favorites) : 0;
@@ -298,7 +309,16 @@ export default function PhotoDetailPage({ params }: { params: { id: string } }) 
 
               {/* Engage strip */}
               <div className="flex gap-3 mt-8 items-center">
-                <LikeButton photoId={photo.id} baseLikes={photo.likes} />
+                {isUUID ? (
+                  <DBLikeButton photoId={photo.id} />
+                ) : (
+                  <span className="heart" aria-label="Likes (read-only seed)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="13" height="13">
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                    </svg>
+                    <span>{photo.likes.toLocaleString()}</span>
+                  </span>
+                )}
 
                 {/* Favorite button — runtime-dynamic class based on favorited state */}
                 <button
@@ -345,49 +365,37 @@ export default function PhotoDetailPage({ params }: { params: { id: string } }) 
               </div>
 
               {/* Comments */}
-              <div className="mt-14">
-                <SectionHeader title="Comments" eyebrow={`${comments.length} comments`} />
-                <div className="flex gap-3 mb-8">
-                  <input
-                    type="text"
-                    className="input flex-1"
-                    placeholder="พิมพ์Commentsของคุณ — ใช้ @ เพื่อ mention"
-                  />
-                  <button className="btn">Post</button>
-                </div>
-                <div className="flex flex-col gap-6">
-                  {comments.map((c: Comment, i: number) => {
-                    const cuser: Photographer | undefined = getPhotographer(c.user);
-                    return (
-                      <div key={i} className="flex gap-4 pb-6 border-b border-rule">
-                        <div className="w-9 h-9 rounded-full bg-tile overflow-hidden shrink-0">
-                          {cuser && (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={cuser.avatar}
-                              alt=""
-                              className="w-full h-full object-cover"
-                              loading="lazy"
-                            />
-                          )}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex justify-between items-baseline">
-                            <Link
-                              href={`/photographer/${c.user}`}
-                              className="text-[13px] font-medium tracking-[-0.005em]"
-                            >
-                              {cuser?.name ?? c.user}
-                            </Link>
-                            <span className="mono text-[11px] opacity-50">{c.at}</span>
+              {isUUID ? (
+                <CommentSection photoId={photo.id} />
+              ) : (
+                <div className="mt-14">
+                  <SectionHeader title="Comments" eyebrow={`${comments.length} comments`} />
+                  <div className="flex flex-col gap-6">
+                    {comments.map((c: Comment, i: number) => {
+                      const cuser: Photographer | undefined = getPhotographer(c.user);
+                      return (
+                        <div key={i} className="flex gap-4 pb-6 border-b border-rule">
+                          <div className="w-9 h-9 rounded-full bg-tile overflow-hidden shrink-0">
+                            {cuser && (
+                              /* eslint-disable-next-line @next/next/no-img-element */
+                              <img src={cuser.avatar} alt="" className="w-full h-full object-cover" loading="lazy" />
+                            )}
                           </div>
-                          <p className="th mt-2 text-[14px] leading-[1.6]">{c.text}</p>
+                          <div className="flex-1">
+                            <div className="flex justify-between items-baseline">
+                              <Link href={`/photographer/${c.user}`} className="text-[13px] font-medium tracking-[-0.005em]">
+                                {cuser?.name ?? c.user}
+                              </Link>
+                              <span className="mono text-[11px] opacity-50">{c.at}</span>
+                            </div>
+                            <p className="th mt-2 text-[14px] leading-[1.6]">{c.text}</p>
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* ---- Sidebar ---- */}

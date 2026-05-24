@@ -34,8 +34,14 @@ export function MobilePhoto({ id }: { id: string }) {
   useEffect(() => {
     if (!SUPABASE_CONFIGURED || !authUser?.id) return;
     const supabase = getSupabaseBrowserClient();
+    if (!supabase) return;
     let cancelled = false;
-    supabase.from('prototype_likes').select('photo_id').eq('user_id', authUser.id).eq('photo_id', photo.id).maybeSingle()
+    supabase
+      .from('votes')
+      .select('id')
+      .eq('user_id', authUser.id)
+      .eq('photo_id', photo.id)
+      .maybeSingle()
       .then(({ data }) => { if (!cancelled) setLiked(Boolean(data)); });
     return () => { cancelled = true; };
   }, [photo.id, authUser?.id]);
@@ -50,8 +56,16 @@ export function MobilePhoto({ id }: { id: string }) {
     } catch {}
     if (SUPABASE_CONFIGURED && authUser?.id) {
       const supabase = getSupabaseBrowserClient();
-      if (next) await supabase.from('prototype_likes').upsert({ user_id: authUser.id, photo_id: photo.id });
-      else await supabase.from('prototype_likes').delete().eq('user_id', authUser.id).eq('photo_id', photo.id);
+      if (!supabase) return;
+      if (next) {
+        await supabase.from('votes').insert({
+          photo_id: photo.id,
+          user_id: authUser.id,
+          user_email: authUser.email ?? '',
+        });
+      } else {
+        await supabase.from('votes').delete().eq('user_id', authUser.id).eq('photo_id', photo.id);
+      }
     }
   };
 
