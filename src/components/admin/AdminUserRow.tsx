@@ -11,6 +11,7 @@ interface UserProps {
   loc?: string;
   isCustomer?: boolean;
   isAmbassador?: boolean;
+  photographerStatus?: string;
   joined?: string;
   photos?: number;
 }
@@ -21,7 +22,7 @@ export function AdminUserRow({ user }: { user: UserProps }) {
       
       {/* Avatar */}
       <div className="w-12 h-12 bg-neutral-100 overflow-hidden rounded-none border border-neutral-200">
-        <img src={user.avatar} alt={user.name} className="w-full h-full object-cover grayscale opacity-90 group-hover:grayscale-0 transition-all duration-300" />
+        <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
       </div>
 
       {/* Profile Details */}
@@ -34,13 +35,19 @@ export function AdminUserRow({ user }: { user: UserProps }) {
 
       {/* Role */}
       <div className="flex items-center gap-2">
-        <Badge variant="outline" className={`rounded-none px-2 py-0.5 text-[10px] font-mono uppercase tracking-widest ${
-          user.isCustomer 
-            ? 'border-neutral-300 text-neutral-700 bg-neutral-50' 
-            : 'bg-neutral-900 text-white border-neutral-900'
-        }`}>
-          {user.isCustomer ? 'Voyageur' : 'Photographer'}
-        </Badge>
+        {user.isCustomer ? (
+          <Badge variant="outline" className="rounded-none px-2 py-0.5 text-[10px] font-mono uppercase tracking-widest border-neutral-300 text-neutral-700 bg-neutral-50">
+            Voyageur
+          </Badge>
+        ) : user.photographerStatus === 'approved' ? (
+          <Badge variant="outline" className="rounded-none px-2 py-0.5 text-[10px] font-mono uppercase tracking-widest bg-neutral-900 text-white border-neutral-900">
+            Photographer
+          </Badge>
+        ) : (
+          <Badge variant="outline" className="rounded-none px-2 py-0.5 text-[10px] font-mono uppercase tracking-widest border-neutral-200 text-neutral-500 bg-transparent">
+            Member
+          </Badge>
+        )}
         {user.isAmbassador && (
           <Badge variant="outline" className="rounded-none px-2 py-0.5 text-[10px] font-mono uppercase tracking-widest border-yellow-600/30 text-yellow-700 bg-yellow-50">
             Ambassador

@@ -1,7 +1,8 @@
 'use client';
 import { notFound } from 'next/navigation';
-import { getPhotographer, getPhotographers, getPhotos } from '@/lib/data';
+import { useState, useEffect } from 'react';
 import type { Photo, Photographer } from '@/lib/types';
+import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { PhotoGrid } from '@/components/photo/PhotoGrid';
 import { Footer } from '@/components/layout/Footer';
 import { VoyageurMark, CrownIcon } from '@/components/icons';
@@ -44,11 +45,66 @@ function ProfileEmpty({ msg }: ProfileEmptyProps) {
 // ---------------------------------------------------------------------------
 
 export default function PhotographerProfilePage({ params }: { params: { username: string } }) {
-  const photographer: Photographer | undefined = getPhotographer(params.username);
-  if (!photographer) notFound();
+  const [photographer, setPhotographer] = useState<any>(null);
+  const [myPhotos, setMyPhotos] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const allPhotos: Photo[] = getPhotos();
-  const myPhotos: Photo[] = allPhotos.filter((p: Photo) => p.by === photographer.username);
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const supabase = getSupabaseBrowserClient();
+      
+      // Fetch user
+      const { data: userData } = await supabase
+        .from('users')
+        .select('*')
+        .eq('username', params.username)
+        .single();
+        
+      if (!userData) {
+        setIsLoading(false);
+        return;
+      }
+      
+      setPhotographer({
+        username: userData.username,
+        name: userData.display_name || userData.username,
+        bio: userData.bio || 'No bio yet.',
+        loc: userData.location || 'EARTH',
+        avatar: userData.avatar_url,
+        cover: userData.cover_url || 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=2938&auto=format&fit=crop',
+        isCustomer: userData.is_customer,
+        isAmbassador: userData.is_ambassador,
+        followers: 0,
+        joined: new Date(userData.created_at || Date.now()).getFullYear().toString(),
+        cameras: ['Digital Camera'],
+      });
+
+      // Fetch photos
+      const { data: photosData } = await supabase
+        .from('photos')
+        .select('*')
+        .eq('user_id', userData.id);
+        
+      if (photosData) {
+        setMyPhotos(photosData.map(p => ({
+          id: p.id,
+          src: p.image_url,
+          title: p.title,
+          by: userData.username,
+          cat: p.category || 'General',
+          pulse: 0,
+          picks: []
+        })));
+      }
+      
+      setIsLoading(false);
+    };
+    
+    fetchProfile();
+  }, [params.username]);
+
+  if (isLoading) return <div className="page-fade py-32 text-center text-neutral-500 font-mono text-xs uppercase tracking-widest">Loading Profile...</div>;
+  if (!photographer) return notFound();
 
   const avgPulse = myPhotos.length
     ? (myPhotos.reduce((s: number, p: Photo) => s + p.pulse, 0) / myPhotos.length).toFixed(0)
@@ -63,13 +119,11 @@ export default function PhotographerProfilePage({ params }: { params: { username
 
   // Galleries tab data — drawn from photographer's own photos + allPhotos
   const galleryItems = [
-    { title: 'Mae Hong Son Loop', count: 18, cover: myPhotos[0]?.src },
-    { title: 'Studio sessions', count: 12, cover: allPhotos.find((p: Photo) => p.cat === 'Portrait')?.src },
-    { title: 'B/W only', count: 8, cover: allPhotos.find((p: Photo) => p.cat === 'BW')?.src },
+    { title: 'Recent Uploads', count: myPhotos.length, cover: myPhotos[0]?.src },
   ];
 
   // Favorites tab — first 6 photos (public, mocked)
-  const favoritePhotos = allPhotos.slice(0, 6);
+  const favoritePhotos = myPhotos.slice(0, 6);
 
   // About tab — unique categories from this photographer's photos
   const myCategories = Array.from(new Set(myPhotos.map((p: Photo) => p.cat)));

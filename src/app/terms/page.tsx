@@ -1,49 +1,109 @@
 import { PageCover } from '@/components/layout/PageCover';
 
 export default function TermsPage() {
+  const sections = [
+    {
+      id: "introduction",
+      title: "บทนำ (Introduction)",
+      content: "ยินดีต้อนรับสู่ Gography Photo Awards (ต่อจากนี้จะเรียกว่า \"แพลตฟอร์ม\") ซึ่งดำเนินการโดย GOGRAPHY Co., Ltd. การที่คุณเข้าใช้งานแพลตฟอร์มนี้ ไม่ว่าจะในฐานะ Visitor, Registered User, หรือ Photographer ถือว่าคุณได้ยอมรับและตกลงที่จะปฏิบัติตามข้อตกลงและเงื่อนไขเหล่านี้อย่างครบถ้วน"
+    },
+    {
+      id: "copyright",
+      title: "ลิขสิทธิ์และความเป็นเจ้าของภาพ",
+      content: "ผู้ใช้งานที่อัปโหลดภาพถ่ายลงบนแพลตฟอร์ม ยังคงเป็นเจ้าของลิขสิทธิ์ภาพถ่ายนั้น 100% อย่างไรก็ตาม คุณยินยอมให้ GOGRAPHY Co., Ltd. มีสิทธิ์ในการแสดงผล ทำซ้ำ ปรับขนาด และใช้ภาพถ่ายเหล่านั้นเพื่อการประชาสัมพันธ์บนแพลตฟอร์มและสื่อโซเชียลมีเดียของ Gography โดยจะมีการให้เครดิตช่างภาพเสมอ"
+    },
+    {
+      id: "scoring",
+      title: "กฎเกณฑ์การให้คะแนนและการประกวด",
+      content: "คะแนน Pulse Score ถูกคำนวณจากสูตรเปิดเผย (Transparent Algorithm) ที่ระบุไว้ในหน้า About Ranking การตัดสินของแอดมิน, Editor, และ Ambassador ถือเป็นที่สิ้นสุด\n• แพลตฟอร์มขอสงวนสิทธิ์ในการริบรางวัลหรือระงับบัญชีผู้ใช้งาน หากตรวจสอบพบว่ามีการใช้บอท สแปม หรือวิธีการใดๆ ที่ไม่สุจริตเพื่อเพิ่มยอด Like (Pulse Score)"
+    },
+    {
+      id: "customer-privileges",
+      title: "สิทธิ์พิเศษสำหรับ Customer",
+      content: "การเลื่อนขั้น (Upgrade) บัญชีให้มีสิทธิ์เป็น Customer (ลูกค้าที่เคยร่วมทริปของ Gography) เป็นไปตามดุลยพินิจและข้อมูลจากระบบจองทัวร์ของ Gography\n• รางวัล Cashback หรือ Voucher ที่ได้จากการประกวด ไม่สามารถแลกเปลี่ยนหรือทอนเป็นเงินสดได้ และต้องนำไปใช้เป็นส่วนลดตามเงื่อนไขที่กำหนดเท่านั้น"
+    },
+    {
+      id: "limitation",
+      title: "ข้อจำกัดความรับผิดชอบ (Limitation)",
+      content: "แพลตฟอร์มให้บริการแบบ \"ตามสภาพ\" (As is) เราไม่รับประกันว่าแพลตฟอร์มจะทำงานได้โดยไม่มีข้อผิดพลาด หรือปราศจากการหยุดชะงัก GOGRAPHY จะไม่รับผิดชอบต่อความเสียหายใดๆ ที่เกิดขึ้นจากการดาวน์โหลดภาพ การละเมิดลิขสิทธิ์โดยผู้ใช้อื่น หรือการสูญหายของข้อมูล"
+    },
+    {
+      id: "termination",
+      title: "การยกเลิกและระงับบัญชี",
+      content: "เราขอสงวนสิทธิ์ในการระงับ ลบ หรือแบนบัญชีผู้ใช้งานที่ทำผิดกฎ อัปโหลดภาพอนาจาร ภาพผิดกฎหมาย หรือทำตัวไม่เหมาะสมในช่องคอมเมนต์ โดยไม่จำเป็นต้องแจ้งให้ทราบล่วงหน้า"
+    }
+  ];
+
   return (
     <>
       <PageCover 
         title="Terms of Service" 
         subtitle="ข้อตกลงและเงื่อนไขการใช้งาน Gography Photo Awards"
       />
-      <div className="wrap py-[80px]">
-        <div className="max-w-[800px] mx-auto prose prose-neutral prose-p:font-th prose-p:text-fg-soft prose-h2:font-th prose-h2:font-normal prose-h2:tracking-tight prose-h2:mt-12">
-          
-          <p className="font-mono text-xs uppercase tracking-widest text-fg-soft/70 mb-8">
+      
+      {/* Date Banner */}
+      <div className="bg-neutral-50/50 border-b border-neutral-100">
+        <div className="wrap py-6">
+          <p className="font-mono text-[11px] uppercase tracking-widest text-neutral-400">
             Last Updated: January 1, 2026
           </p>
+        </div>
+      </div>
 
-          <h2>1. บทนำ (Introduction)</h2>
-          <p>
-            ยินดีต้อนรับสู่ Gography Photo Awards (ต่อจากนี้จะเรียกว่า "แพลตฟอร์ม") ซึ่งดำเนินการโดย GOGRAPHY Co., Ltd. การที่คุณเข้าใช้งานแพลตฟอร์มนี้ ไม่ว่าจะในฐานะ Visitor, Registered User, หรือ Photographer ถือว่าคุณได้ยอมรับและตกลงที่จะปฏิบัติตามข้อตกลงและเงื่อนไขเหล่านี้อย่างครบถ้วน
-          </p>
-
-          <h2>2. ลิขสิทธิ์และสิทธิ์ความเป็นเจ้าของภาพถ่าย</h2>
-          <p>
-            ผู้ใช้งานที่อัปโหลดภาพถ่ายลงบนแพลตฟอร์ม **ยังคงเป็นเจ้าของลิขสิทธิ์ภาพถ่ายนั้น 100%** อย่างไรก็ตาม คุณยินยอมให้ GOGRAPHY Co., Ltd. มีสิทธิ์ในการแสดงผล ทำซ้ำ ปรับขนาด และใช้ภาพถ่ายเหล่านั้นเพื่อการประชาสัมพันธ์บนแพลตฟอร์มและสื่อโซเชียลมีเดียของ Gography โดยจะมีการให้เครดิตช่างภาพเสมอ
-          </p>
-
-          <h2>3. กฎเกณฑ์การให้คะแนนและการประกวด (Pulse Score)</h2>
-          <p>
-            คะแนน Pulse Score ถูกคำนวณจากสูตรเปิดเผย (Transparent Algorithm) ที่ระบุไว้ในหน้า About Ranking การตัดสินของแอดมิน, Editor, และ Ambassador ถือเป็นที่สิ้นสุด แพลตฟอร์มขอสงวนสิทธิ์ในการริบรางวัลหรือระงับบัญชีผู้ใช้งาน หากตรวจสอบพบว่ามีการใช้บอท สแปม หรือวิธีการใดๆ ที่ไม่สุจริตเพื่อเพิ่มยอด Like (Pulse Score)
-          </p>
-
-          <h2>4. สิทธิ์พิเศษสำหรับ Customer</h2>
-          <p>
-            การเลื่อนขั้น (Upgrade) บัญชีให้มีสิทธิ์เป็น Customer (ลูกค้าที่เคยร่วมทริปของ Gography) เป็นไปตามดุลยพินิจและข้อมูลจากระบบจองทัวร์ของ Gography รางวัล Cashback หรือ Voucher ที่ได้จากการประกวด ไม่สามารถแลกเปลี่ยนหรือทอนเป็นเงินสดได้ และต้องนำไปใช้เป็นส่วนลดตามเงื่อนไขที่กำหนดเท่านั้น
-          </p>
-
-          <h2>5. ข้อจำกัดความรับผิดชอบ (Limitation of Liability)</h2>
-          <p>
-            แพลตฟอร์มให้บริการแบบ "ตามสภาพ" (As is) เราไม่รับประกันว่าแพลตฟอร์มจะทำงานได้โดยไม่มีข้อผิดพลาด หรือปราศจากการหยุดชะงัก GOGRAPHY จะไม่รับผิดชอบต่อความเสียหายใดๆ ที่เกิดขึ้นจากการดาวน์โหลดภาพ การละเมิดลิขสิทธิ์โดยผู้ใช้อื่น หรือการสูญหายของข้อมูล
-          </p>
-
-          <h2>6. การยกเลิกและระงับบัญชี</h2>
-          <p>
-            เราขอสงวนสิทธิ์ในการระงับ ลบ หรือแบนบัญชีผู้ใช้งานที่ทำผิดกฎ อัปโหลดภาพอนาจาร ภาพผิดกฎหมาย หรือทำตัวไม่เหมาะสมในช่องคอมเมนต์ โดยไม่จำเป็นต้องแจ้งให้ทราบล่วงหน้า
-          </p>
+      <div className="wrap py-20 lg:py-32">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_2.5fr] gap-16 lg:gap-24 items-start">
           
+          {/* Sticky Sidebar Navigation */}
+          <aside className="hidden lg:block sticky top-32">
+            <h4 className="font-mono text-xs uppercase tracking-widest text-neutral-400 mb-8">Table of Contents</h4>
+            <nav className="flex flex-col gap-6">
+              {sections.map((s, idx) => (
+                <a 
+                  key={s.id} 
+                  href={`#${s.id}`}
+                  className="text-[15px] text-neutral-500 hover:text-black transition-colors font-medium flex items-center gap-4 group"
+                >
+                  <span className="font-mono text-[10px] text-neutral-300 group-hover:text-neutral-900 transition-colors">0{idx + 1}</span>
+                  <span className="th">{s.title}</span>
+                </a>
+              ))}
+            </nav>
+          </aside>
+
+          {/* Main Content */}
+          <div className="max-w-[760px]">
+            {sections.map((section, index) => (
+              <div 
+                key={section.id} 
+                id={section.id} 
+                className="mb-24 last:mb-0 scroll-mt-32"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-baseline gap-4 sm:gap-6 mb-8">
+                  <span className="font-mono text-6xl font-light text-neutral-200 select-none hidden sm:block">
+                    0{index + 1}
+                  </span>
+                  <span className="font-mono text-4xl font-light text-neutral-300 select-none sm:hidden">
+                    0{index + 1}
+                  </span>
+                  <h2 className="th text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-neutral-900 leading-tight">
+                    {section.title}
+                  </h2>
+                </div>
+                
+                <div className="th text-[16px] sm:text-[18px] leading-[1.8] text-neutral-600 sm:pl-[5.5rem]">
+                  {section.content.split('\n').map((line, i) => (
+                    <p 
+                      key={i} 
+                      className={line.startsWith('•') ? 'pl-6 mb-3 relative before:content-[""] before:absolute before:left-0 before:top-[12px] before:w-1.5 before:h-1.5 before:bg-neutral-300 before:rounded-full' : 'mb-6'}
+                    >
+                      {line.replace('• ', '')}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
         </div>
       </div>
     </>

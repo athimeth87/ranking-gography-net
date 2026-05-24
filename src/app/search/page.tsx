@@ -1,10 +1,10 @@
 'use client';
-import { Suspense, useState, useRef, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { Suspense, useState, useRef, useEffect, useTransition } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getPhotos, getPhotographers } from '@/lib/data';
 import type { Photo, Photographer } from '@/lib/types';
 import { PhotoGrid } from '@/components/photo/PhotoGrid';
+import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { Footer } from '@/components/layout/Footer';
 import { PageCover } from '@/components/layout/PageCover';
 
@@ -14,37 +14,106 @@ import { PageCover } from '@/components/layout/PageCover';
 const SUGGESTIONS = ['Patagonia', 'Doi Inthanon', 'Portrait', 'Leica', 'fog', 'Wattana', 'Black & White'];
 
 function SearchResults() {
+  const router = useRouter();
   const params = useSearchParams();
   const initialQ = params.get('q') ?? '';
 
   const [q, setQ] = useState<string>(initialQ);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const [photoResults, setPhotoResults] = useState<Photo[]>([]);
+  const [photographerResults, setPhotographerResults] = useState<Photographer[]>([]);
+  const [trendingPhotographers, setTrendingPhotographers] = useState<Photographer[]>([]);
+  const [isPending, startTransition] = useTransition();
+
   useEffect(() => {
     inputRef.current?.focus();
+    
+    // Fetch trending photographers initially
+    const fetchTrending = async () => {
+      const supabase = getSupabaseBrowserClient();
+      const { data } = await supabase.from('users').select('*').limit(4);
+      if (data) {
+        setTrendingPhotographers(data.map(p => ({
+          username: p.username,
+          name: p.display_name || p.username,
+          avatar: p.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + p.username,
+          loc: p.location || 'EARTH',
+          followers: 0,
+          photos: 0
+        })));
+      }
+    };
+    fetchTrending();
   }, []);
 
-  const allPhotos = getPhotos();
-  const allPhotographers = getPhotographers();
+  useEffect(() => {
+    if (!q) {
+      setPhotoResults([]);
+      setPhotographerResults([]);
+      // Update URL silently
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('q');
+      window.history.replaceState({}, '', newUrl.toString());
+      return;
+    }
 
-  const photoResults: Photo[] = q
-    ? allPhotos.filter((p: Photo) =>
-        p.title.toLowerCase().includes(q.toLowerCase()) ||
-        p.cat.toLowerCase().includes(q.toLowerCase()) ||
-        p.caption.toLowerCase().includes(q.toLowerCase()) ||
-        p.by.toLowerCase().includes(q.toLowerCase())
-      )
-    : [];
+    const delayDebounceFn = setTimeout(() => {
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.set('q', q);
+      window.history.replaceState({}, '', newUrl.toString());
 
-  const photographerResults: Photographer[] = q
-    ? allPhotographers.filter((p: Photographer) =>
-        p.name.toLowerCase().includes(q.toLowerCase()) ||
-        p.username.toLowerCase().includes(q.toLowerCase()) ||
-        p.loc.toLowerCase().includes(q.toLowerCase())
-      )
-    : [];
+      startTransition(async () => {
+        const supabase = getSupabaseBrowserClient();
+        
+        // Fetch Photographers
+        const { data: usersData } = await supabase
+          .from('users')
+          .select('*')
+          .or(`display_name.ilike.%${q}%,username.ilike.%${q}%`)
+          .limit(10);
 
-  const trendingPhotographers = allPhotographers.slice(0, 4);
+        if (usersData) {
+          setPhotographerResults(usersData.map(p => ({
+            username: p.username,
+            name: p.display_name || p.username,
+            avatar: p.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + p.username,
+            loc: p.location || 'EARTH',
+            followers: 0,
+            photos: 0
+          })));
+        } else {
+          setPhotographerResults([]);
+        }
+
+        // Fetch Photos
+        const { data: photosData } = await supabase
+          .from('photos')
+          .select('*, users!inner(*)')
+          .or(`title.ilike.%${q}%,description.ilike.%${q}%,location.ilike.%${q}%`)
+          .limit(20);
+
+        if (photosData) {
+          setPhotoResults(photosData.map(p => ({
+            id: p.id,
+            src: p.image_url,
+            title: p.title,
+            by: p.users?.username || 'unknown',
+            cat: p.category || 'General',
+            pulse: 0,
+            camera: p.camera || 'Unknown',
+            lens: p.lens || 'Unknown',
+            date: p.uploaded_at,
+            voyageurOnly: p.voyageur_only
+          })));
+        } else {
+          setPhotoResults([]);
+        }
+      });
+    }, 400); // debounce 400ms
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [q]);
 
   return (
     <div className="page-fade">
@@ -62,7 +131,7 @@ function SearchResults() {
               className="th font-thai flex-1 bg-transparent border-0 outline-none text-fg font-light tracking-[-.02em] text-[clamp(24px,7vw,64px)]"
             />
             <span className="mono text-[11px] opacity-55">
-              {q ? `${photoResults.length + photographerResults.length} results` : 'Type to search'}
+              {isPending ? 'Searching...' : (q ? `${photoResults.length + photographerResults.length} results` : 'Type to search')}
             </span>
           </div>
 
@@ -133,7 +202,7 @@ function SearchResults() {
                 </div>
               )}
 
-              {photoResults.length === 0 && photographerResults.length === 0 && (
+              {!isPending && photoResults.length === 0 && photographerResults.length === 0 && (
                 <div className="py-[80px] text-center">
                   <div className="th text-[32px] font-light">ไม่พบผลลัพธ์สำหรับ &ldquo;{q}&rdquo;</div>
                   <p className="th text-[var(--fg-soft)] mt-[16px]">

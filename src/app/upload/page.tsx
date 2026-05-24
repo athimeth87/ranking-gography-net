@@ -25,6 +25,9 @@ interface Draft {
   cat: Category;
   forCustomerAwards: boolean;
   caption: string;
+  location: string;
+  camera: string;
+  lens: string;
   file: DraftFile | null;
   actualFile: File | null;
 }
@@ -161,6 +164,9 @@ export default function UploadPage() {
     cat: 'Landscape',
     forCustomerAwards: userState === 'customer',
     caption: '',
+    location: '',
+    camera: '',
+    lens: '',
     file: null,
     actualFile: null,
   });
@@ -222,6 +228,9 @@ export default function UploadPage() {
       slug: slug,
       description: draft.caption,
       category: draft.cat.toLowerCase(),
+      location: draft.location,
+      camera: draft.camera,
+      lens: draft.lens,
       storage_url: publicUrlData.publicUrl,
       width: 4, 
       height: 3, 
@@ -407,25 +416,32 @@ export default function UploadPage() {
                     />
                   </Field2>
 
-                  {/* EXIF preview */}
-                  <div>
-                    <div className="caps opacity-55 mb-3">EXIF · auto-detected</div>
-                    <table className="w-full mono text-[12px] border-collapse">
-                      <tbody>
-                        {(
-                          [
-                            ['Camera', draft.file ? 'Sony A7R V' : '—'],
-                            ['Lens', draft.file ? '24-70mm f/2.8 GM II' : '—'],
-                            ['ISO · F · S', draft.file ? '100 · f/8.0 · 1/250' : '—'],
-                          ] as [string, string][]
-                        ).map(([k, v]) => (
-                          <tr key={k} className="border-b border-rule">
-                            <td className="py-2 opacity-55 w-[40%]">{k.toUpperCase()}</td>
-                            <td className="py-2">{v}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  <Field2 label="สถานที่ (Location)">
+                    <input
+                      className="input"
+                      placeholder="เช่น Chiang Mai, Thailand"
+                      value={draft.location}
+                      onChange={(e) => setDraft((d) => ({ ...d, location: e.target.value }))}
+                    />
+                  </Field2>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <Field2 label="กล้อง (Camera)">
+                      <input
+                        className="input"
+                        placeholder="เช่น Sony A7R V"
+                        value={draft.camera}
+                        onChange={(e) => setDraft((d) => ({ ...d, camera: e.target.value }))}
+                      />
+                    </Field2>
+                    <Field2 label="เลนส์ (Lens)">
+                      <input
+                        className="input"
+                        placeholder="เช่น 24-70mm f/2.8 GM"
+                        value={draft.lens}
+                        onChange={(e) => setDraft((d) => ({ ...d, lens: e.target.value }))}
+                      />
+                    </Field2>
                   </div>
 
                   <button

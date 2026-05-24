@@ -1,8 +1,10 @@
 'use client';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Photo, Photographer } from '@/lib/types';
 import { ViewfinderFrame } from '@/components/photo/ViewfinderFrame';
 import { PulseCountUp } from '@/components/editorial/PulseCountUp';
+import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 
 interface HeroSectionProps {
   banner: Photo;
@@ -13,6 +15,21 @@ interface HeroSectionProps {
 
 export function HeroSection({ banner, top, bannerPhotographer, topPhotographer }: HeroSectionProps) {
   const router = useRouter();
+  const [content, setContent] = useState({
+    headline: 'Photographs<br />that tell stories',
+    description: 'A photography ranking platform by photographers and travellers — vote, discover, and help choose the photo of the season.'
+  });
+
+  useEffect(() => {
+    const fetchContent = async () => {
+      const supabase = getSupabaseBrowserClient();
+      const { data } = await supabase.from('site_settings').select('value').eq('id', 'hero_section').single();
+      if (data?.value) {
+        setContent(prev => ({ ...prev, ...data.value }));
+      }
+    };
+    fetchContent();
+  }, []);
 
   return (
     <section className="relative">
@@ -21,7 +38,7 @@ export function HeroSection({ banner, top, bannerPhotographer, topPhotographer }
         className="relative overflow-hidden bg-black h-[68vh] min-h-[460px] md:min-h-[520px] max-h-[760px]"
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={banner.src} alt={banner.title} className="w-full h-full object-cover" />
+        <img src={(content as any).image_url || banner.src} alt={banner.title} className="w-full h-full object-cover" />
         {/* Gradient overlay */}
         <div
           className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,.45)_0%,rgba(0,0,0,.08)_35%,rgba(0,0,0,.1)_65%,rgba(0,0,0,.65)_100%)]"
@@ -40,12 +57,11 @@ export function HeroSection({ banner, top, bannerPhotographer, topPhotographer }
           <div className="wrap !p-0 !max-w-none">
             <h1
               className="th font-light leading-[.92] text-white m-0 max-w-[14ch] text-[clamp(44px,11vw,128px)] md:text-[clamp(64px,8vw,128px)] tracking-[-.035em]"
+              dangerouslySetInnerHTML={{ __html: content.headline }}
             >
-              Photographs<br />that tell stories
             </h1>
             <div className="mt-6 md:mt-7 flex flex-col md:flex-row items-start md:items-end justify-between gap-6 md:gap-10">
-              <p className="th text-[14px] md:text-[16px] leading-[1.55] max-w-[460px] text-white/85 m-0">
-                A photography ranking platform by photographers and travellers — vote, discover, and help choose the photo of the season.
+              <p className="th text-[14px] md:text-[16px] leading-[1.55] max-w-[460px] text-white/85 m-0" dangerouslySetInnerHTML={{ __html: content.description }}>
               </p>
               <div className="flex flex-col sm:flex-row gap-[10px] w-full md:w-auto shrink-0">
                 <button

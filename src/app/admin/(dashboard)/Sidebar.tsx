@@ -16,7 +16,8 @@ import {
   Command,
   Bell,
   Megaphone,
-  ClipboardList
+  ClipboardList,
+  LayoutTemplate
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -42,6 +43,7 @@ const navGroups = [
   {
     label: 'System',
     items: [
+      { name: 'Site Content', href: '/admin/content', icon: LayoutTemplate },
       { name: 'Points & Rewards', href: '/admin/rewards', icon: Trophy },
       { name: 'Settings', href: '/admin/settings', icon: Settings },
     ]

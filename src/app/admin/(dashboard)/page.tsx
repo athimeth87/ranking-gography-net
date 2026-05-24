@@ -1,26 +1,59 @@
+'use client';
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Users, Image as ImageIcon, Heart, Eye, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
-import { getPhotos, getPhotographers } from '@/lib/data';
+import { useState, useEffect } from 'react';
+import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { AdminStatCard } from '@/components/admin/AdminStatCard';
 
 export default function AdminDashboardPage() {
-  const PHOTOS = getPhotos();
-  const PHOTOGRAPHERS = getPhotographers();
-  // Compute some mock stats based on data
-  const totalPhotos = PHOTOS.length;
-  const totalUsers = PHOTOGRAPHERS.length + 1200; // Mock base user count
-  const totalLikes = PHOTOS.reduce((acc, p) => acc + p.likes, 0);
+  const [photos, setPhotos] = useState<any[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Mock pending items
-  const recentUploads = PHOTOS.slice(0, 4).map((p, i) => ({
-    ...p,
-    status: i === 0 || i === 2 ? 'Pending' : 'Approved'
+  useEffect(() => {
+    const fetchData = async () => {
+      const supabase = getSupabaseBrowserClient();
+      const [photosRes, usersRes] = await Promise.all([
+        supabase.from('photos').select('*, users!inner(username)').order('created_at', { ascending: false }),
+        supabase.from('users').select('*').order('created_at', { ascending: false })
+      ]);
+      if (photosRes.data) setPhotos(photosRes.data);
+      if (usersRes.data) setUsers(usersRes.data);
+      setIsLoading(false);
+    };
+    fetchData();
+  }, []);
+
+  const PHOTOS = photos;
+  const PHOTOGRAPHERS = users;
+
+  const totalPhotos = PHOTOS.length;
+  const totalUsers = PHOTOGRAPHERS.length;
+  const totalLikes = PHOTOS.reduce((acc: number, p: any) => acc + (p.likes_count || 0), 0);
+
+  // Recent uploads (last 4)
+  const recentUploads = PHOTOS.slice(0, 4).map((p: any, i: number) => ({
+    id: p.id,
+    title: p.title,
+    src: p.image_url || p.storage_url,
+    by: p.users?.username || 'Unknown',
+    status: p.is_approved ? 'Approved' : 'Pending'
   }));
   
-  const pendingUsers = PHOTOGRAPHERS.slice(-3);
+  // Pending users (photographers waiting approval)
+  const pendingUsers = PHOTOGRAPHERS.filter((u: any) => u.photographer_status === 'pending' || !u.is_customer).slice(0, 3).map((u: any) => ({
+    username: u.username,
+    name: u.display_name || u.username,
+    avatar: u.avatar_url || 'https://via.placeholder.com/150'
+  }));
+
+  if (isLoading) {
+    return <div className="p-12 text-center text-neutral-500 font-mono text-xs uppercase tracking-widest">Loading Dashboard...</div>;
+  }
 
   return (
     <div className="flex flex-col gap-8 pb-12">

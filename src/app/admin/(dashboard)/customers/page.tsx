@@ -15,16 +15,47 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
-// Mock Data
-const mockWhitelist = [
-  { id: '1', email: 'johndoe@example.com', role: 'photographer', status: 'registered', addedAt: '2026-05-20', registeredAt: '2026-05-21' },
-  { id: '2', email: 'sarah.smith@gmail.com', role: 'voyageur', status: 'pending', addedAt: '2026-05-22', registeredAt: null },
-  { id: '3', email: 'mike.travels@hotmail.com', role: 'photographer', status: 'pending', addedAt: '2026-05-23', registeredAt: null },
-  { id: '4', email: 'alice.w@agency.com', role: 'voyageur', status: 'registered', addedAt: '2026-05-15', registeredAt: '2026-05-18' },
-];
+import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 
 export default function CustomerWhitelistPage() {
   const [showAddModal, setShowAddModal] = useState(false);
+  const [whitelist, setWhitelist] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [newEmail, setNewEmail] = useState('');
+  const [newRole, setNewRole] = useState('voyageur');
+
+  const fetchWhitelist = async () => {
+    setIsLoading(true);
+    const supabase = getSupabaseBrowserClient();
+    const { data } = await supabase.from('customer_whitelist').select('*').order('added_at', { ascending: false });
+    if (data) {
+      setWhitelist(data);
+    }
+    setIsLoading(false);
+  };
+
+  React.useEffect(() => {
+    fetchWhitelist();
+  }, []);
+
+  const handleAddEmail = async () => {
+    if (!newEmail) return;
+    const supabase = getSupabaseBrowserClient();
+    await supabase.from('customer_whitelist').insert([{ email: newEmail.toLowerCase(), role: newRole }]);
+    setShowAddModal(false);
+    setNewEmail('');
+    fetchWhitelist();
+  };
+
+  const handleDelete = async (id: string) => {
+    const supabase = getSupabaseBrowserClient();
+    await supabase.from('customer_whitelist').delete().eq('id', id);
+    fetchWhitelist();
+  };
+
+  const totalWhitelisted = whitelist.length;
+  const registered = whitelist.filter(w => w.status === 'registered').length;
+  const pending = whitelist.filter(w => w.status === 'pending').length;
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500 pb-12">
@@ -59,21 +90,21 @@ export default function CustomerWhitelistPage() {
             <h3 className="text-xs font-semibold tracking-wider uppercase">Total Whitelisted</h3>
             <Mail className="h-4 w-4" />
           </div>
-          <p className="text-3xl font-light text-neutral-900">1,248</p>
+          <p className="text-3xl font-light text-neutral-900">{totalWhitelisted}</p>
         </div>
         <div className="bg-white border border-neutral-200 p-5 rounded-lg shadow-sm">
           <div className="flex items-center justify-between text-emerald-600 mb-3">
             <h3 className="text-xs font-semibold tracking-wider uppercase">Registered</h3>
             <CheckCircle2 className="h-4 w-4" />
           </div>
-          <p className="text-3xl font-light text-neutral-900">892</p>
+          <p className="text-3xl font-light text-neutral-900">{registered}</p>
         </div>
         <div className="bg-white border border-neutral-200 p-5 rounded-lg shadow-sm">
           <div className="flex items-center justify-between text-amber-600 mb-3">
             <h3 className="text-xs font-semibold tracking-wider uppercase">Pending Login</h3>
             <Clock className="h-4 w-4" />
           </div>
-          <p className="text-3xl font-light text-neutral-900">356</p>
+          <p className="text-3xl font-light text-neutral-900">{pending}</p>
         </div>
       </div>
 
@@ -113,7 +144,11 @@ export default function CustomerWhitelistPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-100">
-              {mockWhitelist.map((item) => (
+              {isLoading ? (
+                <tr><td colSpan={5} className="px-6 py-8 text-center text-neutral-500 font-mono text-xs uppercase tracking-widest">Loading...</td></tr>
+              ) : whitelist.length === 0 ? (
+                <tr><td colSpan={5} className="px-6 py-8 text-center text-neutral-500 font-mono text-xs uppercase tracking-widest">No emails whitelisted yet.</td></tr>
+              ) : whitelist.map((item) => (
                 <tr key={item.id} className="hover:bg-neutral-50/50 transition-colors group">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
@@ -141,12 +176,12 @@ export default function CustomerWhitelistPage() {
                       </Badge>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-neutral-500">
-                    {item.addedAt}
+                  <td className="px-6 py-4 text-neutral-500 text-xs">
+                    {new Date(item.added_at).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button className="p-1.5 text-neutral-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors">
+                      <button onClick={() => handleDelete(item.id)} className="p-1.5 text-neutral-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors">
                         <Trash2 className="w-4 h-4" />
                       </button>
                       <button className="p-1.5 text-neutral-400 hover:text-neutral-900 hover:bg-neutral-100 rounded-md transition-colors">
@@ -174,13 +209,19 @@ export default function CustomerWhitelistPage() {
                 <label className="text-xs font-semibold text-neutral-700 uppercase tracking-wider">Email Address</label>
                 <input 
                   type="email" 
+                  value={newEmail}
+                  onChange={e => setNewEmail(e.target.value)}
                   placeholder="customer@example.com" 
                   className="w-full px-3 py-2 border border-neutral-200 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-900"
                 />
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-neutral-700 uppercase tracking-wider">Assign Role</label>
-                <select className="w-full px-3 py-2 border border-neutral-200 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-900 bg-white">
+                <select 
+                  value={newRole}
+                  onChange={e => setNewRole(e.target.value)}
+                  className="w-full px-3 py-2 border border-neutral-200 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-900 bg-white"
+                >
                   <option value="voyageur">Voyageur (Customer)</option>
                   <option value="photographer">Photographer</option>
                 </select>
@@ -194,8 +235,9 @@ export default function CustomerWhitelistPage() {
                 Cancel
               </button>
               <button 
-                onClick={() => setShowAddModal(false)}
-                className="px-4 py-2 text-sm font-medium text-white bg-neutral-900 hover:bg-neutral-800 rounded-md shadow-sm transition-colors"
+                onClick={handleAddEmail}
+                className="px-4 py-2 text-sm font-medium text-white bg-neutral-900 hover:bg-neutral-800 rounded-md shadow-sm transition-colors disabled:opacity-50"
+                disabled={!newEmail}
               >
                 Save & Whitelist
               </button>

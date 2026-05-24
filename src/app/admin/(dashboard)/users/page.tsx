@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { getPhotographers } from '@/lib/data';
+import { useState, useEffect } from 'react';
+import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,16 +16,40 @@ import { AdminUserRow } from '@/components/admin/AdminUserRow';
 export default function AdminUsersPage() {
   const [activeTab, setActiveTab] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-  
-  const allUsers = getPhotographers();
+  const [allUsers, setAllUsers] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setIsLoading(true);
+      const supabase = getSupabaseBrowserClient();
+      const { data } = await supabase.from('users').select('*').order('created_at', { ascending: false });
+      
+      if (data) {
+        setAllUsers(data.map(p => ({
+          name: p.display_name || p.username,
+          username: p.username,
+          avatar: p.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${p.username}`,
+          loc: p.location || 'EARTH',
+          isCustomer: p.is_customer || false,
+          photographerStatus: p.photographer_status || 'none',
+          joined: new Date(p.created_at).toLocaleDateString(),
+          photos: 0
+        })));
+      }
+      setIsLoading(false);
+    };
+    fetchUsers();
+  }, []);
   
   const filteredUsers = allUsers.filter(u => 
     u.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
     u.username.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const displayUsers = activeTab === 'photographers' ? filteredUsers.filter(u => !u.isCustomer) :
+  const displayUsers = activeTab === 'photographers' ? filteredUsers.filter(u => !u.isCustomer && u.photographerStatus === 'approved') :
                        activeTab === 'voyageurs' ? filteredUsers.filter(u => u.isCustomer) :
+                       activeTab === 'members' ? filteredUsers.filter(u => !u.isCustomer && u.photographerStatus !== 'approved') :
                        filteredUsers;
 
   return (
@@ -80,9 +104,10 @@ export default function AdminUsersPage() {
       <Tabs defaultValue="all" className="w-full" onValueChange={setActiveTab}>
         <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
           <TabsList className="rounded-none bg-neutral-100 p-1 h-auto">
-            <TabsTrigger value="all" className="rounded-none font-mono text-[10px] uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm px-4 py-2">All Users</TabsTrigger>
+            <TabsTrigger value="all" className="rounded-none font-mono text-[10px] uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm px-4 py-2">All</TabsTrigger>
             <TabsTrigger value="photographers" className="rounded-none font-mono text-[10px] uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm px-4 py-2">Photographers</TabsTrigger>
             <TabsTrigger value="voyageurs" className="rounded-none font-mono text-[10px] uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm px-4 py-2">Voyageurs</TabsTrigger>
+            <TabsTrigger value="members" className="rounded-none font-mono text-[10px] uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm px-4 py-2">Members</TabsTrigger>
           </TabsList>
           
           <div className="relative w-full sm:w-64">
@@ -98,26 +123,31 @@ export default function AdminUsersPage() {
         </div>
 
         <TabsContent value={activeTab} className="mt-0 outline-none">
-          <div className="border border-neutral-200 bg-white">
-            {/* Custom Table Header */}
-            <div className="grid grid-cols-[auto_1fr_1fr_120px_120px_60px] gap-4 p-4 border-b border-neutral-200 bg-neutral-50 font-mono text-[10px] uppercase tracking-widest text-neutral-500">
-              <div className="w-12 text-center">Avatar</div>
-              <div>User Profile</div>
-              <div>Role / Status</div>
-              <div className="text-center">Joined</div>
-              <div className="text-center">Photos</div>
-              <div className="text-right">Actions</div>
+          <div className="bg-white border border-neutral-200">
+            {/* Header */}
+            <div className="grid grid-cols-[auto_1fr_1fr_120px_120px_60px] gap-4 p-4 border-b border-neutral-200 bg-neutral-50/50">
+              <div className="font-mono text-[10px] uppercase tracking-widest text-neutral-500 col-start-2">User</div>
+              <div className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">Role</div>
+              <div className="font-mono text-[10px] uppercase tracking-widest text-neutral-500 text-right">Joined</div>
+              <div className="font-mono text-[10px] uppercase tracking-widest text-neutral-500 text-right">Photos</div>
+              <div></div>
             </div>
 
-            {/* User Rows */}
-            <div className="flex flex-col divide-y divide-neutral-100">
-              {displayUsers.length === 0 ? (
-                <div className="p-8 text-center font-mono text-xs uppercase tracking-widest text-neutral-400">
-                  No users found
+            {/* List */}
+            <div className="divide-y divide-neutral-100">
+              {isLoading ? (
+                <div className="p-8 text-center text-neutral-500 font-mono text-xs uppercase tracking-widest">
+                  Loading users...
                 </div>
-              ) : displayUsers.map((user) => (
-                <AdminUserRow key={user.username} user={user} />
-              ))}
+              ) : displayUsers.length > 0 ? (
+                displayUsers.map(user => (
+                  <AdminUserRow key={user.username} user={user} />
+                ))
+              ) : (
+                <div className="p-8 text-center text-neutral-500 font-mono text-xs uppercase tracking-widest">
+                  No users found.
+                </div>
+              )}
             </div>
           </div>
         </TabsContent>

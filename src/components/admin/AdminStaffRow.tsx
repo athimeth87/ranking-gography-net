@@ -9,6 +9,7 @@ interface StaffProps {
   avatar: string;
   role: string;
   joined?: string;
+  status?: string;
 }
 
 export function AdminStaffRow({ user }: { user: StaffProps }) {
@@ -47,8 +48,12 @@ export function AdminStaffRow({ user }: { user: StaffProps }) {
 
       {/* Status */}
       <div className="flex justify-center">
-        <Badge variant="outline" className="rounded-none px-2 py-0.5 text-[10px] font-mono uppercase tracking-widest border-green-600/30 text-green-700 bg-green-50">
-          Active
+        <Badge variant="outline" className={`rounded-none px-2 py-0.5 text-[10px] font-mono uppercase tracking-widest ${
+          user.status === 'Pending' 
+            ? 'border-yellow-600/30 text-yellow-700 bg-yellow-50' 
+            : 'border-green-600/30 text-green-700 bg-green-50'
+        }`}>
+          {user.status || 'Active'}
         </Badge>
       </div>
 

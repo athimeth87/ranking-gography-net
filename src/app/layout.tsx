@@ -5,6 +5,8 @@ import { AppProvider } from '@/providers/AppProvider';
 import { Nav } from '@/components/layout/Nav';
 import { TweaksPanel } from '@/components/layout/TweaksPanel';
 import { SideMenu } from '@/components/layout/SideMenu';
+import { GlobalPopup } from '@/components/shared/GlobalPopup';
+import { CookieConsent } from '@/components/shared/CookieConsent';
 import { cn } from "@/lib/utils";
 
 const inter = Inter({ subsets: ['latin'], weight: ['300', '400', '500', '600', '700'], variable: '--font-inter', display: 'swap' });
@@ -18,14 +20,16 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="th" data-theme="light" className={cn(inter.variable, plexMono.variable, notoThai.variable, "font-sans")}>
-      <body>
+    <html lang="th" data-theme="light" className={cn(inter.variable, plexMono.variable, notoThai.variable, "font-sans")} suppressHydrationWarning>
+      <body suppressHydrationWarning>
         <AppProvider>
           <Nav />
           <main>{children}</main>
           <SideMenu />
           <TweaksPanel />
         </AppProvider>
+        <GlobalPopup />
+        <CookieConsent />
       </body>
     </html>
   );

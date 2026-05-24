@@ -77,23 +77,26 @@ export function VoyageursSection({ featuredPhoto }: VoyageursSectionProps) {
   }, []);
 
   return (
-    <section className="py-20 border-t border-[var(--rule)]">
-      <div className="wrap grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-        <div>
-          <div className="mono text-[11px] tracking-[.16em] uppercase opacity-55 mb-6 flex items-center gap-2">
+    <section className="py-24 bg-[var(--cream)] rule-top rule-bot">
+      <div className="wrap">
+        <div className="flex justify-between items-baseline pb-8 border-b border-[var(--rule)] mb-14">
+          <div className="caps opacity-55 flex items-center gap-2">
             <VoyageurMark size={9} /> The Voyageurs Programme
           </div>
           <div className="mono text-[11px] opacity-55">EXCLUSIVE · CUSTOMERS ONLY</div>
         </div>
 
         <div
-          className="grid items-center grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-10 md:gap-14 lg:gap-20"
+          className="grid items-center grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-20"
         >
           {/* Left: copy */}
           <div>
-            <h2 className="th text-[56px] leading-[1.05] tracking-tight mb-6" dangerouslySetInnerHTML={{ __html: content.title }}></h2>
+            <h2 
+              className="th font-normal m-0 leading-[1.05] text-[clamp(40px,4.6vw,64px)] tracking-[-.025em] mb-7" 
+              dangerouslySetInnerHTML={{ __html: content.title.replace(/\\n|\n/g, '<br />') }}
+            ></h2>
           
-            <p className="th text-[15px] leading-[1.7] text-[var(--fg-soft)] mb-10 max-w-[460px]" dangerouslySetInnerHTML={{ __html: content.description }}></p>
+            <p className="th text-[17px] leading-[1.65] text-[var(--fg-soft)] max-w-[520px] mb-8" dangerouslySetInnerHTML={{ __html: content.description }}></p>
           
             <div className="flex gap-4 mb-12">
               <RewardBadge icon="voucher" label={content.reward1_amount} sub={`${content.reward1_label} · ${content.reward1_sub}`} />
@@ -135,9 +138,9 @@ export function VoyageursSection({ featuredPhoto }: VoyageursSectionProps) {
         </div>
 
         {/* Steps */}
-        <div className="mt-14 md:mt-20 pt-10 md:pt-14 border-t border-[var(--rule)]">
-          <div className="caps opacity-55 mb-6 md:mb-8">How it works · 3 steps</div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10 lg:gap-14">
+        <div className="mt-20 pt-14 border-t border-[var(--rule)]">
+          <div className="caps opacity-55 mb-8">How it works · 3 steps</div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-14">
             <Step
               n="01"
               t="รับการยืนยันสถานะ"
