@@ -10,6 +10,7 @@ import { MeFavorites } from '@/components/account/MeFavorites';
 import { MeGalleries } from '@/components/account/MeGalleries';
 import { MeStats } from '@/components/account/MeStats';
 import { MeSettings } from '@/components/account/MeSettings';
+import { MobileMe } from '@/components/mobile/MobileMe';
 
 interface PageProps {
   params: { section?: string[] };
@@ -101,6 +102,7 @@ export default function Page({ params }: PageProps) {
     avatar: profile.avatar_url || '',
     loc: profile.location || 'Not set',
     bio: profile.bio || '',
+    website: profile.portfolio_url || '',
     isCustomer: profile.is_customer
   };
 
@@ -120,17 +122,29 @@ export default function Page({ params }: PageProps) {
 
   return (
     <div className="page-fade">
-      <PageCover
-        photoId="p013"
-        eyebrow="Your account"
-        title="Your dashboard"
-        subtitle="ภาพของคุณ คะแนน favorites ทริปกับ GOGRAPHY — รวมที่เดียว"
-        height="38vh"
-        minHeight={300}
-        maxHeight={420}
-      />
+      <div className="hidden md:block">
+        <PageCover
+          photoId="p013"
+          eyebrow="Your account"
+          title="Your dashboard"
+          subtitle="ภาพของคุณ คะแนน favorites ทริปกับ GOGRAPHY — รวมที่เดียว"
+          height="38vh"
+          minHeight={300}
+          maxHeight={420}
+        />
+      </div>
+      <div className="md:hidden">
+        <MobileMe 
+          section={section}
+          profile={profile}
+          myPhotos={myPhotos}
+          isVoyageur={isVoyageur}
+          favoritesCount={favoritesCount}
+          galleriesCount={galleriesCount}
+        />
+      </div>
       <div
-        className="wrap grid items-start pt-12 px-10 pb-24 grid-cols-[240px_1fr] gap-14"
+        className="hidden md:grid wrap items-start pt-12 px-10 pb-24 grid-cols-[240px_1fr] gap-14"
       >
         <MeSidebar
           persona={persona}

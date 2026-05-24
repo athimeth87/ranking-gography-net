@@ -45,7 +45,7 @@ export function PhotoCard({
             <div className="pimg-overlay-meta">
               <span>{photographer ? photographer.name : photo.by}</span>
               <span className="pimg-overlay-sep">·</span>
-              <span>{photo.exif.camera}</span>
+              <span>{photo.exif?.camera || 'Unknown Camera'}</span>
             </div>
             <div className="pimg-overlay-pulse">
               <span className="pimg-overlay-pulse-num">{photo.pulse.toFixed(0)}</span>

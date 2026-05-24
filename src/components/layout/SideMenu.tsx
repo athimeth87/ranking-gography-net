@@ -23,7 +23,6 @@ const CATEGORIES: NavLink[] = [
 
 const CURATION: NavLink[] = [
   { to: '/ambassadors', label: 'Ambassadors' },
-  { to: '/about-ranking', label: 'Pulse Score' },
 ];
 
 const ABOUT: NavLink[] = [
@@ -78,7 +77,7 @@ export function SideMenu() {
         className={`sidemenu ${sideMenuOpen ? 'is-open' : ''}`}
         aria-hidden={!sideMenuOpen}
       >
-        <div className="sidemenu-inner">
+        <div className="sidemenu-inner no-scrollbar">
 
           {/* Top chrome — brand + close */}
           <div className="sidemenu-chrome">

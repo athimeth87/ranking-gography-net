@@ -14,18 +14,20 @@ export function FeaturedPhotographersSection({
   allPhotos,
 }: FeaturedPhotographersSectionProps) {
   const router = useRouter();
-  const featured = photographers.filter((p) => !p.isCustomer).slice(0, 4);
+  const topPhotographers = [...photographers]
+    .sort((a, b) => b.followers - a.followers)
+    .slice(0, 4);
 
   return (
     <section className="py-10 pb-24 bg-black text-white">
       <div className="wrap">
-        <SectionNumber n={3} label="Featured Photographers · Week 12" />
+        <SectionNumber n={3} label="Top Photographers · All time" />
         <div className="flex justify-between items-baseline pb-7 mb-8 border-b border-[var(--rule)]">
           <div>
             <h2
               className="th font-normal m-0 leading-none text-[clamp(36px,4.2vw,56px)] tracking-[-.025em]"
             >
-              Featured Photographers
+              Top Photographers
             </h2>
           </div>
           <button
@@ -36,7 +38,7 @@ export function FeaturedPhotographersSection({
           </button>
         </div>
         <div className="grid grid-cols-4 gap-5">
-          {featured.map((p) => (
+          {topPhotographers.map((p) => (
             <PhotographerCard key={p.username} photographer={p} variant="general" photos={allPhotos} />
           ))}
         </div>

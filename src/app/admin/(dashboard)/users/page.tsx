@@ -19,26 +19,28 @@ export default function AdminUsersPage() {
   const [allUsers, setAllUsers] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const fetchUsers = async () => {
+    setIsLoading(true);
+    const supabase = getSupabaseBrowserClient();
+    const { data } = await supabase.from('users').select('*').order('created_at', { ascending: false });
+    
+    if (data) {
+      setAllUsers(data.map(p => ({
+        id: p.id,
+        name: p.display_name || p.username,
+        username: p.username,
+        avatar: p.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${p.username}`,
+        loc: p.location || 'EARTH',
+        isCustomer: p.is_customer || false,
+        photographerStatus: p.photographer_status || 'none',
+        joined: new Date(p.created_at).toLocaleDateString(),
+        photos: 0
+      })));
+    }
+    setIsLoading(false);
+  };
+
   useEffect(() => {
-    const fetchUsers = async () => {
-      setIsLoading(true);
-      const supabase = getSupabaseBrowserClient();
-      const { data } = await supabase.from('users').select('*').order('created_at', { ascending: false });
-      
-      if (data) {
-        setAllUsers(data.map(p => ({
-          name: p.display_name || p.username,
-          username: p.username,
-          avatar: p.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${p.username}`,
-          loc: p.location || 'EARTH',
-          isCustomer: p.is_customer || false,
-          photographerStatus: p.photographer_status || 'none',
-          joined: new Date(p.created_at).toLocaleDateString(),
-          photos: 0
-        })));
-      }
-      setIsLoading(false);
-    };
     fetchUsers();
   }, []);
   
@@ -141,7 +143,7 @@ export default function AdminUsersPage() {
                 </div>
               ) : displayUsers.length > 0 ? (
                 displayUsers.map(user => (
-                  <AdminUserRow key={user.username} user={user} />
+                  <AdminUserRow key={user.id || user.username} user={user} onUpdate={fetchUsers} />
                 ))
               ) : (
                 <div className="p-8 text-center text-neutral-500 font-mono text-xs uppercase tracking-widest">

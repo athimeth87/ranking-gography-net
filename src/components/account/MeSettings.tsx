@@ -1,5 +1,7 @@
 'use client';
 import { useState } from 'react';
+import { useApp } from '@/providers/AppProvider';
+import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -66,11 +68,60 @@ export function MeSettings({ persona, isVoyageur }: MeSettingsProps) {
   };
 
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [toastMsg, setToastMsg] = useState('');
+
+  const { authUser } = useApp();
+  
+  // Controlled inputs for Profile Form
+  const [displayName, setDisplayName] = useState(persona.name || '');
+  const [username, setUsername] = useState(persona.username || '');
+  const [bio, setBio] = useState(persona.bio || '');
+  // @ts-ignore: persona may not have website defined in type yet
+  const [website, setWebsite] = useState(persona.website || '');
+
+  const handleSaveProfile = async () => {
+    setIsSaving(true);
+    setToastMsg('');
+    const supabase = getSupabaseBrowserClient();
+    
+    if (supabase && authUser?.id) {
+      const { error } = await supabase.from('users').update({
+        display_name: displayName,
+        username: username,
+        bio: bio,
+        portfolio_url: website
+      }).eq('id', authUser.id);
+      
+      if (error) {
+        setToastMsg('Error: ' + error.message);
+      } else {
+        setSaveSuccess(true);
+        setToastMsg('Profile saved successfully! ✨');
+      }
+    } else {
+      setToastMsg('Error: Unable to connect to database or not logged in.');
+    }
+
+    setIsSaving(false);
+    setTimeout(() => {
+      setToastMsg('');
+      setSaveSuccess(false);
+    }, 4000);
+  };
 
   return (
-    <div>
+    <div className="relative">
+      {/* UI Toast */}
+      {toastMsg && (
+        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] bg-[var(--fg)] text-[var(--bg)] px-6 py-3 rounded-full text-[13px] font-medium shadow-xl transition-all duration-300 animate-in fade-in slide-in-from-bottom-4">
+          {toastMsg}
+        </div>
+      )}
+
       <div className="caps opacity-55 mb-[14px]">Account</div>
-      <h1 className="th text-[56px] font-normal tracking-[-0.025em] m-0 leading-none">Settings</h1>
+      <h1 className="th text-[36px] md:text-[56px] font-normal tracking-[-0.025em] m-0 leading-none">Settings</h1>
 
       {/* Profile */}
       <SettingsBlock title="Profile">
@@ -83,24 +134,27 @@ export function MeSettings({ persona, isVoyageur }: MeSettingsProps) {
         </div>
         <Row2>
           <Field3 label="Display name">
-            <Input className="input" defaultValue={persona.name} />
+            <Input className="input" value={displayName} onChange={e => setDisplayName(e.target.value)} />
           </Field3>
           <Field3 label="Username">
-            <Input className="input" defaultValue={persona.username} />
+            <Input className="input" value={username} onChange={e => setUsername(e.target.value)} />
           </Field3>
         </Row2>
         <Field3 label="Bio">
-          <Textarea rows={3} defaultValue={persona.bio} />
+          <Textarea rows={3} value={bio} onChange={e => setBio(e.target.value)} />
         </Field3>
         <Row2>
-          <Field3 label="Location">
-            <Input className="input" defaultValue={persona.loc} />
-          </Field3>
           <Field3 label="Website">
-            <Input className="input" placeholder="https://..." />
+            <Input className="input" placeholder="https://..." value={website} onChange={e => setWebsite(e.target.value)} />
           </Field3>
         </Row2>
-        <button className="btn btn-solid btn-sm mt-6">Save profile</button>
+        <button 
+          onClick={handleSaveProfile} 
+          disabled={isSaving}
+          className="btn btn-solid btn-sm mt-6"
+        >
+          {isSaving ? 'Saving...' : saveSuccess ? 'Saved!' : 'Save profile'}
+        </button>
       </SettingsBlock>
 
       {/* Notifications */}
@@ -164,7 +218,7 @@ export function MeSettings({ persona, isVoyageur }: MeSettingsProps) {
       {/* Danger zone */}
       <SettingsBlock title="Danger zone" danger>
         <div className="p-[18px_22px] border border-rule">
-          <div className="flex justify-between items-start gap-6">
+          <div className="flex flex-col md:flex-row justify-between items-start gap-6">
             <div>
               <div className="th text-[15px] font-medium">ลบบัญชีทั้งหมด</div>
               <p className="th text-[12px] text-fg-soft mt-[6px] leading-[1.6] max-w-[480px]">

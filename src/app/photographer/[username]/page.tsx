@@ -47,6 +47,8 @@ function ProfileEmpty({ msg }: ProfileEmptyProps) {
 export default function PhotographerProfilePage({ params }: { params: { username: string } }) {
   const [photographer, setPhotographer] = useState<any>(null);
   const [myPhotos, setMyPhotos] = useState<any[]>([]);
+  const [myGalleries, setMyGalleries] = useState<any[]>([]);
+  const [myFavorites, setMyFavorites] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -83,18 +85,59 @@ export default function PhotographerProfilePage({ params }: { params: { username
       const { data: photosData } = await supabase
         .from('photos')
         .select('*')
-        .eq('user_id', userData.id);
+        .eq('photographer_id', userData.id)
+        .order('uploaded_at', { ascending: false });
         
       if (photosData) {
         setMyPhotos(photosData.map(p => ({
           id: p.id,
-          src: p.image_url,
+          slug: p.id,
+          src: p.storage_url,
           title: p.title,
           by: userData.username,
           cat: p.category || 'General',
-          pulse: 0,
-          picks: []
+          pulse: p.pulse_score || 0,
+          picks: [],
+          exif: { camera: 'Unknown', lens: 'Unknown', iso: 100, shutter: '1/100', aperture: 'f/8', focal: '50mm' }
         })));
+      }
+
+      // Fetch galleries
+      const { data: galleriesData } = await supabase
+        .from('galleries')
+        .select('id, name, gallery_photos ( photos ( storage_url ) )')
+        .eq('user_id', userData.id)
+        .order('created_at', { ascending: false });
+        
+      if (galleriesData) {
+        setMyGalleries(galleriesData.map(g => {
+          const photos = g.gallery_photos || [];
+          // @ts-ignore
+          const coverUrl = photos[0]?.photos?.storage_url || '';
+          return { id: g.id, title: g.name, count: photos.length, cover: coverUrl };
+        }));
+      }
+
+      // Fetch favorites
+      const { data: favsData } = await supabase
+        .from('favorites')
+        .select('photos ( id, title, storage_url, category, pulse_score, users ( username ) )')
+        .eq('user_id', userData.id)
+        .order('created_at', { ascending: false });
+        
+      if (favsData) {
+        setMyFavorites(favsData.map(f => {
+          // @ts-ignore
+          const p = f.photos;
+          if (!p) return null;
+          return {
+            id: p.id, slug: p.id, src: p.storage_url, title: p.title,
+            // @ts-ignore
+            by: p.users?.username || 'Unknown',
+            cat: p.category || 'General', pulse: p.pulse_score || 0, picks: [],
+            exif: { camera: 'Unknown', lens: 'Unknown', iso: 100, shutter: '1/100', aperture: 'f/8', focal: '50mm' }
+          };
+        }).filter(Boolean));
       }
       
       setIsLoading(false);
@@ -116,14 +159,6 @@ export default function PhotographerProfilePage({ params }: { params: { username
     photographer.isCustomer ? 'Voyageur' : 'Photographer',
     `@${photographer.username}`,
   ].filter(Boolean).join(' · ');
-
-  // Galleries tab data — drawn from photographer's own photos + allPhotos
-  const galleryItems = [
-    { title: 'Recent Uploads', count: myPhotos.length, cover: myPhotos[0]?.src },
-  ];
-
-  // Favorites tab — first 6 photos (public, mocked)
-  const favoritePhotos = myPhotos.slice(0, 6);
 
   // About tab — unique categories from this photographer's photos
   const myCategories = Array.from(new Set(myPhotos.map((p: Photo) => p.cat)));
@@ -215,10 +250,10 @@ export default function PhotographerProfilePage({ params }: { params: { username
                 Photos <span className="opacity-55 ml-[6px]">{myPhotos.length}</span>
               </TabsTrigger>
               <TabsTrigger value="galleries" className="px-0 mr-8 py-5 text-[13px] tracking-[.14em] uppercase font-medium">
-                Galleries <span className="opacity-55 ml-[6px]">3</span>
+                Galleries <span className="opacity-55 ml-[6px]">{myGalleries.length}</span>
               </TabsTrigger>
               <TabsTrigger value="favorites" className="px-0 mr-8 py-5 text-[13px] tracking-[.14em] uppercase font-medium">
-                Favorites <span className="opacity-55 ml-[6px]">28</span>
+                Favorites <span className="opacity-55 ml-[6px]">{myFavorites.length}</span>
               </TabsTrigger>
               <TabsTrigger value="about" className="px-0 py-5 text-[13px] tracking-[.14em] uppercase font-medium">
                 About
@@ -238,27 +273,31 @@ export default function PhotographerProfilePage({ params }: { params: { username
 
               {/* Galleries tab */}
               <TabsContent value="galleries">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-                  {galleryItems.map((g, i) => (
-                    <div key={i} className="cursor-pointer">
-                      <div className="aspect-[4/3] bg-tile overflow-hidden">
-                        {g.cover && (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={g.cover} // runtime: cover url from gallery item (derived from photographer's photos)
-                            alt={g.title}
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                          />
-                        )}
+                {myGalleries.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                    {myGalleries.map((g, i) => (
+                      <div key={i} className="cursor-pointer">
+                        <div className="aspect-[4/3] bg-tile overflow-hidden">
+                          {g.cover && (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={g.cover}
+                              alt={g.title}
+                              className="w-full h-full object-cover"
+                              loading="lazy"
+                            />
+                          )}
+                        </div>
+                        <div className="mt-4 flex justify-between items-baseline">
+                          <div className="text-[18px] font-medium tracking-[-0.01em]">{g.title}</div>
+                          <span className="mono text-[11px] opacity-55">{g.count} photos</span>
+                        </div>
                       </div>
-                      <div className="mt-4 flex justify-between items-baseline">
-                        <div className="text-[18px] font-medium tracking-[-0.01em]">{g.title}</div>
-                        <span className="mono text-[11px] opacity-55">{g.count} photos</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <ProfileEmpty msg="ยังไม่มีแกลเลอรี่ในโปรไฟล์นี้" />
+                )}
               </TabsContent>
 
               {/* Favorites tab */}
@@ -267,7 +306,11 @@ export default function PhotographerProfilePage({ params }: { params: { username
                   <p className="th text-[14px] text-fg-soft mt-0 mb-8 max-w-[600px]">
                     ภาพที่ {photographer.name.split(' ')[0]} เลือกบันทึกไว้ — ตั้งเป็น public โดยช่างภาพ
                   </p>
-                  <PhotoGrid photos={favoritePhotos} cols={3} />
+                  {myFavorites.length > 0 ? (
+                    <PhotoGrid photos={myFavorites} cols={3} />
+                  ) : (
+                    <ProfileEmpty msg="ยังไม่มีภาพที่บันทึกไว้" />
+                  )}
                 </div>
               </TabsContent>
 

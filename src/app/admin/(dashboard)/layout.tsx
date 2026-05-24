@@ -29,7 +29,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
 
   return (
-    <div className="flex min-h-screen w-full bg-neutral-50 dark:bg-neutral-950">
+    <div data-theme="light" className="flex min-h-screen w-full bg-neutral-50 text-neutral-900">
       {/* Desktop Sidebar */}
       <div className="hidden sm:block">
         <Sidebar />

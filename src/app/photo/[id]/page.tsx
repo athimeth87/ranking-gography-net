@@ -342,14 +342,6 @@ export default function PhotoDetailPage({ params }: { params: { id: string } }) 
                   />
                   <BreakdownStat label="Hours since" val={photo.hours} mult="÷" />
                 </div>
-                <div className="mt-4">
-                  <Link
-                    href="/about-ranking"
-                    className="mono text-[11px] tracking-[.14em] uppercase opacity-65 border-b border-rule pb-[2px]"
-                  >
-                    How Pulse is calculated →
-                  </Link>
-                </div>
               </div>
 
               {/* Comments */}

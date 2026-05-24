@@ -141,7 +141,6 @@ export function MobilePhotographers({ initialFilter = 'all' }: { initialFilter?:
       <div style={{ height: 56 }} />
       <MobileMarquee text={`★ ${PHOTOGRAPHERS.length} photographers ★ Season 04 ★`} />
       <MobileFooter />
-      <BottomNav />
     </div>
   );
 }

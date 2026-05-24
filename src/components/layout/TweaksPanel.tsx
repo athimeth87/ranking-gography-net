@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { useApp } from '@/providers/AppProvider';
 import { cn } from '@/lib/utils';
 import type { Theme, Mode, UserState } from '@/lib/types';
@@ -24,9 +25,12 @@ const PERSONAS: { label: string; value: UserState }[] = [
 export function TweaksPanel() {
   const [open, setOpen] = useState(false);
   const { theme, setTheme, mode, setMode, userState, setUserState } = useApp();
+  const pathname = usePathname();
+
+  if (pathname !== '/') return null;
 
   return (
-    <div className="fixed bottom-4 right-4 z-[100] flex flex-col items-end gap-2">
+    <div className="fixed bottom-[80px] md:bottom-4 right-4 z-[100] flex flex-col items-end gap-2">
       {open && (
         <div className="bg-[var(--bg)] border border-[var(--rule)] rounded-none p-4 flex flex-col gap-4 w-52">
           {/* Theme */}

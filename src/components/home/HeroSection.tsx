@@ -70,12 +70,6 @@ export function HeroSection({ banner, top, bannerPhotographer, topPhotographer }
                 >
                   Explore the gallery
                 </button>
-                <button
-                  onClick={() => router.push('/about-ranking')}
-                  className="px-[22px] py-3 text-[11px] tracking-[.14em] uppercase font-medium cursor-pointer bg-[rgba(255,255,255,.08)] text-white border border-[rgba(255,255,255,.45)] w-full sm:w-auto"
-                >
-                  How Pulse works
-                </button>
               </div>
             </div>
           </div>

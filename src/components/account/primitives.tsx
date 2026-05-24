@@ -90,7 +90,7 @@ export function Field3({ label, children }: Field3Props) {
 // Row2 — two-column grid for pairing form fields
 // ---------------------------------------------------------------------------
 export function Row2({ children }: { children: ReactNode }) {
-  return <div className="grid grid-cols-2 gap-5">{children}</div>;
+  return <div className="grid grid-cols-1 md:grid-cols-2 gap-5">{children}</div>;
 }
 
 // ---------------------------------------------------------------------------

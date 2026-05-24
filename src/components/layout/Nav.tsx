@@ -10,7 +10,6 @@ const LINKS: { to: string; label: string }[] = [
   { to: '/explore', label: 'Explore' },
   { to: '/hall-of-fame', label: 'Hall of Fame' },
   { to: '/for-customers', label: 'For Voyageurs' },
-  { to: '/about-ranking', label: 'Pulse Score' },
   { to: '/about', label: 'About' },
 ];
 

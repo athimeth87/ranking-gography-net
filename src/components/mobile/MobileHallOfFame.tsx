@@ -196,7 +196,6 @@ export function MobileHallOfFame() {
       <div style={{ height: 48 }} />
       <MobileMarquee text="◆ 4 seasons ◆ 4 winners ◆ ฿1.2M cashback paid ◆" />
       <MobileFooter />
-      <BottomNav />
     </div>
   );
 }

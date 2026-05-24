@@ -23,6 +23,8 @@ export default function CustomerWhitelistPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [newEmail, setNewEmail] = useState('');
   const [newRole, setNewRole] = useState('voyageur');
+  const [isImporting, setIsImporting] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const fetchWhitelist = async () => {
     setIsLoading(true);
@@ -53,6 +55,50 @@ export default function CustomerWhitelistPage() {
     fetchWhitelist();
   };
 
+  const handleImportCSV = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setIsImporting(true);
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const text = event.target?.result as string;
+        const rows = text.split('\n').map(row => row.trim()).filter(row => row.length > 0);
+        
+        const startIndex = rows[0].toLowerCase().includes('email') ? 1 : 0;
+        const inserts = [];
+        
+        for (let i = startIndex; i < rows.length; i++) {
+          const cols = rows[i].split(',').map(c => c.trim().replace(/^"|"$/g, ''));
+          const email = cols[0];
+          const role = cols.length > 1 && cols[1] ? cols[1].toLowerCase() : 'voyageur';
+          
+          if (email && email.includes('@')) {
+            inserts.push({ email: email.toLowerCase(), role });
+          }
+        }
+        
+        if (inserts.length > 0) {
+          const supabase = getSupabaseBrowserClient();
+          const { error } = await supabase.from('customer_whitelist').upsert(inserts, { onConflict: 'email' });
+          if (error) throw error;
+          
+          alert(`Successfully imported ${inserts.length} emails!`);
+          fetchWhitelist();
+        } else {
+          alert('No valid emails found in the CSV.');
+        }
+      } catch (err: any) {
+        alert('Failed to import CSV: ' + err.message);
+      } finally {
+        setIsImporting(false);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      }
+    };
+    reader.readAsText(file);
+  };
+
   const totalWhitelisted = whitelist.length;
   const registered = whitelist.filter(w => w.status === 'registered').length;
   const pending = whitelist.filter(w => w.status === 'pending').length;
@@ -69,9 +115,20 @@ export default function CustomerWhitelistPage() {
           </p>
         </div>
         <div className="flex gap-3">
-          <button className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-neutral-700 bg-white border border-neutral-200 rounded-md shadow-sm hover:bg-neutral-50 transition-colors">
+          <input 
+            type="file" 
+            accept=".csv" 
+            ref={fileInputRef} 
+            onChange={handleImportCSV} 
+            style={{ display: 'none' }} 
+          />
+          <button 
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isImporting}
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-neutral-700 bg-white border border-neutral-200 rounded-md shadow-sm hover:bg-neutral-50 transition-colors disabled:opacity-50"
+          >
             <Download className="h-4 w-4" />
-            Import CSV
+            {isImporting ? 'Importing...' : 'Import CSV'}
           </button>
           <button 
             onClick={() => setShowAddModal(true)}

@@ -29,7 +29,6 @@ export function Footer() {
             <ul>
               <li><Link href="/hall-of-fame">Hall of Fame</Link></li>
               <li><Link href="/ambassadors">Ambassadors</Link></li>
-              <li><Link href="/about-ranking">Pulse Score</Link></li>
             </ul>
           </div>
           <div>

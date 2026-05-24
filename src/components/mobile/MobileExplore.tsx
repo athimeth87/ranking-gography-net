@@ -187,7 +187,6 @@ export function MobileExplore() {
 
       <MobileMarquee text={`◆ ${PHOTOS.length} frames ◆ Season 04 ◆ Updated continuously ◆`} />
       <MobileFooter />
-      <BottomNav active="explore" />
     </div>
   );
 }

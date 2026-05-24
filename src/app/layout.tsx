@@ -5,6 +5,7 @@ import { AppProvider } from '@/providers/AppProvider';
 import { Nav } from '@/components/layout/Nav';
 import { TweaksPanel } from '@/components/layout/TweaksPanel';
 import { SideMenu } from '@/components/layout/SideMenu';
+import { BottomNav } from '@/components/mobile/MobileShared';
 import { GlobalPopup } from '@/components/shared/GlobalPopup';
 import { CookieConsent } from '@/components/shared/CookieConsent';
 import { cn } from "@/lib/utils";
@@ -28,6 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <main>{children}</main>
           <SideMenu />
           <TweaksPanel />
+          <BottomNav />
         </AppProvider>
         <GlobalPopup />
         <CookieConsent />
