@@ -74,7 +74,9 @@ function BreakdownStat({ label, val, mult }: BreakdownStatProps) {
 export function PhotoDetailClient({ id }: { id: string }) {
   const params = { id };
   const router = useRouter();
-  const isUUID = params.id.includes('-');
+  
+  // We will track if this photo came from the DB to enable DB-specific features (likes, comments, realtime)
+  const [isDbPhoto, setIsDbPhoto] = useState(false);
 
   const [photo, setPhoto] = useState<Photo | null>(null);
   const [photographer, setPhotographer] = useState<Photographer | undefined>(undefined);
@@ -88,7 +90,14 @@ export function PhotoDetailClient({ id }: { id: string }) {
 
   useEffect(() => {
     const fetchPhoto = async () => {
-      if (!isUUID) {
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(params.id);
+      const supabase = getSupabaseBrowserClient();
+      
+      // Try to fetch from Supabase
+      const column = isUUID ? 'id' : 'slug';
+      const { data: pData } = await supabase.from('photos').select('*').eq(column, params.id).single();
+      
+      if (!pData) {
         // Fallback to mock data
         const p = getPhoto(params.id);
         if (!p) { setError(true); setLoading(false); return; }
@@ -102,15 +111,7 @@ export function PhotoDetailClient({ id }: { id: string }) {
         return;
       }
 
-      // Fetch from Supabase
-      const supabase = getSupabaseBrowserClient();
-      const { data: pData } = await supabase.from('photos').select('*').eq('id', params.id).single();
-      
-      if (!pData) {
-        setError(true);
-        setLoading(false);
-        return;
-      }
+      setIsDbPhoto(true);
 
       const { data: uData } = await supabase.from('users').select('*').eq('id', pData.photographer_id).single();
 
@@ -214,20 +215,20 @@ export function PhotoDetailClient({ id }: { id: string }) {
     };
     
     fetchPhoto();
-  }, [params.id, isUUID]);
+  }, [params.id]);
 
   // Realtime counts: subscribe to the photo row so likes / comments /
   // favorites / pulse update without reloading.
   useEffect(() => {
-    if (!isUUID) return;
+    if (!isDbPhoto || !photo?.id) return;
     const supabase = getSupabaseBrowserClient();
     if (!supabase) return;
 
     const channel = supabase
-      .channel(`photo-detail-${params.id}`)
+      .channel(`photo-detail-${photo.id}`)
       .on(
         'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'photos', filter: `id=eq.${params.id}` },
+        { event: 'UPDATE', schema: 'public', table: 'photos', filter: `id=eq.${photo.id}` },
         (payload) => {
           const next = payload.new as { likes_count?: number; comments_count?: number; favorites_count?: number };
           setPhoto((curr) => {
@@ -254,11 +255,11 @@ export function PhotoDetailClient({ id }: { id: string }) {
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [isUUID, params.id]);
+  }, [isDbPhoto, photo?.id]);
 
-  const favoriteState = useFavoriteState(isUUID ? params.id : '');
+  const favoriteState = useFavoriteState(isDbPhoto && photo?.id ? photo.id : '');
   const onFavoriteClick = async () => {
-    if (!isUUID) return;
+    if (!isDbPhoto) return;
     const res = await favoriteState.toggle();
     if (res.kind === 'unauth') {
       router.push(`/login?next=${encodeURIComponent(pathname ?? '/')}`);
@@ -347,7 +348,7 @@ export function PhotoDetailClient({ id }: { id: string }) {
 
               {/* Engage strip */}
               <div className="flex gap-3 mt-8 items-center">
-                {isUUID ? (
+                {isDbPhoto ? (
                   <DBLikeButton photoId={photo.id} />
                 ) : (
                   <span className="heart" aria-label="Likes (read-only seed)">
@@ -360,7 +361,7 @@ export function PhotoDetailClient({ id }: { id: string }) {
 
                 {/* Favorite button — real DB toggle for UUID-keyed photos,
                     read-only display for seed/mock IDs */}
-                {isUUID ? (
+                {isDbPhoto ? (
                   <button
                     className={`heart${favoriteState.favorited ? ' on' : ''}`}
                     onClick={onFavoriteClick}
@@ -451,12 +452,12 @@ export function PhotoDetailClient({ id }: { id: string }) {
                       </div>
                       <div>
                         <div className="text-[18px] font-medium">
-                          {(isUUID ? follow.followersCount : photographer.followers).toLocaleString()}
+                          {(isDbPhoto ? follow.followersCount : photographer.followers).toLocaleString()}
                         </div>
                         <div className="text-[10px] tracking-[.16em] uppercase opacity-55 mt-[2px]">Followers</div>
                       </div>
                     </div>
-                    {isUUID ? (
+                    {isDbPhoto ? (
                       follow.isSelf ? (
                         <button className="btn btn-sm w-full mt-6 justify-center" disabled>You</button>
                       ) : (

@@ -5,7 +5,9 @@ import type { ImageObject, WithContext } from 'schema-dts';
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   const supabase = getSupabaseServerClient();
-  const { data } = await supabase.from('photos').select('title, description, storage_url, category').eq('id', params.id).single();
+  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(params.id);
+  const column = isUUID ? 'id' : 'slug';
+  const { data } = await supabase.from('photos').select('title, description, storage_url, category').eq(column, params.id).single();
 
   if (!data) return { title: 'Photo Not Found' };
 
@@ -36,8 +38,11 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
 
 export default async function PhotoPage({ params }: { params: { id: string } }) {
   const supabase = getSupabaseServerClient();
+  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(params.id);
+  const column = isUUID ? 'id' : 'slug';
+  
   // Fetch just enough data for the JSON-LD schema
-  const { data } = await supabase.from('photos').select('title, description, storage_url, photographer_id').eq('id', params.id).single();
+  const { data } = await supabase.from('photos').select('title, description, storage_url, photographer_id').eq(column, params.id).single();
   let username = 'unknown';
 
   if (data?.photographer_id) {
