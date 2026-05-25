@@ -189,7 +189,10 @@ export function MobileExplore({ initialCategory = 'All', dbPhotos = [] }: { init
         {CATS.map(c => {
           const active = cat === c;
           return (
-            <button key={c} onClick={() => setCat(c)} style={{
+            <button key={c} onClick={() => {
+              setCat(c);
+              router.push(c === 'All' ? '/explore' : `/explore/${c.toLowerCase()}`);
+            }} style={{
               height: 36, padding: '0 14px',
               border: `1px solid ${active ? (dark ? '#fff' : '#000') : 'var(--rule-strong)'}`,
               background: active ? (dark ? '#fff' : '#000') : 'transparent',
