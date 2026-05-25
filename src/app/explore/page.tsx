@@ -168,7 +168,7 @@ export default function ExplorePage() {
   return (
     <>
       <div className="md:hidden">
-        <MobileExplore />
+        <MobileExplore dbPhotos={photos} />
       </div>
     <div className="page-fade hidden md:block">
       {/* ── Cinematic Hero Header ── */}

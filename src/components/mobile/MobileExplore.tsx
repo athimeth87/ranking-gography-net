@@ -118,7 +118,7 @@ export function MasonryTile({ photo }: { photo: any }) {
 
 const CATS = ['All', 'Landscape', 'Portrait', 'BW'] as const;
 
-export function MobileExplore({ initialCategory = 'All' }: { initialCategory?: typeof CATS[number] }) {
+export function MobileExplore({ initialCategory = 'All', dbPhotos = [] }: { initialCategory?: typeof CATS[number], dbPhotos?: any[] }) {
   const router = useRouter();
   const { theme } = useApp();
   const dark = theme === 'dark';
@@ -126,12 +126,14 @@ export function MobileExplore({ initialCategory = 'All' }: { initialCategory?: t
   const [cat, setCat] = useState<typeof CATS[number]>(initialCategory);
   const [visible, setVisible] = useState(8);
 
+  const dataSource = dbPhotos.length > 0 ? dbPhotos : PHOTOS;
+
   const filtered = useMemo(() => {
-    const base = cat === 'All' ? PHOTOS : PHOTOS.filter(p => p.cat === cat);
+    const base = cat === 'All' ? dataSource : dataSource.filter(p => p.cat === cat || p.cat.toLowerCase() === cat.toLowerCase());
     return sort === 'Hirest'
-      ? base.slice().sort((a, b) => pulseScore(b) - pulseScore(a))
-      : base.slice().sort((a, b) => a.hours - b.hours);
-  }, [sort, cat]);
+      ? base.slice().sort((a, b) => (b.pulse !== undefined ? b.pulse : pulseScore(b)) - (a.pulse !== undefined ? a.pulse : pulseScore(a)))
+      : base.slice().sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [sort, cat, dataSource]);
   const grid = filtered.slice(0, visible);
 
   const trending = PHOTOGRAPHERS
@@ -163,7 +165,7 @@ export function MobileExplore({ initialCategory = 'All' }: { initialCategory?: t
           fontSize: 36, lineHeight: 1.02, letterSpacing: '-0.02em',
         }}>This season's frames</h1>
         <p style={{ fontSize: 14, lineHeight: 1.55, color: 'var(--fg-soft)', margin: 0, maxWidth: '36ch' }}>
-          {filtered.length} of {PHOTOS.length} frames. Updated continuously.
+          {filtered.length} of {dataSource.length} frames. Updated continuously.
         </p>
       </div>
 
@@ -260,7 +262,7 @@ export function MobileExplore({ initialCategory = 'All' }: { initialCategory?: t
         </div>
       </section>
 
-      <MobileMarquee text={`◆ ${PHOTOS.length} frames ◆ Season 04 ◆ Updated continuously ◆`} />
+      <MobileMarquee text={`◆ ${dataSource.length} frames ◆ Season 04 ◆ Updated continuously ◆`} />
       <MobileFooter />
     </div>
   );
