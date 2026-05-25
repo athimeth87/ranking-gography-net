@@ -85,8 +85,20 @@ export function PhotoDetailClient({ id }: { id: string }) {
   const [similar, setSimilar] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
   const pathname = usePathname();
   const follow = useFollowState(photographerUserId);
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleReport = () => {
+    alert("Report submitted for review.");
+  };
 
   useEffect(() => {
     const fetchPhoto = async () => {
@@ -390,8 +402,24 @@ export function PhotoDetailClient({ id }: { id: string }) {
                 </button>
 
                 <div className="flex-1" />
-                <button className="heart">Copy link</button>
-                <button className="heart">Report</button>
+                <button 
+                  className="heart" 
+                  onClick={() => {
+                    navigator.clipboard.writeText(window.location.href);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  }}
+                >
+                  {copied ? 'Copied!' : 'Copy link'}
+                </button>
+                <button 
+                  className="heart"
+                  onClick={() => {
+                    alert('Thank you. Our moderation team will review this photo.');
+                  }}
+                >
+                  Report
+                </button>
               </div>
 
               {/* Engagement breakdown */}
