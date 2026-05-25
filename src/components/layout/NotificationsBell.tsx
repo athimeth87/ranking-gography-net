@@ -52,7 +52,7 @@ export function NotificationsBell() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-[calc(100%+8px)] w-[320px] bg-bg border border-rule shadow-none z-50">
+        <div className="fixed md:absolute left-0 right-0 md:left-auto md:right-0 top-[61px] md:top-[calc(100%+8px)] w-full md:w-[320px] h-[calc(100vh-61px)] md:h-auto bg-bg border-b border-rule md:border shadow-none z-50 flex flex-col md:block">
           <div className="flex justify-between items-center px-4 py-3 border-b border-rule">
             <span className="caps text-[11px] opacity-65">Notifications</span>
             <button
@@ -63,7 +63,7 @@ export function NotificationsBell() {
               Mark all read
             </button>
           </div>
-          <div className="max-h-[400px] overflow-y-auto">
+          <div className="flex-1 overflow-y-auto max-h-none md:max-h-[400px]">
             {notifications.length === 0 ? (
               <div className="px-4 py-8 text-center opacity-50 text-[13px]">No notifications yet.</div>
             ) : (
