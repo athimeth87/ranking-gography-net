@@ -177,6 +177,7 @@ export default function AdminPopupsPage() {
           if (!open) resetForm();
           else setIsOpen(true);
         }}>
+          {/* @ts-ignore */}
           <DialogTrigger asChild>
             <Button className="font-mono text-xs uppercase tracking-widest rounded-none bg-neutral-900 text-white hover:bg-neutral-800 gap-2">
               <Plus className="h-3.5 w-3.5" /> Create Campaign

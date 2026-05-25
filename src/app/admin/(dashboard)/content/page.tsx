@@ -34,6 +34,7 @@ export default function AdminContentPage() {
   useEffect(() => {
     const loadSettings = async () => {
       const supabase = getSupabaseBrowserClient();
+      if (!supabase) return;
       const [voyRes, heroRes] = await Promise.all([
         supabase.from('site_settings').select('value').eq('id', 'voyageurs_section').single(),
         supabase.from('site_settings').select('value').eq('id', 'hero_section').single()
@@ -52,6 +53,10 @@ export default function AdminContentPage() {
   const handleSave = async () => {
     setIsSaving(true);
     const supabase = getSupabaseBrowserClient();
+    if (!supabase) {
+      setIsSaving(false);
+      return;
+    }
     let finalSettings = { ...voySettings };
     let finalHeroSettings = { ...heroSettings };
 

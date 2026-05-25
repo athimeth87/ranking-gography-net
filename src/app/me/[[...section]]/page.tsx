@@ -11,6 +11,7 @@ import { MeFavorites } from '@/components/account/MeFavorites';
 import { MeStats } from '@/components/account/MeStats';
 import { MeSettings } from '@/components/account/MeSettings';
 import { MobileMe } from '@/components/mobile/MobileMe';
+import type { Photographer } from '@/lib/types';
 
 interface PageProps {
   params: { section?: string[] };
@@ -290,11 +291,17 @@ export default function Page({ params }: PageProps) {
     username: profile?.username || '',
     name: profile?.display_name || '',
     avatar: profile?.avatar_url || '',
+    cover: profile?.cover_url || '',
     loc: profile?.location || 'Not set',
     bio: profile?.bio || '',
     website: profile?.portfolio_url || '',
     isCustomer: profile?.is_customer,
-  };
+    followers: profile?.followers_count || 0,
+    photos: myPhotos.length,
+    isAmbassador: profile?.is_ambassador || false,
+    joined: profile?.created_at || '',
+    cameras: [],
+  } as Photographer;
 
   const sections = [
     { id: 'dashboard', label: 'Dashboard', path: '/me' },

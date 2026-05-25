@@ -14,7 +14,7 @@ export function GlobalUploadModal() {
   const pathname = usePathname();
   const { authUser, userState, isUploadModalOpen, setUploadModalOpen } = useApp();
   
-  const isPhotographer = userState === 'photographer' || userState === 'admin';
+  const isPhotographer = userState === 'photographer';
   const isVoyageur = userState === 'customer';
   
   const [isUploading, setIsUploading] = useState(false);

@@ -11,7 +11,7 @@ export function AdminHeader() {
   // Quick breadcrumb logic
   const pathParts = pathname.split('/').filter(Boolean);
   const currentPage = pathParts.length > 1 
-    ? pathParts[1].charAt(0).toUpperCase() + pathParts[1].slice(1)
+    ? pathParts[1]!.charAt(0).toUpperCase() + pathParts[1]!.slice(1)
     : 'Overview';
 
   return (
