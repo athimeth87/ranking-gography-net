@@ -29,9 +29,13 @@ export function CardLikeButton({ photoId, ownerId }: CardLikeButtonProps) {
     <button
       type="button"
       onClick={onClick}
+      onPointerDown={(e) => e.stopPropagation()}
+      onMouseDown={(e) => e.stopPropagation()}
       aria-label={liked ? 'Unlike' : 'Like'}
       aria-pressed={liked}
-      className="absolute bottom-3 right-3 z-10 w-9 h-9 flex items-center justify-center bg-black/40 backdrop-blur-sm hover:bg-black/60 transition-colors text-white"
+      className={`absolute bottom-3 right-3 z-10 w-9 h-9 flex items-center justify-center backdrop-blur-sm transition-colors ${
+        liked ? 'bg-black/40 text-[#ff5d75]' : 'bg-black/40 hover:bg-black/60 text-white'
+      }`}
     >
       <svg
         viewBox="0 0 24 24"
