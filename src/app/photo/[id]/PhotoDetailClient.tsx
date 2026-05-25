@@ -284,18 +284,18 @@ export function PhotoDetailClient({ id }: { id: string }) {
     <div className="page-fade">
       {/* Breadcrumb */}
       <div className="py-5 border-b border-rule">
-        <div className="wrap mono flex justify-between text-[11px] tracking-[.14em] uppercase opacity-65">
-          <div className="flex items-center">
-            <Link href="/explore" className="opacity-70">Explore</Link>
-            <span className="opacity-35 mx-3">/</span>
-            <Link href={`/explore/${catSlug}`} className="opacity-70">{photo.cat}</Link>
-            <span className="opacity-35 mx-3">/</span>
-            <span>{photo.id}</span>
+        <div className="wrap mono flex flex-col md:flex-row justify-between gap-3 md:gap-0 text-[11px] tracking-[.14em] uppercase opacity-65">
+          <div className="flex items-center flex-wrap gap-y-2">
+            <Link href="/explore" className="opacity-70 shrink-0">Explore</Link>
+            <span className="opacity-35 mx-2 md:mx-3 shrink-0">/</span>
+            <Link href={`/explore/${catSlug}`} className="opacity-70 shrink-0">{photo.cat}</Link>
+            <span className="opacity-35 mx-2 md:mx-3 shrink-0">/</span>
+            <span className="truncate max-w-[120px] md:max-w-[200px]" title={photo.id}>{photo.id}</span>
           </div>
-          <div>
-            <span className="opacity-55">Rank</span> #{String(photo.rank).padStart(3, '0')}
-            <span className="opacity-35 mx-3">·</span>
-            <span className="opacity-55">Posted</span> {photo.date}
+          <div className="flex flex-wrap items-center gap-y-2">
+            <span><span className="opacity-55">Rank</span> #{String(photo.rank).padStart(3, '0')}</span>
+            <span className="opacity-35 mx-2 md:mx-3">·</span>
+            <span><span className="opacity-55">Posted</span> {new Date(photo.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
           </div>
         </div>
       </div>
