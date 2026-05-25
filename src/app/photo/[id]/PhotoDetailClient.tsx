@@ -278,9 +278,6 @@ export function PhotoDetailClient({ id }: { id: string }) {
     }
   };
 
-  // Lightbox state
-  const [lightboxOpen, setLightboxOpen] = useState(false);
-
   // Category slug for links
   const catSlug = photo ? photo.cat.toLowerCase() : '';
 
