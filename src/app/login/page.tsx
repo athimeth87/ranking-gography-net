@@ -16,7 +16,10 @@ export default function LoginPage() {
 
       const { error: signInError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: `${window.location.origin}/auth/callback?next=/` },
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback?next=/`,
+          queryParams: { prompt: 'select_account' },
+        },
       });
       if (signInError) throw signInError;
     } catch (e: any) {

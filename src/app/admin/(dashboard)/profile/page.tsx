@@ -38,9 +38,14 @@ export default function AdminProfilePage() {
   const roleName = adminProfile?.is_super_admin ? 'Superadmin' : 'Admin';
 
   const handleSignOut = async () => {
-    const supabase = getSupabaseBrowserClient();
-    await supabase.auth.signOut();
-    window.location.href = '/admin/login';
+    try {
+      const supabase = getSupabaseBrowserClient();
+      if (supabase) await supabase.auth.signOut();
+    } catch (e) {
+      console.error('Sign out error:', e);
+    } finally {
+      window.location.replace('/admin/login');
+    }
   };
 
   return (
