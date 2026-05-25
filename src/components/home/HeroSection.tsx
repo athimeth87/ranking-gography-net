@@ -94,7 +94,7 @@ export function HeroSection({ banner, top, bannerPhotographer, topPhotographer }
         <div className="wrap flex justify-between items-baseline pb-6 text-white/65">
           <div className="caps opacity-85">Cover of the week</div>
           <div className="mono text-[11px] tracking-[.18em] uppercase">
-            ★ #1 <PulseCountUp value={top.pulse} decimals={0} suffix="%" />
+            ★ #1 · <PulseCountUp value={top.likes} decimals={0} suffix=" LIKES" />
           </div>
         </div>
 

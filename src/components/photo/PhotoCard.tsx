@@ -4,7 +4,6 @@ import type { Photo } from '@/lib/types';
 import { getPhotographer } from '@/lib/data';
 import { PickBadge } from '@/components/icons';
 import { CardLikeButton } from './CardLikeButton';
-import { formatPulseDisplay } from '@/lib/pulse-engine';
 
 interface PhotoCardProps {
   photo: Photo;
@@ -19,18 +18,11 @@ interface PhotoCardProps {
 export function PhotoCard({
   photo,
   showRank = false,
-  showRankDelta = false,
-  leaderTopScore = null,
   uniform = false,
-  pulseLabel = 'Pulse',
   showLike = false,
 }: PhotoCardProps) {
   const router = useRouter();
   const photographer = getPhotographer(photo.by);
-  const delta =
-    showRankDelta && leaderTopScore != null && photo.rank > 1
-      ? photo.pulse - leaderTopScore
-      : null;
 
   return (
     <div className="pcard" onClick={() => router.push(`/photo/${photo.id}`)}>
@@ -52,8 +44,8 @@ export function PhotoCard({
               <span>{photo.exif?.camera || 'Unknown Camera'}</span>
             </div>
             <div className="pimg-overlay-pulse">
-              <span className="pimg-overlay-pulse-num">{formatPulseDisplay(photo.pulse)}</span>
-              <span className="pimg-overlay-pulse-lab">%</span>
+              <span className="pimg-overlay-pulse-num">{photo.likes}</span>
+              <span className="pimg-overlay-pulse-lab">{photo.likes === 1 ? 'like' : 'likes'}</span>
             </div>
           </div>
         </div>
@@ -75,14 +67,13 @@ export function PhotoCard({
         </div>
         <div className="shrink-0 ml-4 text-right">
           <div className="pulse">
-            <span className="big">{formatPulseDisplay(photo.pulse)}</span>
-            <span className="lab">%</span>
+            <span className="big">{photo.likes}</span>
+            <span className="lab">{photo.likes === 1 ? 'like' : 'likes'}</span>
           </div>
-          {delta !== null && (
-            <div className="mono text-[10px] text-fg-soft mt-1 tracking-[.04em]">
-              {delta.toFixed(1)} from #1
-            </div>
-          )}
+          <div className="mono text-[10px] text-fg-soft mt-1 tracking-[.04em] flex gap-2 justify-end">
+            {photo.favorites > 0 && <span>★ {photo.favorites}</span>}
+            {photo.comments > 0 && <span>· {photo.comments} comments</span>}
+          </div>
         </div>
       </div>
       {(photo.picks?.length || 0) > 0 && (

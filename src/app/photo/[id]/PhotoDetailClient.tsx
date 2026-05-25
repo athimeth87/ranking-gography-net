@@ -15,7 +15,7 @@ import { CommentSection } from '@/components/photo/CommentSection';
 import { useFollowState } from '@/hooks/useFollowState';
 import { useFavoriteState } from '@/hooks/useFavoriteState';
 import { usePathname } from 'next/navigation';
-import { computePulse, formatPulseDisplay, type PickType } from '@/lib/pulse-engine';
+import { computePulse, type PickType } from '@/lib/pulse-engine';
 
 // ===== Single photo detail page — /photo/[id] =====
 // Large image + sidebar (photographer, EXIF, pulse/stats, comments), like/favorite toggles, lightbox.
@@ -393,22 +393,21 @@ export function PhotoDetailClient({ id }: { id: string }) {
                 <button className="heart">Report</button>
               </div>
 
-              {/* Score breakdown */}
+              {/* Engagement breakdown */}
               <div className="mt-10 md:mt-14 py-6 md:py-8 border-t border-rule border-b border-rule">
-                <div className="grid gap-4 md:gap-8 items-baseline grid-cols-3 md:grid-cols-5">
+                <div className="grid gap-4 md:gap-8 items-baseline grid-cols-2 md:grid-cols-4">
                   <div>
-                    <div className="caps opacity-55 mb-2">Score</div>
+                    <div className="caps opacity-55 mb-2">Likes</div>
                     <div className="mono font-medium leading-[1] text-[48px] tracking-[-.02em]">
-                      {formatPulseDisplay(photo.pulse)}<span className="text-[24px] opacity-65">%</span>
+                      {photo.likes}
                     </div>
                   </div>
-                  <BreakdownStat label="Likes" val={photo.likes} mult="×1" />
-                  <BreakdownStat label="24h likes" val={photo.likes24h} mult="×3" />
+                  <BreakdownStat label="Favorites" val={photo.favorites} />
+                  <BreakdownStat label="Comments" val={photo.comments} />
                   <BreakdownStat
                     label="Curation"
-                    val={photo.picks.length === 2 ? '+100' : photo.picks.length === 1 ? '+50' : '+0'}
+                    val={photo.picks.length === 2 ? 'Both' : photo.picks.length === 1 ? '1 pick' : '—'}
                   />
-                  <BreakdownStat label="Hours since" val={photo.hours} mult="÷" />
                 </div>
               </div>
 
