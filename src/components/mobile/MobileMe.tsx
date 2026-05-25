@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useApp } from '@/providers/AppProvider';
 import { MobileFooter } from './MobileShared';
 import { MeSettings } from '../account/MeSettings';
+import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 
 const SECTIONS = [
   { id: 'dashboard', label: 'Overview' },
@@ -30,13 +31,73 @@ export function MobileMe({
   const [activeTab, setActiveTab] = useState<SectionKey>(
     (SECTIONS.find(s => s.id === initialSection)?.id || 'dashboard') as SectionKey
   );
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const [localAvatar, setLocalAvatar] = useState<string | null>(null);
+  const [localCover, setLocalCover] = useState<string | null>(null);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'avatar' | 'cover') => {
+    const file = e.target.files?.[0];
+    if (!file || !authUser?.id) {
+      e.target.value = '';
+      return;
+    }
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file');
+      e.target.value = '';
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size exceeds 5MB');
+      e.target.value = '';
+      return;
+    }
+
+    const setUploading = type === 'avatar' ? setUploadingAvatar : setUploadingCover;
+    setUploading(true);
+
+    try {
+      const supabase = getSupabaseBrowserClient();
+      const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const fileName = `${type}s/${authUser.id}-${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('photos')
+        .upload(fileName, file, { upsert: true });
+      if (uploadError) throw uploadError;
+
+      const { data: pub } = supabase.storage.from('photos').getPublicUrl(fileName);
+      const publicUrl = pub.publicUrl;
+
+      const column = type === 'avatar' ? 'avatar_url' : 'cover_url';
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({ [column]: publicUrl })
+        .eq('id', authUser.id);
+      if (updateError) throw updateError;
+
+      if (type === 'avatar') {
+        setLocalAvatar(publicUrl);
+        // Call global profile update if provided (optional)
+        if (typeof profile?.updateProfile === 'function') profile.updateProfile({ avatar_url: publicUrl });
+      } else {
+        setLocalCover(publicUrl);
+        if (typeof profile?.updateProfile === 'function') profile.updateProfile({ cover_url: publicUrl });
+      }
+    } catch (err: any) {
+      alert('Upload failed: ' + err.message);
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
+  };
 
   const persona = {
     username: profile?.username || '',
     name: profile?.display_name || 'User',
     loc: profile?.location || '',
-    avatar: profile?.avatar_url || '',
-    cover: profile?.cover_url || profile?.avatar_url || 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=800&auto=format&fit=crop',
+    avatar: localAvatar || profile?.avatar_url || '',
+    cover: localCover || profile?.cover_url || 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=800&auto=format&fit=crop',
   };
 
   const totalLikes = myPhotos.reduce((s: any, p: any) => s + (p.likes || 0), 0);
@@ -52,25 +113,40 @@ export function MobileMe({
     }}>
 
       {/* Cover banner */}
-      {persona.cover && (
-        <div style={{ position: 'relative', width: '100%', height: 160, background: 'var(--tile)' }}>
-          <img src={persona.cover} alt="Cover" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-          <div style={{
-            position: 'absolute', inset: 0,
-            background: 'linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.5) 100%)',
-          }} />
-        </div>
-      )}
+      <div style={{ position: 'relative', width: '100%', height: 160, background: 'var(--tile)' }}>
+        <img src={persona.cover} alt="Cover" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.5) 100%)',
+        }} />
+        <label style={{
+          position: 'absolute', top: 12, right: 12,
+          background: 'rgba(0,0,0,0.5)', color: 'white', padding: '6px 10px',
+          borderRadius: '4px', fontSize: '10px', textTransform: 'uppercase',
+          letterSpacing: '0.1em', cursor: 'pointer', zIndex: 20
+        }}>
+          {uploadingCover ? 'Uploading...' : 'Change Cover'}
+          <input type="file" accept="image/*" className="hidden" disabled={uploadingCover} onChange={(e) => handleImageUpload(e, 'cover')} />
+        </label>
+      </div>
 
       {/* Header */}
-      <section style={{ padding: '0 16px 0', display: 'flex', alignItems: 'flex-end', gap: 16, marginTop: persona.cover ? -32 : 24, position: 'relative', zIndex: 10 }}>
-        {persona.avatar ? (
-          <img src={persona.avatar} alt="Profile" style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover', border: `3px solid ${dark ? '#0a0a0a' : '#fff'}` }} />
-        ) : (
-          <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--rule)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `3px solid ${dark ? '#0a0a0a' : '#fff'}` }}>
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-          </div>
-        )}
+      <section style={{ padding: '0 16px 0', display: 'flex', alignItems: 'flex-end', gap: 16, marginTop: -32, position: 'relative', zIndex: 10 }}>
+        <label style={{ cursor: 'pointer', position: 'relative', display: 'block' }}>
+          {persona.avatar ? (
+            <img src={persona.avatar} alt="Profile" style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover', border: `3px solid ${dark ? '#0a0a0a' : '#fff'}` }} />
+          ) : (
+            <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--rule)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `3px solid ${dark ? '#0a0a0a' : '#fff'}` }}>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            </div>
+          )}
+          <input type="file" accept="image/*" className="hidden" disabled={uploadingAvatar} onChange={(e) => handleImageUpload(e, 'avatar')} />
+          {uploadingAvatar && (
+            <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '10px' }}>
+              ...
+            </div>
+          )}
+        </label>
         <div style={{ paddingBottom: 4 }}>
           <div style={{
             fontFamily: "'IBM Plex Mono', monospace", fontSize: 11,
@@ -169,7 +245,7 @@ export function MobileMe({
                 <p style={{
                   fontFamily: "'Noto Sans Thai', sans-serif",
                   fontSize: 13, color: 'var(--fg-soft)', lineHeight: 1.6, marginTop: 8,
-                }}>ส่งภาพอีก 5 ภาพในฤดูกาลนี้เพื่อขึ้น Top 5 · เหลือเวลา 42 วัน</p>
+                }}>เหลือเวลา 42 วัน</p>
                 <div style={{
                   marginTop: 14, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
                   paddingTop: 14, borderTop: '1px solid var(--rule)',
@@ -196,9 +272,9 @@ export function MobileMe({
             }}>Quick actions</div>
             <div style={{ display: 'grid', gap: 0, border: '1px solid var(--rule-strong)' }}>
               {[
-                ['ส่งภาพใหม่',     'อัพได้วันละ 1 ภาพ',     () => alert('Submit · Coming soon')],
-                ['โหวต & favorite', 'ค้นพบภาพใหม่',           () => router.push('/explore')],
-                ['ดู Hall of Fame', 'ภาพแห่งฤดูกาลทั้งหมด',  () => router.push('/hall-of-fame')],
+                ['Submit new photo','1 upload per day',       () => alert('Submit · Coming soon')],
+                ['Vote & Favorite', 'Discover new photos',    () => router.push('/explore')],
+                ['View Hall of Fame','All photos of the season',() => router.push('/hall-of-fame')],
               ].map(([t, sub, onClick], i, a) => (
                 <button key={t as string} onClick={onClick as any} style={{
                   padding: '16px 18px', textAlign: 'left',

@@ -8,6 +8,7 @@ import { useApp } from '@/providers/AppProvider';
 import { PageCover } from '@/components/layout/PageCover';
 import type { Category } from '@/lib/types';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
+import { MAX_UPLOAD_BYTES, formatBytes } from '@/lib/imageConvert';
 
 // ---------------------------------------------------------------------------
 // Upload page — single photo upload form with daily limit
@@ -30,6 +31,8 @@ interface Draft {
   lens: string;
   file: DraftFile | null;
   actualFile: File | null;
+  width?: number;
+  height?: number;
 }
 
 interface DropZoneProps {
@@ -41,8 +44,40 @@ interface DropZoneProps {
 
 function DropZone({ draft, setDraft, dragOver, setDragOver }: DropZoneProps) {
   const handleFile = (f: File) => {
+    if (f.size > MAX_UPLOAD_BYTES) {
+      alert(`ไฟล์ใหญ่เกินไป (${formatBytes(f.size)}) — สูงสุด 5 MB`);
+      return;
+    }
     const url = URL.createObjectURL(f);
-    setDraft((d) => ({ ...d, file: { name: f.name, size: f.size, url }, actualFile: f }));
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      
+      ctx.drawImage(img, 0, 0);
+      
+      // Convert to WebP
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        
+        // Replace old extension with .webp
+        const newName = f.name.replace(/\.[^/.]+$/, "") + ".webp";
+        const webpFile = new File([blob], newName, { type: 'image/webp' });
+        const webpUrl = URL.createObjectURL(webpFile);
+
+        setDraft((d) => ({
+          ...d,
+          file: { name: webpFile.name, size: webpFile.size, url: webpUrl },
+          actualFile: webpFile,
+          width: img.width,
+          height: img.height
+        }));
+      }, 'image/webp', 0.85); // 85% quality to save space while retaining good detail
+    };
+    img.src = url;
   };
 
   const onDrop = (e: React.DragEvent<HTMLDivElement>) => {
@@ -66,7 +101,7 @@ function DropZone({ draft, setDraft, dragOver, setDragOver }: DropZoneProps) {
   if (draft.file) {
     return (
       <div className="relative">
-        <div className="aspect-[4/3] overflow-hidden bg-tile">
+        <div className="aspect-square overflow-hidden bg-tile">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={draft.file.url} alt="" className="w-full h-full object-cover" />
         </div>
@@ -94,7 +129,7 @@ function DropZone({ draft, setDraft, dragOver, setDragOver }: DropZoneProps) {
       onDragLeave={() => setDragOver(false)}
       onDrop={onDrop}
       onClick={triggerPick}
-      className="aspect-[4/3] grid place-items-center cursor-pointer text-center p-10 transition-colors duration-150"
+      className="aspect-square grid place-items-center cursor-pointer text-center p-10 transition-colors duration-150"
       style={{
         border: `2px dashed ${dragOver ? 'var(--fg)' : 'var(--rule)'}`, // runtime: dragOver state
         background: dragOver ? 'var(--cream)' : 'transparent', // runtime: dragOver state
@@ -104,7 +139,7 @@ function DropZone({ draft, setDraft, dragOver, setDragOver }: DropZoneProps) {
         <div className="text-[64px] font-light tracking-[-0.04em] leading-none mb-4 mono">↑</div>
         <div className="th text-[18px] font-normal">Drop a photo here</div>
         <p className="th text-[13px] text-fg-soft mt-3 leading-[1.6]">
-          หรือคลิกเพื่อเลือกจากเครื่อง — JPEG, PNG, WebP สูงสุด 25 MB
+          หรือคลิกเพื่อเลือกจากเครื่อง — JPEG/PNG/WebP สูงสุด 5 MB · แปลงเป็น WebP อัตโนมัติ
         </p>
       </div>
     </div>
@@ -174,7 +209,7 @@ export default function UploadPage() {
   const [countdown, setCountdown] = useState('');
   const [isUploading, setIsUploading] = useState(false);
 
-  const limitReached = uploadedToday >= 1;
+  const limitReached = false; // unlimited uploads
 
   // Countdown to midnight (Bangkok)
   useEffect(() => {
@@ -202,14 +237,13 @@ export default function UploadPage() {
     setIsUploading(true);
 
     const supabase = getSupabaseBrowserClient();
-    
-    // 1. Upload to Storage
-    const fileExt = draft.actualFile.name.split('.').pop();
-    const fileName = `${authUser.id}/${Date.now()}.${fileExt}`;
-    
+
+    // draft.actualFile is already converted to WebP in handleFile()
+    const fileName = `${authUser.id}/${Date.now()}.webp`;
+
     const { error: uploadError } = await supabase.storage
       .from('photos')
-      .upload(fileName, draft.actualFile);
+      .upload(fileName, draft.actualFile, { contentType: 'image/webp' });
 
     if (uploadError) {
       alert('Upload failed: ' + uploadError.message);
@@ -217,9 +251,8 @@ export default function UploadPage() {
       return;
     }
 
-    // 2. Insert record to public.photos
     const { data: publicUrlData } = supabase.storage.from('photos').getPublicUrl(fileName);
-    
+
     const slug = `${draft.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now()}`;
 
     const { error: dbError } = await supabase.from('photos').insert({
@@ -228,12 +261,12 @@ export default function UploadPage() {
       slug: slug,
       description: draft.caption,
       category: draft.cat.toLowerCase(),
-      location: draft.location,
+      location: draft.location.trim() || 'EARTH',
       camera: draft.camera,
       lens: draft.lens,
       storage_url: publicUrlData.publicUrl,
-      width: 4, 
-      height: 3, 
+      width: draft.width || 4,
+      height: draft.height || 3,
       likes_count: 0,
       favorites_count: 0
     });
@@ -245,7 +278,19 @@ export default function UploadPage() {
     }
 
     setIsUploading(false);
-    setUploadedToday(1);
+    // Reset draft so the user can upload another photo right away
+    setDraft({
+      title: '',
+      cat: 'Landscape',
+      forCustomerAwards: userState === 'customer',
+      caption: '',
+      location: '',
+      camera: '',
+      lens: '',
+      file: null,
+      actualFile: null,
+    });
+    alert('Upload successful!');
   };
 
   const profilePath =
@@ -257,7 +302,7 @@ export default function UploadPage() {
         photoId="p019"
         eyebrow="Upload"
         title="Submit a photo"
-        subtitle="1 ภาพต่อวัน — JPEG/PNG/WebP สูงสุด 25 MB · ภาพต้องเป็นผลงานของคุณ"
+        subtitle="อัพโหลดได้ไม่จำกัด — JPEG/PNG/WebP สูงสุด 5 MB · แปลงเป็น .webp อัตโนมัติ"
       />
       <section className="pt-12 pb-8">
         <div className="wrap">
@@ -269,19 +314,17 @@ export default function UploadPage() {
               </h1>
             </div>
 
-            {/* Daily limit counter */}
+            {/* Unlimited uploads notice */}
             <div className="text-right">
-              <div className="caps opacity-55 mb-2">Today&apos;s upload</div>
+              <div className="caps opacity-55 mb-2">Daily upload</div>
               <div className="flex items-baseline gap-[6px] justify-end">
-                {/* runtime: uploadedToday from state */}
-                <span className="mono text-[48px] font-medium tracking-[-0.02em] leading-none">
-                  {uploadedToday}
+                <span className="mono text-[32px] font-medium tracking-[-0.02em] leading-none">
+                  ∞
                 </span>
-                <span className="mono text-[24px] opacity-35">/1</span>
+                <span className="mono text-[14px] opacity-55 ml-2">UNLIMITED</span>
               </div>
               <div className="mono text-[11px] opacity-55 mt-2">
-                {/* runtime: countdown from timer */}
-                RESETS IN {countdown} (BANGKOK)
+                NO DAILY CAP
               </div>
             </div>
           </div>
@@ -305,16 +348,14 @@ export default function UploadPage() {
                   setDragOver={setDragOver}
                 />
 
-                {/* Daily rule notice */}
+                {/* Unlimited uploads notice */}
                 <div className="mt-6 py-[18px] px-6 bg-cream border border-rule flex justify-between items-center">
                   <div>
-                    <div className="th text-[13px] font-medium">วันละ 1 ภาพต่อบัญชี</div>
+                    <div className="th text-[13px] font-medium">อัพโหลดได้ไม่จำกัด</div>
                     <div className="th text-[12px] text-fg-soft mt-1">
-                      Limit รวมทุกหมวด · reset เวลา 00:00 ตามเวลาประเทศไทย · โหวตภาพอื่นได้ไม่จำกัด
+                      ไม่มี cap ต่อวัน · โหวตภาพอื่นได้ไม่จำกัด
                     </div>
                   </div>
-                  {/* runtime: countdown from timer */}
-                  <div className="mono text-[11px] opacity-55">{countdown}</div>
                 </div>
               </div>
 
@@ -416,7 +457,7 @@ export default function UploadPage() {
                     />
                   </Field2>
 
-                  <Field2 label="สถานที่ (Location)">
+                  <Field2 label="สถานที่ (Location) (ไม่บังคับ)">
                     <input
                       className="input"
                       placeholder="เช่น Chiang Mai, Thailand"

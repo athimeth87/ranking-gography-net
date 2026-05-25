@@ -152,7 +152,7 @@ export function SideMenu() {
               </div>
             </div>
             <div className="flex items-center justify-between">
-              <div className="sidemenu-version mono">GOGRAPHY · 2026</div>
+              <div className="sidemenu-version mono">GOGRAPHY RANKING · 2026</div>
               {authUser && (
                 <button
                   className="text-[10px] uppercase tracking-[0.18em] opacity-55 hover:opacity-100"

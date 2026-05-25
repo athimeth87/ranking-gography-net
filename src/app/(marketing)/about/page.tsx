@@ -32,7 +32,7 @@ export default function Page() {
         photoId="p013"
         eyebrow="About"
         title={<>A platform for photographers<br />who never stop travelling</>}
-        subtitle="GOGRAPHY Photo Awards — เวทีสำหรับช่างภาพและนักเดินทาง ภาพต้องหายใจได้ ไม่ใช่ภาพที่ algorithm จัดการ"
+        subtitle="GOGRAPHY Ranking — เวทีสำหรับช่างภาพและนักเดินทาง ภาพต้องหายใจได้ ไม่ใช่ภาพที่ algorithm จัดการ"
       />
 
       <section className="pt-[96px] pb-[120px]">
@@ -58,7 +58,7 @@ export default function Page() {
               className="text-[16px] leading-[1.85] text-[var(--fg-soft)] m-0"
               style={{ fontFamily: 'var(--serif)' }}
             >
-              GOGRAPHY Photo Awards คือเวทีที่นั่น คะแนนจัดอันดับเปิดเผยทั้งหมด
+              GOGRAPHY Ranking คือเวทีที่นั่น คะแนนจัดอันดับเปิดเผยทั้งหมด
               ทุก 4 เดือนเราเลือกภาพที่ดีที่สุดของฤดูกาล มอบ Voucher 50,000 บาท
               และเก็บไว้ใน Hall of Fame ตลอดไป
             </p>

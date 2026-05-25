@@ -47,7 +47,7 @@ export function MobilePhotographers({ initialFilter = 'all' }: { initialFilter?:
           <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', opacity: 0.85, marginBottom: 14 }}>— Directory</div>
           <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 'clamp(34px, 9vw, 56px)', lineHeight: 1.02, letterSpacing: '-0.02em', maxWidth: '16ch' }}>All photographers</div>
           <div style={{ fontSize: 14, lineHeight: 1.5, opacity: 0.82, maxWidth: '32ch', marginTop: 12 }}>
-            ช่างภาพและ Voyageurs ที่อยู่บนเวที GOGRAPHY Photo Awards
+            ช่างภาพและ Voyageurs ที่อยู่บนเวที GOGRAPHY Ranking
           </div>
         </div>
       </div>

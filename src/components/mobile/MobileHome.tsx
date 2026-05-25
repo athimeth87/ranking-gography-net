@@ -20,12 +20,23 @@ export function MobileHome({
   const router = useRouter();
   const { theme } = useApp();
   const dark = theme === 'dark';
-  const [tab, setTab] = useState('foryou');
+  const [tab, setTab] = useState('leaderboard');
 
   const pList = realPhotos.length > 0 ? realPhotos : PHOTOS;
   const photogList = realPhotographers.length > 0 ? realPhotographers : PHOTOGRAPHERS;
 
-  const fresh = pList.slice().sort((a, b) => (b.date ? new Date(b.date).getTime() : 0) - (a.date ? new Date(a.date).getTime() : 0)).slice(0, 4);
+  const fresh = pList
+    .slice()
+    .sort((a, b) => (b.date ? new Date(b.date).getTime() : 0) - (a.date ? new Date(a.date).getTime() : 0))
+    .slice(0, 12)
+    .map(ph => {
+      const photographer = photogList.find(p => p.username === ph.by);
+      return {
+        ...ph,
+        photographerName: photographer?.name || ph.by,
+        photographerAvatar: ph.avatarUrl || photographer?.avatar,
+      };
+    });
 
   const voyageurs = photogList
     .filter(p => p.isAmbassador || p.isCustomer)
@@ -39,15 +50,21 @@ export function MobileHome({
       pulse: Math.round(pList.filter(ph => ph.by === p.username).reduce((s, ph) => s + (ph.pulse || pulseScore(ph)), 0)),
     }));
 
-  const leaderboard = photogList
-    .map(p => ({
-      username: p.username,
-      name: p.name,
-      pulse: Math.round(pList.filter(ph => ph.by === p.username).reduce((s, ph) => s + (ph.pulse || pulseScore(ph)), 0)),
-    }))
-    .sort((a, b) => b.pulse - a.pulse)
-    .slice(0, 5)
-    .map((r, i) => ({ ...r, rank: i + 1, delta: ['+22', '+8', '+18', '+4', '−2'][i] }));
+  // Photo leaderboard — top photos by pulse, with photographer info for overlay
+  const photoLeaderboard = pList
+    .slice()
+    .sort((a, b) => (b.pulse || pulseScore(b)) - (a.pulse || pulseScore(a)))
+    .slice(0, 12)
+    .map(ph => {
+      const photographer = photogList.find(p => p.username === ph.by);
+      return {
+        ...ph,
+        photographerName: photographer?.name || ph.by,
+        photographerAvatar: ph.avatarUrl || photographer?.avatar,
+        isAmbassador: photographer?.isAmbassador,
+        isCustomer: photographer?.isCustomer,
+      };
+    });
 
   return (
     <div className="gpa-mobile" style={{
@@ -55,25 +72,84 @@ export function MobileHome({
       background: dark ? '#0a0a0a' : '#fff',
       color: dark ? '#fff' : '#000',
       fontFamily: "'Inter', system-ui, sans-serif",
+      paddingBottom: 64,
     }}>
       <MobileNav />
       <FeedTabs active={tab} onChange={setTab} />
 
-      {/* FEED — square photos */}
-      <section style={{ paddingTop: 4 }}>
-        {fresh.map(p => (
-          <div key={p.id} style={{
-            borderBottom: `1px solid ${dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
-            paddingBottom: 4,
-          }}>
-            <FeedCard photo={p} />
-          </div>
-        ))}
+      {/* FEED — 2-col masonry with avatar/like overlay */}
+      <section style={{ padding: '8px 6px 0' }}>
+        <div style={{ columnCount: 2, columnGap: 8 }}>
+          {fresh.map(p => {
+            const aspect = p.w && p.h ? `${p.w} / ${p.h}` : '4 / 5';
+            const likes = p.likes || 0;
+            const likesLabel = likes >= 1000 ? `${(likes / 1000).toFixed(1)}k` : likes;
+            return (
+              <div
+                key={p.id}
+                onClick={() => router.push(`/photo/${p.slug || p.id}`)}
+                style={{
+                  position: 'relative', breakInside: 'avoid',
+                  marginBottom: 8, cursor: 'pointer', overflow: 'hidden',
+                  background: 'var(--tile)',
+                }}
+              >
+                <div style={{ width: '100%', aspectRatio: aspect, overflow: 'hidden' }}>
+                  <img
+                    src={p.src}
+                    alt={p.title}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                    loading="lazy"
+                  />
+                </div>
+                <div style={{
+                  position: 'absolute', inset: 'auto 0 0 0', height: 56,
+                  background: 'linear-gradient(to top, rgba(0,0,0,0.78), rgba(0,0,0,0.25), transparent)',
+                  pointerEvents: 'none',
+                }} />
+                <div style={{
+                  position: 'absolute', left: 10, bottom: 10,
+                  display: 'flex', alignItems: 'center', gap: 7,
+                  maxWidth: 'calc(100% - 70px)',
+                }}>
+                  <div style={{
+                    width: 24, height: 24, borderRadius: '50%',
+                    overflow: 'hidden', background: 'rgba(255,255,255,0.15)',
+                    border: '1px solid rgba(255,255,255,0.3)', flexShrink: 0,
+                  }}>
+                    {p.photographerAvatar && (
+                      <img src={p.photographerAvatar} alt={p.by} style={{
+                        width: '100%', height: '100%', objectFit: 'cover',
+                      }} />
+                    )}
+                  </div>
+                  <span style={{
+                    color: '#fff', fontSize: 13, fontWeight: 500,
+                    letterSpacing: '-0.005em',
+                    whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                    textShadow: '0 1px 2px rgba(0,0,0,0.4)',
+                  }}>{p.by}</span>
+                </div>
+                <div style={{
+                  position: 'absolute', right: 10, bottom: 10,
+                  display: 'flex', alignItems: 'center', gap: 4,
+                  color: '#fff', fontSize: 13, fontWeight: 500,
+                  textShadow: '0 1px 2px rgba(0,0,0,0.4)',
+                }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                  </svg>
+                  <span>{likesLabel}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </section>
 
-      {/* Season banner break */}
+      {/* Season banner break — slim */}
       <section style={{
-        padding: '28px 16px',
+        padding: '12px 16px',
         background: dark ? '#131310' : 'var(--cream)',
         borderTop: `1px solid ${dark ? 'rgba(255,255,255,0.08)' : 'var(--rule)'}`,
         borderBottom: `1px solid ${dark ? 'rgba(255,255,255,0.08)' : 'var(--rule)'}`,
@@ -85,18 +161,6 @@ export function MobileHome({
         }}>
           Season 04 · 37 days left
         </div>
-        <h2 style={{
-          margin: '12px 0 4px',
-          fontFamily: "'Playfair Display', serif", fontWeight: 700,
-          fontSize: 28, lineHeight: 1.05, letterSpacing: '-0.01em',
-        }}>Ranked by pulse — not influence.</h2>
-        <p style={{
-          fontFamily: "'Noto Sans Thai', sans-serif",
-          fontSize: 13, lineHeight: 1.6, color: 'var(--fg-soft)',
-          margin: '8px auto 0', maxWidth: '32ch',
-        }}>
-          ภาพถ่ายเดินทางจากทั่วประเทศ จัดอันดับตามการมีส่วนร่วม
-        </p>
       </section>
 
       {/* Quick stats — 2x2 */}
@@ -232,30 +296,82 @@ export function MobileHome({
         </div>
       </section>
 
-      {/* LEADERBOARD */}
-      <section style={{ padding: '40px 16px 0' }}>
-        <MobileSectionHeader num="03 / Leaderboard" title="Pulse this week" />
-        <table style={{
-          width: '100%', borderCollapse: 'collapse', marginTop: 16,
-          fontFamily: "'IBM Plex Mono', monospace",
+      {/* LEADERBOARD — 2-col photo masonry */}
+      <section style={{ padding: '40px 6px 16px' }}>
+        <div style={{ padding: '0 10px' }}>
+          <MobileSectionHeader num="03 / Leaderboard" title="Pulse this week" link="See all" href="/explore" />
+        </div>
+        <div style={{
+          columnCount: 2, columnGap: 8, marginTop: 16,
         }}>
-          <tbody>
-            {leaderboard.map(r => (
-              <tr key={r.rank}
-                onClick={() => router.push(`/photographer/${r.username}`)}
-                style={{ borderBottom: '1px solid var(--rule)', cursor: 'pointer' }}>
-                <td style={{ padding: '14px 0', width: 28, fontSize: 11, color: 'var(--fg-soft)' }}>
-                  {String(r.rank).padStart(2, '0')}
-                </td>
-                <td style={{ padding: '14px 0', fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 500 }}>{r.name}</td>
-                <td style={{ padding: '14px 0', textAlign: 'right', fontSize: 13 }}>{r.pulse}</td>
-                <td style={{ padding: '14px 0 14px 12px', textAlign: 'right', fontSize: 11, color: 'var(--fg-soft)', width: 44 }}>
-                  {r.delta}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+          {photoLeaderboard.map(p => {
+            const aspect = p.w && p.h ? `${p.w} / ${p.h}` : '4 / 5';
+            const likes = p.likes || 0;
+            const likesLabel = likes >= 1000 ? `${(likes / 1000).toFixed(1)}k` : likes;
+            return (
+              <div
+                key={p.id}
+                onClick={() => router.push(`/photo/${p.slug || p.id}`)}
+                style={{
+                  position: 'relative', breakInside: 'avoid',
+                  marginBottom: 8, cursor: 'pointer', overflow: 'hidden',
+                  background: 'var(--tile)',
+                }}
+              >
+                <div style={{ width: '100%', aspectRatio: aspect, overflow: 'hidden' }}>
+                  <img
+                    src={p.src}
+                    alt={p.title}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                    loading="lazy"
+                  />
+                </div>
+                {/* Bottom gradient for legibility */}
+                <div style={{
+                  position: 'absolute', inset: 'auto 0 0 0', height: 56,
+                  background: 'linear-gradient(to top, rgba(0,0,0,0.78), rgba(0,0,0,0.25), transparent)',
+                  pointerEvents: 'none',
+                }} />
+                {/* Avatar + username — bottom-left */}
+                <div style={{
+                  position: 'absolute', left: 10, bottom: 10,
+                  display: 'flex', alignItems: 'center', gap: 7,
+                  maxWidth: 'calc(100% - 70px)',
+                }}>
+                  <div style={{
+                    width: 24, height: 24, borderRadius: '50%',
+                    overflow: 'hidden', background: 'rgba(255,255,255,0.15)',
+                    border: '1px solid rgba(255,255,255,0.3)', flexShrink: 0,
+                  }}>
+                    {p.photographerAvatar && (
+                      <img src={p.photographerAvatar} alt={p.by} style={{
+                        width: '100%', height: '100%', objectFit: 'cover',
+                      }} />
+                    )}
+                  </div>
+                  <span style={{
+                    color: '#fff', fontSize: 11, fontWeight: 500,
+                    letterSpacing: '-0.005em',
+                    whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                    textShadow: '0 1px 2px rgba(0,0,0,0.4)',
+                  }}>{p.by}</span>
+                </div>
+                {/* Heart + count — bottom-right */}
+                <div style={{
+                  position: 'absolute', right: 6, bottom: 6,
+                  display: 'flex', alignItems: 'center', gap: 3,
+                  color: '#fff', fontSize: 11, fontWeight: 500,
+                  textShadow: '0 1px 2px rgba(0,0,0,0.4)',
+                }}>
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                  </svg>
+                  <span>{likesLabel}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </section>
 
       <div style={{ marginTop: 40 }}>

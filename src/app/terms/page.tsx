@@ -5,7 +5,7 @@ export default function TermsPage() {
     {
       id: "introduction",
       title: "บทนำ (Introduction)",
-      content: "ยินดีต้อนรับสู่ Gography Photo Awards (ต่อจากนี้จะเรียกว่า \"แพลตฟอร์ม\") ซึ่งดำเนินการโดย GOGRAPHY Co., Ltd. การที่คุณเข้าใช้งานแพลตฟอร์มนี้ ไม่ว่าจะในฐานะ Visitor, Registered User, หรือ Photographer ถือว่าคุณได้ยอมรับและตกลงที่จะปฏิบัติตามข้อตกลงและเงื่อนไขเหล่านี้อย่างครบถ้วน"
+      content: "ยินดีต้อนรับสู่ Gography Ranking (ต่อจากนี้จะเรียกว่า \"แพลตฟอร์ม\") ซึ่งดำเนินการโดย GOGRAPHY Co., Ltd. การที่คุณเข้าใช้งานแพลตฟอร์มนี้ ไม่ว่าจะในฐานะ Visitor, Registered User, หรือ Photographer ถือว่าคุณได้ยอมรับและตกลงที่จะปฏิบัติตามข้อตกลงและเงื่อนไขเหล่านี้อย่างครบถ้วน"
     },
     {
       id: "copyright",
@@ -38,7 +38,7 @@ export default function TermsPage() {
     <>
       <PageCover 
         title="Terms of Service" 
-        subtitle="ข้อตกลงและเงื่อนไขการใช้งาน Gography Photo Awards"
+        subtitle="ข้อตกลงและเงื่อนไขการใช้งาน Gography Ranking"
       />
       
       {/* Date Banner */}

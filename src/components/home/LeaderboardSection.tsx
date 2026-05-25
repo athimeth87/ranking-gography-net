@@ -49,7 +49,7 @@ export function LeaderboardSection({ allPhotos, voyageurUsernames }: Leaderboard
         </div>
         <CategoryChips value={leaderCat} onChange={setLeaderCat} showVoyageurs />
         <div className="mt-8">
-          <PhotoGrid photos={leaderboard} cols={4} showRank showRankDelta uniform />
+          <PhotoGrid photos={leaderboard} cols={4} showRank showRankDelta uniform showLike />
         </div>
       </div>
     </section>

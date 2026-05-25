@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { Photo } from '@/lib/types';
 import { getPhotographer } from '@/lib/data';
+import { TrendsHeart } from './TrendsHeart';
 
 interface TrendsNowSectionProps {
   photos: Photo[];
@@ -27,19 +28,19 @@ export function TrendsNowSection({ photos }: TrendsNowSectionProps) {
           </Link>
         </div>
 
-        <ol className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-[48px] gap-y-[2px]">
+        <ol className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-[40px] gap-y-[20px]">
           {top9.map((photo, i) => {
             const photographer = getPhotographer(photo.by);
             return (
-              <li key={photo.id} className="border-t border-rule first:border-t-0 md:[&:nth-child(2)]:border-t-0 lg:[&:nth-child(3)]:border-t-0">
+              <li key={photo.id}>
                 <Link
                   href={`/photo/${photo.id}`}
-                  className="grid grid-cols-[40px_76px_1fr] gap-[18px] items-center py-[16px] group"
+                  className="grid grid-cols-[32px_120px_1fr] gap-[16px] items-center py-[10px] group"
                 >
-                  <span className="mono text-[22px] font-medium tabular-nums opacity-45 group-hover:opacity-100 transition-opacity">
+                  <span className="mono text-[16px] font-medium tabular-nums opacity-45 group-hover:opacity-100 transition-opacity">
                     {String(i + 1).padStart(2, '0')}
                   </span>
-                  <div className="w-[76px] h-[96px] overflow-hidden bg-tile">
+                  <div className="w-[120px] h-[150px] overflow-hidden bg-tile">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={photo.src}
@@ -52,17 +53,20 @@ export function TrendsNowSection({ photos }: TrendsNowSectionProps) {
                     <div className="text-[15px] font-medium tracking-[-.005em] truncate">
                       {photo.title}
                     </div>
-                    <div className="mono text-[10px] tracking-[.16em] uppercase opacity-55 mt-[4px] truncate">
+                    <div className="mono text-[10px] tracking-[.16em] uppercase opacity-55 mt-[6px] truncate">
                       {photographer?.name ?? photo.by}
                     </div>
-                    <div className="flex items-baseline gap-[10px] mt-[8px]">
+                    <div className="flex items-center gap-[10px] mt-[8px]">
                       <span className="mono text-[10px] tracking-[.14em] uppercase opacity-65">
                         {photo.cat}
                       </span>
                       <span className="opacity-40 text-[10px]">·</span>
-                      <span className="mono text-[11px] tabular-nums">
-                        Pulse {Math.round(photo.pulse)}
+                      <span className="mono text-[11px] tabular-nums opacity-80">
+                        {photo.likes} {photo.likes === 1 ? 'like' : 'likes'}
                       </span>
+                    </div>
+                    <div className="mt-[10px]">
+                      <TrendsHeart photoId={photo.id} />
                     </div>
                   </div>
                 </Link>

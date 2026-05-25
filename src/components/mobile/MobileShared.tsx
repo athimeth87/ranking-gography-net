@@ -27,56 +27,35 @@ export function MobileNav() {
 export function MobileFooter() {
   const { theme } = useApp();
   const dark = theme === 'dark';
-  const cols = [
-    { h: 'Awards',    items: [['Hall of Fame','/hall-of-fame'], ['Season 04','/explore'], ['Voyageurs','/photographers/voyageurs'], ['Ambassadors','/ambassadors']] },
-    { h: 'Discover',  items: [['Explore','/explore'], ['Photographers','/photographers'], ['Categories','/explore'], ['Search','/search']] },
-    { h: 'Customers', items: [['Cashback','/for-customers'], ['Rewards','/for-customers'], ['Rules','/for-customers'], ['How it works','/for-customers']] },
-    { h: 'About',     items: [['Mission','/about'], ['Team','/about'], ['Press','/about'], ['Contact','/about']] },
-  ];
   return (
     <footer style={{
       background: dark ? '#000' : 'var(--cream)',
       color: dark ? '#fff' : 'var(--fg)',
       borderTop: `1px solid ${dark ? 'rgba(255,255,255,0.1)' : 'var(--rule)'}`,
     }}>
-      <div style={{ padding: '40px 16px 24px' }}>
-        <div className="wordmark" style={{
-          fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 28,
-          letterSpacing: '-0.01em', marginBottom: 4,
-        }}>GOGRAPHY</div>
-        <div className="mono" style={{ fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', opacity: 0.6 }}>
-          Photo Awards · Season 04
-        </div>
-        <p className="th" style={{ marginTop: 18, fontSize: 13, lineHeight: 1.6, opacity: 0.78, maxWidth: '34ch' }}>
-          เวทีรางวัลภาพถ่ายไทยรายฤดูกาล สำหรับช่างภาพอิสระและนักเดินทาง
-        </p>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '28px 16px', marginTop: 32 }}>
-          {cols.map((c) => (
-            <div key={c.h}>
-              <div style={{
-                fontFamily: "'IBM Plex Mono', monospace", fontSize: 11,
-                letterSpacing: '0.12em', textTransform: 'uppercase',
-                fontWeight: 500, opacity: 0.6, marginBottom: 10,
-              }}>{c.h}</div>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: 8 }}>
-                {c.items.map(([label, href]) => (
-                  <li key={label} style={{ fontSize: 13 }}>
-                    <Link href={href} style={{ color: 'inherit', textDecoration: 'none' }}>{label}</Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-        <div style={{ height: 1, background: dark ? 'rgba(255,255,255,0.1)' : 'var(--rule)', margin: '32px 0 14px' }} />
+      <div style={{ padding: '10px 16px 12px', textAlign: 'center' }}>
+        {/* Logo + wordmark inline */}
         <div style={{
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          flexWrap: 'wrap', gap: 8,
-          fontFamily: "'IBM Plex Mono', monospace", fontSize: 10,
-          letterSpacing: '0.1em', opacity: 0.55, textTransform: 'uppercase',
+          display: 'inline-flex', alignItems: 'center', gap: 10,
+          marginBottom: 4,
         }}>
-          <span>© 2026 Gography</span>
-          <span>Bangkok · Thailand</span>
+          <img
+            src="/logo-white.png"
+            alt="Gography"
+            style={{
+              width: 28, height: 28, objectFit: 'contain',
+              filter: dark ? 'none' : 'invert(1)',
+            }}
+          />
+          <div className="wordmark" style={{
+            fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 22,
+            letterSpacing: '-0.01em',
+          }}>GOGRAPHY</div>
+        </div>
+        <div className="mono" style={{
+          fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', opacity: 0.6,
+        }}>
+          Ranking · Season 04
         </div>
       </div>
     </footer>
@@ -139,8 +118,8 @@ export function FeedTabs({ active, onChange }: { active: string; onChange: (id: 
   const c = dark ? '#fff' : '#000';
   const muted = dark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)';
   const tabs = [
-    { id: 'foryou', label: 'For You' },
-    { id: 'following', label: 'Following' },
+    { id: 'leaderboard', label: 'Leaderboard' },
+    { id: 'trendsnow', label: 'Trends Now' },
   ];
   return (
     <div style={{
@@ -156,10 +135,11 @@ export function FeedTabs({ active, onChange }: { active: string; onChange: (id: 
           <button key={t.id} onClick={() => onChange(t.id)} style={{
             background: 'transparent', border: 0, padding: '4px 2px',
             cursor: 'pointer', position: 'relative',
-            fontFamily: "'Inter', sans-serif",
-            fontSize: on ? 17 : 15, fontWeight: on ? 600 : 500,
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: on ? 13 : 12, fontWeight: 500,
             color: on ? c : muted,
-            letterSpacing: '-0.01em',
+            letterSpacing: '0.22em',
+            textTransform: 'uppercase',
           }}>
             {t.label}
             {on && (

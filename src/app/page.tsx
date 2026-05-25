@@ -166,13 +166,16 @@ export default function LandingPage() {
         <Marquee
           speedSec={70}
           items={(realAllPhotos.length > 0 ? realAllPhotos : mockAllPhotos).slice(0, 12).map((p, i) => {
-            const photographer = getMockPhotographer(p.by);
+            const realPhotographer = realPhotographers.find(rp => rp.username === p.by);
+            const photographer = realPhotographer ?? getMockPhotographer(p.by);
             return {
               num: String(i + 1).padStart(2, '0'),
               title: p.title,
               by: (photographer?.name ?? p.by).toUpperCase(),
-              avatar: p.avatarUrl ?? photographer?.avatar, // Use real avatar if available
-              href: `/photo/${p.slug}` // Make it clickable
+              avatar: p.avatarUrl ?? photographer?.avatar,
+              href: photographer ? `/photographer/${photographer.username}` : `/photo/${p.slug}`,
+              isAmbassador: photographer?.isAmbassador ?? false,
+              isCustomer: photographer?.isCustomer ?? false,
             };
           })}
         />

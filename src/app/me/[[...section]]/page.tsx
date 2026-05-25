@@ -11,6 +11,8 @@ import { MeFavorites } from '@/components/account/MeFavorites';
 import { MeStats } from '@/components/account/MeStats';
 import { MeSettings } from '@/components/account/MeSettings';
 import { MobileMe } from '@/components/mobile/MobileMe';
+import type { Photographer } from '@/lib/types';
+import { computePulse, type PickType } from '@/lib/pulse-engine';
 
 interface PageProps {
   params: { section?: string[] };
@@ -19,6 +21,7 @@ interface PageProps {
 function mapPhoto(p: any, username: string, fallbackEmail?: string) {
   const likes = p.likes_count || 0;
   const favorites = p.favorites_count || 0;
+  const comments = p.comments_count || 0;
   return {
     id: p.id,
     slug: p.id,
@@ -32,12 +35,22 @@ function mapPhoto(p: any, username: string, fallbackEmail?: string) {
     exif: { camera: 'Unknown', lens: 'Unknown', iso: 100, shutter: '1/100', aperture: 'f/8', focal: '50mm' },
     likes,
     likes24h: 0,
-    comments: p.comments_count || 0,
+    comments,
     favorites,
     hours: 1,
     picks: [],
     date: p.uploaded_at,
-    pulse: likes,
+    pulse: computePulse({
+      likes_count: likes,
+      favorites_count: favorites,
+      comments_count: comments,
+      impressions_count: p.impressions_count || 0,
+      uploaded_at: p.uploaded_at,
+      pick_type: (p.pick_type as PickType) ?? 'none',
+      has_title: !!p.title,
+      has_category: !!p.category,
+      has_descriptor: !!(p.location || p.camera || p.lens),
+    }),
     rank: 0,
   };
 }
@@ -52,6 +65,53 @@ export default function Page({ params }: PageProps) {
       window.history.pushState(null, '', path);
     }
   }, []);
+
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !authUser?.id) {
+      e.target.value = '';
+      return;
+    }
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file');
+      e.target.value = '';
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size exceeds 5MB');
+      e.target.value = '';
+      return;
+    }
+
+    setUploadingCover(true);
+    try {
+      const supabase = getSupabaseBrowserClient();
+      const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const fileName = `covers/${authUser.id}-${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('photos')
+        .upload(fileName, file, { upsert: true });
+      if (uploadError) throw uploadError;
+
+      const { data: pub } = supabase.storage.from('photos').getPublicUrl(fileName);
+      const publicUrl = pub.publicUrl;
+
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({ cover_url: publicUrl })
+        .eq('id', authUser.id);
+      if (updateError) throw updateError;
+
+      setProfile((p: any) => ({ ...p, cover_url: publicUrl }));
+    } catch (err: any) {
+      alert('Upload failed: ' + err.message);
+    } finally {
+      setUploadingCover(false);
+      e.target.value = '';
+    }
+  };
 
   useEffect(() => {
     const onPopState = () => {
@@ -213,9 +273,55 @@ export default function Page({ params }: PageProps) {
               const likes = typeof next.likes_count === 'number' ? next.likes_count : p.likes;
               const favorites = typeof next.favorites_count === 'number' ? next.favorites_count : p.favorites;
               const comments = typeof next.comments_count === 'number' ? next.comments_count : p.comments;
-              return { ...p, likes, favorites, comments, pulse: likes };
+              const pulse = computePulse({
+                likes_count: likes,
+                favorites_count: favorites,
+                comments_count: comments,
+                impressions_count: 0,
+                uploaded_at: p.date,
+              });
+              return { ...p, likes, favorites, comments, pulse };
             }),
           );
+        },
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [authUser?.id]);
+
+  // Realtime: keep /me/favorites in sync when the user favorites or
+  // unfavorites a photo from anywhere (photo detail page, another tab).
+  useEffect(() => {
+    if (!authUser?.id) return;
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) return;
+    const channel = supabase
+      .channel(`me-favorites-${authUser.id}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'favorites', filter: `user_id=eq.${authUser.id}` },
+        async (payload) => {
+          const row = payload.new as { photo_id: string };
+          const { data: photo } = await supabase
+            .from('photos')
+            .select('*, users!photographer_id(username)')
+            .eq('id', row.photo_id)
+            .maybeSingle();
+          if (!photo) return;
+          const mapped = mapPhoto(photo, (photo as any)?.users?.username || '');
+          setFavs((curr) => {
+            if (curr.some((p: any) => p?.id === mapped.id)) return curr;
+            return [mapped, ...curr];
+          });
+        },
+      )
+      .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'favorites', filter: `user_id=eq.${authUser.id}` },
+        (payload) => {
+          const removed = payload.old as { photo_id?: string };
+          if (!removed?.photo_id) return;
+          setFavs((curr) => curr.filter((p: any) => p?.id !== removed.photo_id));
         },
       )
       .subscribe();
@@ -243,11 +349,17 @@ export default function Page({ params }: PageProps) {
     username: profile?.username || '',
     name: profile?.display_name || '',
     avatar: profile?.avatar_url || '',
+    cover: profile?.cover_url || '',
     loc: profile?.location || 'Not set',
     bio: profile?.bio || '',
     website: profile?.portfolio_url || '',
     isCustomer: profile?.is_customer,
-  };
+    followers: profile?.followers_count || 0,
+    photos: myPhotos.length,
+    isAmbassador: profile?.is_ambassador || false,
+    joined: profile?.created_at || '',
+    cameras: [],
+  } as Photographer;
 
   const sections = [
     { id: 'dashboard', label: 'Dashboard', path: '/me' },
@@ -259,9 +371,10 @@ export default function Page({ params }: PageProps) {
 
   return (
     <div className="page-fade">
-      <div className="hidden md:block">
+      <div className="hidden md:block relative group">
         <PageCover
-          photoId="p013"
+          photoId={profile?.cover_url ? undefined : "p013"}
+          src={profile?.cover_url || undefined}
           eyebrow="Your account"
           title="Your dashboard"
           subtitle="ภาพของคุณ คะแนน favorites ทริปกับ GOGRAPHY — รวมที่เดียว"
@@ -269,6 +382,10 @@ export default function Page({ params }: PageProps) {
           minHeight={300}
           maxHeight={420}
         />
+        <label className="absolute top-6 right-10 bg-black/50 text-white px-4 py-2 rounded text-[11px] tracking-[.1em] uppercase cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity z-20 hover:bg-black/80">
+          {uploadingCover ? 'Uploading...' : 'Change Cover'}
+          <input type="file" accept="image/*" className="hidden" disabled={uploadingCover} onChange={handleCoverUpload} />
+        </label>
       </div>
       <div className="md:hidden">
         {loading ? (

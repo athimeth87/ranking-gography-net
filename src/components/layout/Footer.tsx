@@ -9,7 +9,7 @@ export function Footer() {
             <div className="logo mb-[18px]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/logo-white.png" alt="Gography" className="logo-img" />
-              <small>Photo Awards</small>
+              <small>Ranking</small>
             </div>
             <p className="th text-[13px] leading-[1.7] max-w-[360px] text-fg-soft">
               เวทีรวมภาพถ่ายของช่างภาพและนักเดินทาง — จัดอันดับด้วย Pulse Score ที่โปร่งใส และมอบรางวัลให้ผู้ชนะทุกฤดูกาล

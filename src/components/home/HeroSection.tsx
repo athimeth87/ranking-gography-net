@@ -46,7 +46,7 @@ export function HeroSection({ banner, top, bannerPhotographer, topPhotographer }
         {/* Top bar */}
         <div className="absolute top-6 md:top-8 left-4 right-4 md:left-10 md:right-10 flex justify-between items-baseline text-white">
           <div className="mono text-[11px] tracking-[.22em] uppercase opacity-85">
-            GOGRAPHY Photo Awards
+            GOGRAPHY Ranking
           </div>
           <div className="mono text-[11px] tracking-[.22em] uppercase opacity-85">
             Spring 2026 · Live
@@ -94,7 +94,7 @@ export function HeroSection({ banner, top, bannerPhotographer, topPhotographer }
         <div className="wrap flex justify-between items-baseline pb-6 text-white/65">
           <div className="caps opacity-85">Cover of the week</div>
           <div className="mono text-[11px] tracking-[.18em] uppercase">
-            ★ #1 PULSE <PulseCountUp value={top.pulse} decimals={0} />
+            ★ #1 · <PulseCountUp value={top.likes} decimals={0} suffix=" LIKES" />
           </div>
         </div>
 

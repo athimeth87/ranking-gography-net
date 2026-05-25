@@ -214,7 +214,7 @@ export function MePhotos({ myPhotos, isPhotographer, isVoyageur, onPhotoUploaded
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
               >
                 <div 
-                  className="shrink-0 min-h-[140px] h-[140px] bg-white/5 border border-dashed border-white/20 rounded-xl grid place-items-center cursor-pointer overflow-hidden relative hover:bg-white/10 transition-colors"
+                  className="shrink-0 aspect-square w-[240px] mx-auto bg-white/5 border border-dashed border-white/20 rounded-xl grid place-items-center cursor-pointer overflow-hidden relative hover:bg-white/10 transition-colors"
                   onClick={() => fileInputRef.current?.click()}
                 >
                   {draft.previewUrl ? (

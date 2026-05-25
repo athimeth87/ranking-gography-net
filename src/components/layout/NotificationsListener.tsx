@@ -48,8 +48,7 @@ export function NotificationsListener() {
               .single()
               .then(({ data }) => {
                 showToast(data?.avatar_url);
-              })
-              .catch(() => showToast());
+              }, () => showToast());
           } else {
             showToast();
           }

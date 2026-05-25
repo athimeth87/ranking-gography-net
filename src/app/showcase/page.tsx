@@ -25,7 +25,7 @@ function PageShowcase() {
         photoId="p018"
         eyebrow="Internal · shadcn/ui"
         title="UI Showcase"
-        subtitle="Reference page for shadcn/ui primitives wired into GOGRAPHY Photo Awards — tuned to the monochrome premium palette (no rounded corners, black/white only)."
+        subtitle="Reference page for shadcn/ui primitives wired into GOGRAPHY Ranking — tuned to the monochrome premium palette (no rounded corners, black/white only)."
         height="40vh"
         minHeight={320}
         maxHeight={440}

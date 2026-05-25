@@ -71,7 +71,7 @@ export function MobileLogin() {
         fontFamily: "'IBM Plex Mono', monospace", fontSize: 11,
         letterSpacing: '0.18em', textTransform: 'uppercase',
         textAlign: 'center', opacity: 0.6, marginTop: 6,
-      }}>Photo Awards · 2026</div>
+      }}>Ranking · 2026</div>
 
       <h1 style={{
         margin: '40px 0 14px',

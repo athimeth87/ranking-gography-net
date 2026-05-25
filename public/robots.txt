@@ -1,0 +1,15 @@
+# *
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin/*
+Disallow: /me
+Disallow: /me/*
+Disallow: /login
+Disallow: /auth/*
+
+# Host
+Host: https://ranking.gography.net
+
+# Sitemaps
+Sitemap: https://ranking.gography.net/sitemap.xml

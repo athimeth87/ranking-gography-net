@@ -1,19 +1,129 @@
 // @ts-nocheck
 'use client';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { PHOTOS, PHOTOGRAPHERS, pulseScore } from '@/lib/data';
 import { useApp } from '@/providers/AppProvider';
+import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { MobileNav, MobileFooter, MobileMarquee, MobileSectionHeader, BottomNav } from './MobileShared';
+
+// Masonry photo tile with avatar+username overlay (left) and like button (right)
+export function MasonryTile({ photo }: { photo: any }) {
+  const router = useRouter();
+  const [liked, setLiked] = useState(false);
+  const { authUser } = useApp();
+  const aspect = photo.w && photo.h ? `${photo.w} / ${photo.h}` : '4 / 5';
+
+  const photographer = PHOTOGRAPHERS.find(p => p.username === photo.by);
+  const avatarUrl = photo.avatarUrl || photographer?.avatar;
+
+  useEffect(() => {
+    try {
+      const map = JSON.parse(localStorage.getItem('gpa-liked') || '{}');
+      setLiked(Boolean(map[photo.id]));
+    } catch {}
+  }, [photo.id]);
+
+  const toggleLike = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const next = !liked;
+    setLiked(next);
+    try {
+      const map = JSON.parse(localStorage.getItem('gpa-liked') || '{}');
+      map[photo.id] = next;
+      localStorage.setItem('gpa-liked', JSON.stringify(map));
+    } catch {}
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(photo.id);
+    if (authUser?.id && isUuid) {
+      const supabase = getSupabaseBrowserClient();
+      if (next) {
+        await supabase.from('favorites').upsert({ user_id: authUser.id, photo_id: photo.id });
+      } else {
+        await supabase.from('favorites').delete().eq('user_id', authUser.id).eq('photo_id', photo.id);
+      }
+    }
+  };
+
+  const baseLikes = photo.likes || 0;
+  const likesShown = baseLikes + (liked ? 1 : 0);
+  const likesLabel = likesShown >= 1000 ? `${(likesShown / 1000).toFixed(1)}k` : likesShown;
+
+  return (
+    <div
+      onClick={() => router.push(`/photo/${photo.slug || photo.id}`)}
+      style={{
+        position: 'relative', breakInside: 'avoid',
+        marginBottom: 8, cursor: 'pointer', overflow: 'hidden', background: 'var(--tile)',
+      }}
+    >
+      <div style={{ width: '100%', aspectRatio: aspect, overflow: 'hidden' }}>
+        <img
+          src={photo.src}
+          alt={photo.title}
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          loading="lazy"
+        />
+      </div>
+      {/* Bottom gradient for legibility */}
+      <div style={{
+        position: 'absolute', inset: 'auto 0 0 0', height: 56,
+        background: 'linear-gradient(to top, rgba(0,0,0,0.78), rgba(0,0,0,0.25), transparent)',
+        pointerEvents: 'none',
+      }} />
+      {/* Avatar + username — bottom-left */}
+      <div style={{
+        position: 'absolute', left: 10, bottom: 10,
+        display: 'flex', alignItems: 'center', gap: 7,
+        maxWidth: 'calc(100% - 70px)',
+      }}>
+        <div style={{
+          width: 24, height: 24, borderRadius: '50%',
+          overflow: 'hidden', background: 'rgba(255,255,255,0.15)',
+          border: '1px solid rgba(255,255,255,0.3)', flexShrink: 0,
+        }}>
+          {avatarUrl && (
+            <img src={avatarUrl} alt={photo.by} style={{
+              width: '100%', height: '100%', objectFit: 'cover',
+            }} />
+          )}
+        </div>
+        <span style={{
+          color: '#fff', fontSize: 13, fontWeight: 500,
+          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          textShadow: '0 1px 2px rgba(0,0,0,0.4)',
+        }}>{photo.by}</span>
+      </div>
+      {/* Like button — bottom-right (clickable) */}
+      <button
+        onClick={toggleLike}
+        aria-label={liked ? 'Unlike' : 'Like'}
+        style={{
+          position: 'absolute', right: 10, bottom: 10,
+          padding: 0, border: 0, background: 'transparent', cursor: 'pointer',
+          display: 'inline-flex', alignItems: 'center', gap: 4,
+          color: liked ? '#ff5d75' : '#fff',
+          fontSize: 13, fontWeight: 500, fontFamily: 'inherit',
+          textShadow: '0 1px 2px rgba(0,0,0,0.4)',
+        }}
+      >
+        <svg width="15" height="15" viewBox="0 0 24 24" fill={liked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+        </svg>
+        <span>{likesLabel}</span>
+      </button>
+    </div>
+  );
+}
 
 const CATS = ['All', 'Landscape', 'Portrait', 'BW'] as const;
 
-export function MobileExplore() {
+export function MobileExplore({ initialCategory = 'All' }: { initialCategory?: typeof CATS[number] }) {
   const router = useRouter();
   const { theme } = useApp();
   const dark = theme === 'dark';
   const [sort, setSort] = useState<'Hirest' | 'Fresh'>('Fresh');
-  const [cat, setCat] = useState<typeof CATS[number]>('All');
+  const [cat, setCat] = useState<typeof CATS[number]>(initialCategory);
   const [visible, setVisible] = useState(8);
 
   const filtered = useMemo(() => {
@@ -109,51 +219,16 @@ export function MobileExplore() {
         })}
       </div>
 
-      {/* Photo grid — 2-col */}
-      <div style={{ padding: '24px 16px 0' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          {grid.map(p => {
-            const photographer = PHOTOGRAPHERS.find(ph => ph.username === p.by);
-            return (
-              <article
-                key={p.id}
-                onClick={() => router.push(`/photo/${p.id}`)}
-                style={{ display: 'flex', flexDirection: 'column', cursor: 'pointer' }}
-              >
-                <div style={{ position: 'relative', width: '100%', aspectRatio: '4 / 5', background: 'var(--tile)', overflow: 'hidden' }}>
-                  <img src={p.src} alt={p.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
-                </div>
-                <div style={{ paddingTop: 10 }}>
-                  <div style={{
-                    fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 500,
-                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                  }}>
-                    {photographer?.name || p.by}
-                  </div>
-                  <div style={{
-                    fontFamily: "'IBM Plex Mono', monospace", fontSize: 10,
-                    color: 'var(--fg-soft)', letterSpacing: '0.08em',
-                    marginTop: 2, textTransform: 'uppercase',
-                  }}>
-                    {photographer?.loc} · ♥ {p.likes}
-                  </div>
-                </div>
-              </article>
-            );
-          })}
+      {/* Photo grid — 2-col masonry (Pinterest-style) */}
+      <div style={{ padding: '16px 6px 0' }}>
+        <div style={{
+          columnCount: 2,
+          columnGap: 8,
+        }}>
+          {filtered.map(p => (
+            <MasonryTile key={p.id} photo={p} />
+          ))}
         </div>
-        {visible < filtered.length && (
-          <button onClick={() => setVisible(v => v + 8)} style={{
-            width: '100%', marginTop: 28,
-            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-            minHeight: 44, padding: '0 18px',
-            fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 500,
-            letterSpacing: '0.04em', textTransform: 'uppercase',
-            border: `1px solid ${dark ? '#fff' : '#000'}`,
-            background: 'transparent', color: dark ? '#fff' : '#000',
-            cursor: 'pointer',
-          }}>Load more</button>
-        )}
       </div>
 
       {/* Trending — moved below grid */}

@@ -30,14 +30,11 @@ export default function Page() {
             return (
               <div
                 key={a.username}
-                className="grid grid-cols-[300px_1fr_1fr] gap-[48px] py-[56px] border-b border-[var(--rule)] items-start"
+                className="grid grid-cols-1 md:grid-cols-[260px_1fr] lg:grid-cols-[280px_1fr_1fr] gap-8 md:gap-10 lg:gap-12 py-10 md:py-14 border-b border-[var(--rule)] items-start"
               >
-                <div>
-                  <div className="mono text-[11px] tracking-[.16em] uppercase opacity-55 mb-[24px]">
-                    {String(i + 1).padStart(2, '0')} of {ambassadors.length}
-                  </div>
+                <div className="flex md:block items-center gap-5">
                   <div
-                    className="w-[120px] h-[120px] rounded-full overflow-hidden bg-[var(--tile)] mb-[20px]"
+                    className="w-[88px] h-[88px] md:w-[120px] md:h-[120px] rounded-full overflow-hidden bg-[var(--tile)] shrink-0 md:mb-[20px]"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
@@ -47,18 +44,25 @@ export default function Page() {
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <h3 className="text-[28px] font-normal tracking-[-0.02em] m-0">{a.name}</h3>
-                  <div className="caps opacity-55 mt-[8px]">
-                    {a.loc} · @{a.username}
+                  <div className="min-w-0">
+                    <div className="mono text-[10px] md:text-[11px] tracking-[.16em] uppercase opacity-55 mb-2 md:mb-[24px] hidden md:block">
+                      {String(i + 1).padStart(2, '0')} of {ambassadors.length}
+                    </div>
+                    <h3 className="text-[22px] md:text-[28px] font-normal tracking-[-0.02em] m-0 truncate">{a.name}</h3>
+                    <div className="caps opacity-55 mt-[6px] md:mt-[8px] truncate">
+                      {a.loc} · @{a.username}
+                    </div>
+                    <div className="hidden md:block">
+                      <ProfileButton username={a.username} />
+                    </div>
                   </div>
-                  <ProfileButton username={a.username} />
                 </div>
                 <div>
-                  <div className="caps opacity-55 mb-[16px]">Statement</div>
-                  <p className="th text-[18px] leading-[1.55] m-0 tracking-[-0.005em]">
+                  <div className="caps opacity-55 mb-[12px] md:mb-[16px]">Statement</div>
+                  <p className="th text-[16px] md:text-[18px] leading-[1.6] m-0 tracking-[-0.005em]">
                     {a.bio}
                   </p>
-                  <p className="th text-[14px] leading-[1.7] text-[var(--fg-soft)] mt-[20px]">
+                  <p className="th text-[13px] md:text-[14px] leading-[1.7] text-[var(--fg-soft)] mt-[16px] md:mt-[20px]">
                     คัดเลือกภาพในแนว{' '}
                     <strong className="text-[var(--fg)] font-medium">
                       {a.username === 'wattana'
@@ -69,10 +73,13 @@ export default function Page() {
                     </strong>{' '}
                     — เน้นที่ composition และจังหวะของแสง
                   </p>
+                  <div className="md:hidden mt-5">
+                    <ProfileButton username={a.username} />
+                  </div>
                 </div>
                 <div>
-                  <div className="caps opacity-55 mb-[16px]">Recent picks</div>
-                  <div className="grid grid-cols-[1fr_1fr] gap-[8px]">
+                  <div className="caps opacity-55 mb-[12px] md:mb-[16px]">Recent picks</div>
+                  <div className="grid grid-cols-4 md:grid-cols-2 gap-[8px]">
                     {theirPicks.slice(0, 4).map((p) => (
                       <PhotoThumb key={p.id} id={p.id} src={p.src} title={p.title} />
                     ))}

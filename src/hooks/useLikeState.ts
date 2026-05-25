@@ -30,8 +30,9 @@ export function useLikeState(photoId: string): UseLikeState {
     const supabase = getSupabaseBrowserClient();
     if (!supabase) return;
 
+    const channelName = `photo-${photoId}-${Math.random().toString(36).slice(2, 10)}`;
     const channel = supabase
-      .channel(`photo-${photoId}`)
+      .channel(channelName)
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'photos', filter: `id=eq.${photoId}` },

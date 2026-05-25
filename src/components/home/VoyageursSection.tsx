@@ -62,7 +62,8 @@ export function VoyageursSection({ featuredPhoto }: VoyageursSectionProps) {
     reward1_sub: 'ต่อหมวด',
     reward2_amount: '3-15%',
     reward2_label: 'CASHBACK',
-    reward2_sub: 'TOP 10'
+    reward2_sub: 'TOP 10',
+    image_url: ''
   });
 
   useEffect(() => {

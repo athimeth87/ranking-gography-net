@@ -7,13 +7,14 @@ import { Switch } from '@/components/ui/switch';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { useApp } from '@/providers/AppProvider';
 import type { Category } from '@/lib/types';
+import { convertToWebP, MAX_UPLOAD_BYTES, formatBytes } from '@/lib/imageConvert';
 
 export function GlobalUploadModal() {
   const router = useRouter();
   const pathname = usePathname();
   const { authUser, userState, isUploadModalOpen, setUploadModalOpen } = useApp();
   
-  const isPhotographer = userState === 'photographer' || userState === 'admin';
+  const isPhotographer = userState === 'photographer';
   const isVoyageur = userState === 'customer';
   
   const [isUploading, setIsUploading] = useState(false);
@@ -60,9 +61,12 @@ export function GlobalUploadModal() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
-    if (f) {
-      setDraft(d => ({ ...d, file: f, previewUrl: URL.createObjectURL(f) }));
+    if (!f) return;
+    if (f.size > MAX_UPLOAD_BYTES) {
+      alert(`ไฟล์ใหญ่เกินไป (${formatBytes(f.size)}) — สูงสุด 5 MB`);
+      return;
     }
+    setDraft(d => ({ ...d, file: f, previewUrl: URL.createObjectURL(f) }));
   };
 
   const handleUploadSubmit = async (e: React.FormEvent) => {
@@ -71,13 +75,27 @@ export function GlobalUploadModal() {
 
     setIsUploading(true);
     const supabase = getSupabaseBrowserClient();
-    
-    const fileExt = draft.file.name.split('.').pop();
-    const fileName = `${authUser.id}/${Date.now()}.${fileExt}`;
-    
+
+    // Convert to WebP before uploading
+    let webpFile: File;
+    let imgWidth = 4;
+    let imgHeight = 3;
+    try {
+      const result = await convertToWebP(draft.file, { quality: 0.85 });
+      webpFile = result.file;
+      imgWidth = result.width;
+      imgHeight = result.height;
+    } catch (err) {
+      alert('Image conversion failed: ' + (err instanceof Error ? err.message : 'unknown'));
+      setIsUploading(false);
+      return;
+    }
+
+    const fileName = `${authUser.id}/${Date.now()}.webp`;
+
     const { error: uploadError } = await supabase.storage
       .from('photos')
-      .upload(fileName, draft.file);
+      .upload(fileName, webpFile, { contentType: 'image/webp' });
 
     if (uploadError) {
       alert('Upload failed: ' + uploadError.message);
@@ -86,9 +104,9 @@ export function GlobalUploadModal() {
     }
 
     const { data: publicUrlData } = supabase.storage.from('photos').getPublicUrl(fileName);
-    
+
     const slug = `${draft.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now()}`;
-    
+
     const { error: dbError } = await supabase.from('photos').insert({
       photographer_id: authUser.id,
       title: draft.title,
@@ -99,8 +117,8 @@ export function GlobalUploadModal() {
       camera: draft.camera,
       lens: draft.lens,
       storage_url: publicUrlData.publicUrl,
-      width: 4, 
-      height: 3, 
+      width: imgWidth,
+      height: imgHeight,
       likes_count: 0,
       favorites_count: 0
     });
@@ -121,7 +139,7 @@ export function GlobalUploadModal() {
     }
   };
 
-  const limitReached = !isPhotographer && uploadedTodayCount >= 2;
+  const limitReached = false; // unlimited uploads
 
   // Don't render for guests if they shouldn't see it, but we handle it via Auth wrapper normally.
   
@@ -145,7 +163,7 @@ export function GlobalUploadModal() {
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
               <div 
-                className="shrink-0 min-h-[140px] h-[140px] bg-white/5 border border-dashed border-white/20 rounded-xl grid place-items-center cursor-pointer overflow-hidden relative hover:bg-white/10 transition-colors"
+                className="shrink-0 aspect-square w-[240px] mx-auto bg-white/5 border border-dashed border-white/20 rounded-xl grid place-items-center cursor-pointer overflow-hidden relative hover:bg-white/10 transition-colors"
                 onClick={() => fileInputRef.current?.click()}
               >
                 {draft.previewUrl ? (

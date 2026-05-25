@@ -48,7 +48,7 @@ export default function AdminSettingsPage() {
               <div className="space-y-6">
                 <div className="grid gap-2">
                   <Label htmlFor="siteName" className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">Site Name</Label>
-                  <Input id="siteName" defaultValue="Gography Photo Awards" className="rounded-none border-neutral-300 h-10" />
+                  <Input id="siteName" defaultValue="Gography Ranking" className="rounded-none border-neutral-300 h-10" />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="contactEmail" className="font-mono text-[10px] uppercase tracking-widest text-neutral-500">Contact Email</Label>

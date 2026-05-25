@@ -48,13 +48,8 @@ export function MeDashboard({ persona, isVoyageur, isPhotographer, myPhotos, fol
 
   return (
     <div>
-      <div className="caps opacity-55 mb-4">Welcome back</div>
-      <h1 className="th text-[56px] font-normal tracking-[-0.025em] m-0 leading-none">
-        {persona.name.split(' ')[0]}
-      </h1>
-
       {/* Stat row */}
-      <div className="grid grid-cols-4 gap-0 mt-12 border border-rule">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-0 border border-rule">
         <DashStat n={myPhotos.length} l="Photos" />
         <DashStat n={followers.toLocaleString()} l="Followers" border />
         <DashStat n={totalLikes.toLocaleString()} l="Likes received" border />
@@ -66,34 +61,31 @@ export function MeDashboard({ persona, isVoyageur, isPhotographer, myPhotos, fol
 
       {/* Voyageur eligibility card */}
       {isVoyageur && (
-        <div className="mt-8 py-7 px-8 bg-cream border border-rule">
-          <div className="flex justify-between items-start gap-6">
-            <div>
-              <div className="caps opacity-55 mb-[10px] flex items-center gap-2">
-                <VoyageurMark size={9} /> Voyageurs Awards · Spring 2026
-              </div>
-              <h3 className="th text-[22px] font-normal tracking-[-0.01em] m-0">
-                คุณอยู่อันดับ <strong className="font-semibold">#7</strong> ในหมวด Landscape
-              </h3>
-              <p className="th mt-3 text-[13px] text-fg-soft leading-[1.7] max-w-[480px]">
-                ส่งภาพอีก 5 ภาพในฤดูกาลนี้เพื่อขึ้น Top 5 · เหลือเวลา 42 วัน ก่อนปิดประกวด
-              </p>
+        <div className="mt-8 p-6 md:py-7 md:px-8 bg-cream border border-rule">
+          <div className="flex items-center justify-between gap-4 pb-5 mb-5 border-b border-rule">
+            <div className="caps opacity-55 flex items-center gap-2 min-w-0">
+              <VoyageurMark size={9} />
+              <span className="truncate">Voyageurs Awards · Spring 2026</span>
             </div>
-            <div className="text-right min-w-[140px]">
-              <div className="mono text-[11px] opacity-55">CASHBACK TIER</div>
-              <div
-                className="text-[36px] font-medium tracking-[-0.025em] mt-[6px] text-gold"
-              >
+            <div className="flex items-baseline gap-2 shrink-0">
+              <span className="text-[28px] md:text-[32px] font-medium tracking-[-0.025em] text-gold leading-none">
                 5%
-              </div>
-              <button
-                onClick={() => router.push('/for-customers')}
-                className="caps mt-[14px] opacity-60 border-b border-rule pb-[3px] cursor-pointer"
-              >
-                How to reach 10% →
-              </button>
+              </span>
+              <span className="mono text-[10px] opacity-55 tracking-[.12em]">CASHBACK</span>
             </div>
           </div>
+          <h3 className="th text-[20px] md:text-[22px] font-normal tracking-[-0.01em] m-0 leading-[1.35]">
+            คุณอยู่อันดับ <strong className="font-semibold">#7</strong> ในหมวด Landscape
+          </h3>
+          <p className="th mt-3 text-[13px] text-fg-soft leading-[1.7] max-w-[480px]">
+            เหลือเวลา 42 วัน ก่อนปิดประกวด
+          </p>
+          <button
+            onClick={() => router.push('/for-customers')}
+            className="caps mt-5 opacity-65 border-b border-rule pb-[3px] cursor-pointer"
+          >
+            How to reach 10% →
+          </button>
         </div>
       )}
 
@@ -115,14 +107,14 @@ export function MeDashboard({ persona, isVoyageur, isPhotographer, myPhotos, fol
       {/* Quick actions */}
       <div className="mt-14">
         <div className="caps opacity-55 mb-5">Quick actions</div>
-        <div className="grid grid-cols-3 gap-4">
-          <ActionCard title="ส่งภาพใหม่" sub="อัพได้วันละ 1 ภาพ" onClick={() => router.push('/upload')} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <ActionCard title="Submit new photo" sub="1 upload per day" onClick={() => router.push('/upload')} />
           <ActionCard
-            title="ตอบความเห็น"
-            sub={`${totalComments.toLocaleString()} ความเห็นทั้งหมด`}
+            title="Reply to comments"
+            sub={`${totalComments.toLocaleString()} total comments`}
             onClick={() => router.push('/me/photos')}
           />
-          <ActionCard title="โหวต & favorite" sub="ค้นพบภาพใหม่" onClick={() => router.push('/explore')} />
+          <ActionCard title="Vote & Favorite" sub="Discover new photos" onClick={() => router.push('/explore')} />
         </div>
       </div>
 

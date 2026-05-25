@@ -2,12 +2,13 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { notFound } from 'next/navigation';
-import { getPhotos } from '@/lib/data';
+import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import type { SortKey } from '@/lib/data';
 import type { Category, Photo } from '@/lib/types';
 import { PhotoGrid } from '@/components/photo/PhotoGrid';
 import { Footer } from '@/components/layout/Footer';
 import { PageCover } from '@/components/layout/PageCover';
+import { MobileExplore } from '@/components/mobile/MobileExplore';
 
 // ===== Explore [category] page (/explore/landscape, /explore/portrait, /explore/bw) =====
 // Masonry grid scoped to one category + same filter controls
@@ -124,8 +125,72 @@ export default function ExploreCategoryPage({
   const [showPicksOnly, setShowPicksOnly] = useState(false);
   const router = useRouter();
 
-  let photos: Photo[] = getPhotos({ category: catKey, sort });
-  if (showPicksOnly) photos = photos.filter((p: Photo) => p.picks.length > 0);
+  const [photos, setPhotos] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPhotos = async () => {
+      setIsLoading(true);
+      const supabase = getSupabaseBrowserClient();
+      let query = supabase
+        .from('photos')
+        .select('id, title, storage_url, category, likes_count, favorites_count, comments_count, uploaded_at, width, height, description, users:users!photos_photographer_id_fkey(username)');
+
+      if (catKey) {
+        query = query.ilike('category', catKey);
+      }
+
+      const { data } = await query;
+
+      if (data) {
+        let mapped = data.map((p: any) => {
+          const likes = p.likes_count || 0;
+          const favorites = p.favorites_count || 0;
+          return {
+            id: p.id,
+            slug: p.id,
+            src: p.storage_url,
+            title: p.title,
+            by: p.users?.username || 'Unknown',
+            cat: p.category || 'General',
+            w: p.width || 4,
+            h: p.height || 3,
+            caption: p.description || '',
+            exif: { camera: 'Unknown', lens: 'Unknown', iso: 100, shutter: '1/100', aperture: 'f/8', focal: '50mm' },
+            likes,
+            likes24h: 0,
+            comments: p.comments_count || 0,
+            favorites,
+            hours: 1,
+            picks: [],
+            date: p.uploaded_at,
+            pulse: likes + favorites * 2,
+            rank: 0,
+          };
+        });
+
+        // Sorting logic
+        if (sort === 'pulse') {
+          mapped.sort((a, b) => b.pulse - a.pulse);
+          mapped.forEach((p, i) => (p.rank = i + 1));
+        } else if (sort === 'recent') {
+          mapped.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        } else if (sort === 'likes') {
+          mapped.sort((a, b) => b.likes - a.likes);
+        }
+
+        // Filtering picks (mocked as empty array for now)
+        if (showPicksOnly) {
+          mapped = mapped.filter((p) => p.picks.length > 0);
+        }
+
+        setPhotos(mapped);
+      }
+      setIsLoading(false);
+    };
+
+    fetchPhotos();
+  }, [sort, timeRange, showPicksOnly, catKey]);
 
   const headingLabel = catKey === 'BW' ? 'Black & White' : catKey;
 
@@ -133,8 +198,19 @@ export default function ExploreCategoryPage({
   const coverTitle = catKey === 'BW' ? 'Black & White' : catKey;
   const coverSubtitle = `เลือกชมหมวด ${catKey === 'BW' ? 'Black & White' : catKey} — เรียงตามอันดับ ภาพล่าสุด หรือยอดโหวต`;
 
+  // Map category to MobileExplore's CAT type
+  const mobileInitial: 'All' | 'Landscape' | 'Portrait' | 'BW' =
+    catKey === 'Landscape' ? 'Landscape'
+    : catKey === 'Portrait' ? 'Portrait'
+    : catKey === 'BW' ? 'BW'
+    : 'All';
+
   return (
-    <div className="page-fade">
+    <>
+    <div className="md:hidden">
+      <MobileExplore initialCategory={mobileInitial} />
+    </div>
+    <div className="page-fade hidden md:block">
       <PageCover
         photoId={coverPhotoId}
         eyebrow="Category"
@@ -224,10 +300,12 @@ export default function ExploreCategoryPage({
       {/* Grid */}
       <section className="py-[40px] pb-[80px]">
         <div className="wrap">
-          {photos.length === 0 ? (
+          {isLoading ? (
+            <div className="py-20 text-center text-fg-soft">Loading...</div>
+          ) : photos.length === 0 ? (
             <EmptyState />
           ) : (
-            <PhotoGrid photos={photos} cols={3} showRank={sort === 'pulse'} />
+            <PhotoGrid photos={photos} cols={3} showRank={sort === 'pulse'} showLike />
           )}
         </div>
       </section>
@@ -243,5 +321,6 @@ export default function ExploreCategoryPage({
 
       <Footer />
     </div>
+    </>
   );
 }

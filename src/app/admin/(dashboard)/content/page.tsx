@@ -53,7 +53,10 @@ export default function AdminContentPage() {
   const handleSave = async () => {
     setIsSaving(true);
     const supabase = getSupabaseBrowserClient();
-    if (!supabase) { setIsSaving(false); return; }
+    if (!supabase) {
+      setIsSaving(false);
+      return;
+    }
     let finalSettings = { ...voySettings };
     let finalHeroSettings = { ...heroSettings };
 

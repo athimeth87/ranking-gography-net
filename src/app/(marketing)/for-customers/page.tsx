@@ -221,7 +221,7 @@ export default function Page() {
                 ],
                 [
                   'ใครเป็นคนตัดสินว่าฉันชนะ?',
-                  'ทีม Editorial ของ GOGRAPHY Photo Awards — เกณฑ์เปิดเผยที่หน้า Pulse Score (แต่ Voyageurs Awards เน้นเรื่องราวมากกว่าตัวเลข)',
+                  'ทีม Editorial ของ GOGRAPHY Ranking — เกณฑ์เปิดเผยที่หน้า Pulse Score (แต่ Voyageurs Awards เน้นเรื่องราวมากกว่าตัวเลข)',
                 ],
               ] as [string, string][]
             ).map(([q, a], i) => (

@@ -50,7 +50,7 @@ export default function PhotographersFilterPage({ params }: { params: { filter: 
     ? 'ลูกค้า GOGRAPHY ที่เคยร่วมทริปและมีภาพอยู่บนเวที'
     : filter === 'ambassadors'
     ? 'ช่างภาพรับเชิญที่ GOGRAPHY ไว้วางใจให้คัดเลือกภาพ'
-    : 'รวมช่างภาพและ Voyageurs ที่อยู่บนเวที GOGRAPHY Photo Awards';
+    : 'รวมช่างภาพและ Voyageurs ที่อยู่บนเวที GOGRAPHY Ranking';
 
   return (
     <div className="page-fade">
@@ -64,16 +64,16 @@ export default function PhotographersFilterPage({ params }: { params: { filter: 
       {/* Filter / Sort bar */}
       <section className="py-[32px] border-t border-rule border-b border-rule">
         <div className="wrap">
-          <div className="flex justify-between items-center gap-6 flex-wrap">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 md:gap-6">
             {/* Filter chips */}
-            <div className="flex gap-2 flex-wrap">
+            <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0 md:flex-wrap">
               {filterChips.map((f) => {
                 const active = filter === f.v;
                 return (
                   <button
                     key={f.v}
                     onClick={() => setFilter(f.v)}
-                    className={`inline-flex items-center gap-2 px-[16px] py-[9px] border text-[11px] tracking-[.14em] uppercase font-medium cursor-pointer ${
+                    className={`inline-flex items-center gap-2 px-[16px] py-[9px] border text-[11px] tracking-[.14em] uppercase font-medium cursor-pointer whitespace-nowrap shrink-0 ${
                       active
                         ? 'border-fg bg-fg text-bg'
                         : 'border-rule bg-transparent text-fg'
@@ -109,7 +109,7 @@ export default function PhotographersFilterPage({ params }: { params: { filter: 
           {list.length === 0 ? (
             <div className="py-[120px] text-center text-fg-soft th">ไม่พบช่างภาพในตัวกรองนี้</div>
           ) : (
-            <div className="grid gap-5 grid-cols-4">
+            <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
               {list.map((p: Photographer) => (
                 <PhotographerCard
                   key={p.username}

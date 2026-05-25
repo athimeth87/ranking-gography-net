@@ -12,7 +12,7 @@ export async function sendWelcomeEmail(userEmail: string, userName: string = 'Ph
   const mailOptions = {
     from: `"GOGRAPHY" <${process.env.EMAIL_USER}>`,
     to: userEmail,
-    subject: 'Welcome to GOGRAPHY Photo Awards! 📸',
+    subject: 'Welcome to GOGRAPHY Ranking! 📸',
     html: `
       <!DOCTYPE html>
       <html>
@@ -30,7 +30,7 @@ export async function sendWelcomeEmail(userEmail: string, userName: string = 'Ph
                 <tr>
                   <td align="center" style="padding: 40px 40px 20px 40px;">
                     <div style="font-size: 24px; font-weight: 300; letter-spacing: -0.02em; color: #111111;">
-                      <span style="font-weight: 600;">GOGRAPHY</span> <span style="color: #666666; font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-top: 4px;">Photo Awards</span>
+                      <span style="font-weight: 600;">GOGRAPHY</span> <span style="color: #666666; font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-top: 4px;">Ranking</span>
                     </div>
                   </td>
                 </tr>
@@ -40,7 +40,7 @@ export async function sendWelcomeEmail(userEmail: string, userName: string = 'Ph
                   <td style="padding: 20px 40px 40px 40px;">
                     <h1 style="font-size: 20px; font-weight: 400; margin: 0 0 24px 0; color: #111111;">Welcome, ${userName}.</h1>
                     <p style="font-size: 15px; line-height: 1.6; color: #444444; margin: 0 0 24px 0;">
-                      We're thrilled to welcome you to GOGRAPHY Photo Awards. Our platform is dedicated to celebrating extraordinary photography from around the globe.
+                      We're thrilled to welcome you to GOGRAPHY Ranking. Our platform is dedicated to celebrating extraordinary photography from around the globe.
                     </p>
                     
                     <div style="background-color: #F9F9F9; border-left: 2px solid #111111; padding: 16px 24px; margin-bottom: 32px;">
@@ -69,7 +69,7 @@ export async function sendWelcomeEmail(userEmail: string, userName: string = 'Ph
                 <tr>
                   <td style="background-color: #F9F9F9; padding: 32px 40px; border-top: 1px solid #EAEAEA;">
                     <p style="font-size: 12px; line-height: 1.5; color: #888888; margin: 0; text-align: center;">
-                      You received this email because you signed up for GOGRAPHY Photo Awards.<br>
+                      You received this email because you signed up for GOGRAPHY Ranking.<br>
                       If you didn't create an account, please ignore this message.
                     </p>
                     <p style="font-size: 12px; color: #BBBBBB; margin: 16px 0 0 0; text-align: center;">
@@ -133,7 +133,7 @@ export async function sendAdminInviteEmail(userEmail: string, role: string) {
                   <td style="padding: 20px 40px 40px 40px;">
                     <h1 style="font-size: 20px; font-weight: 400; margin: 0 0 24px 0;">Admin Invitation</h1>
                     <p style="font-size: 15px; line-height: 1.6; color: #444444; margin: 0 0 24px 0;">
-                      You have been granted <strong>${role.toUpperCase()}</strong> access to the Gography Photo Awards management system.
+                      You have been granted <strong>${role.toUpperCase()}</strong> access to the Gography Ranking management system.
                     </p>
                     <p style="font-size: 15px; line-height: 1.6; color: #444444; margin: 0 0 24px 0;">
                       Please log in with this email address to access your dashboard. If you don't have an account yet, your permissions will be applied automatically as soon as you sign in.

@@ -30,8 +30,9 @@ export function useFavoriteState(photoId: string): UseFavoriteState {
     const supabase = getSupabaseBrowserClient();
     if (!supabase) return;
 
+    const channelName = `photo-fav-${photoId}-${Math.random().toString(36).slice(2, 10)}`;
     const channel = supabase
-      .channel(`photo-fav-${photoId}`)
+      .channel(channelName)
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'photos', filter: `id=eq.${photoId}` },
