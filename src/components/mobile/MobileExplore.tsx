@@ -83,7 +83,7 @@ export function MasonryTile({ photo }: { photo: any }) {
           position: 'absolute', right: 10, bottom: 10,
           padding: 0, border: 0, background: 'transparent', cursor: 'pointer',
           display: 'inline-flex', alignItems: 'center', gap: 4,
-          color: '#fff',
+          color: liked ? '#ff5d75' : '#fff',
           fontSize: 13, fontWeight: 500, fontFamily: 'inherit',
           textShadow: '0 1px 2px rgba(0,0,0,0.4)',
         }}
