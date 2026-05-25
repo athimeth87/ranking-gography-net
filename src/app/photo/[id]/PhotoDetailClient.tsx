@@ -16,6 +16,7 @@ import { useFollowState } from '@/hooks/useFollowState';
 import { useFavoriteState } from '@/hooks/useFavoriteState';
 import { usePathname } from 'next/navigation';
 import { computePulse, type PickType } from '@/lib/pulse-engine';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 
 // ===== Single photo detail page — /photo/[id] =====
 // Large image + sidebar (photographer, EXIF, pulse/stats, comments), like/favorite toggles, lightbox.
@@ -87,6 +88,8 @@ export function PhotoDetailClient({ id }: { id: string }) {
   const [error, setError] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportDone, setReportDone] = useState(false);
   const pathname = usePathname();
   const follow = useFollowState(photographerUserId);
 
@@ -97,7 +100,7 @@ export function PhotoDetailClient({ id }: { id: string }) {
   };
 
   const handleReport = () => {
-    alert("Report submitted for review.");
+    setReportOpen(true);
   };
 
   useEffect(() => {
@@ -401,21 +404,16 @@ export function PhotoDetailClient({ id }: { id: string }) {
                 <div className="flex-1" />
                 <button 
                   className="heart" 
-                  onClick={() => {
-                    navigator.clipboard.writeText(window.location.href);
-                    setCopied(true);
-                    setTimeout(() => setCopied(false), 2000);
-                  }}
+                  onClick={handleCopyLink}
                 >
                   {copied ? 'Copied!' : 'Copy link'}
                 </button>
                 <button 
                   className="heart"
-                  onClick={() => {
-                    alert('Thank you. Our moderation team will review this photo.');
-                  }}
+                  onClick={handleReport}
+                  disabled={reportDone}
                 >
-                  Report
+                  {reportDone ? 'Reported' : 'Report'}
                 </button>
               </div>
 
@@ -585,6 +583,18 @@ export function PhotoDetailClient({ id }: { id: string }) {
         alt={photo.title}
         open={lightboxOpen}
         onOpenChange={setLightboxOpen}
+      />
+      {/* Report Dialog */}
+      <ConfirmDialog
+        open={reportOpen}
+        title="Report this photo?"
+        body="If you find this photo inappropriate, offensive, or infringing on copyrights, let us know. Our moderation team will review it shortly."
+        confirmLabel="Submit Report"
+        onConfirm={() => {
+          setReportOpen(false);
+          setReportDone(true);
+        }}
+        onCancel={() => setReportOpen(false)}
       />
     </div>
   );
