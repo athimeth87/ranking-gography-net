@@ -33,7 +33,7 @@ export function MeSidebar({
   onNavigate,
 }: MeSidebarProps) {
   const router = useRouter();
-  const { authUser } = useApp();
+  const { authUser, signOut } = useApp();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [localAvatar, setLocalAvatar] = useState<string | null>(null);
@@ -204,7 +204,7 @@ export function MeSidebar({
 
       {/* Sign out */}
       <button
-        onClick={() => router.push('/')}
+        onClick={() => signOut?.()}
         className="caps mt-8 opacity-45 cursor-pointer"
       >
         Sign out

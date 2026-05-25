@@ -1,15 +1,20 @@
 'use client';
 import { usePathname, useRouter } from 'next/navigation';
+import { useApp } from '@/providers/AppProvider';
 import { useLikeState } from '@/hooks/useLikeState';
 
 export interface CardLikeButtonProps {
   photoId: string;
+  ownerId?: string | null;
 }
 
-export function CardLikeButton({ photoId }: CardLikeButtonProps) {
+export function CardLikeButton({ photoId, ownerId }: CardLikeButtonProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const { authUser } = useApp();
   const { liked, toggle } = useLikeState(photoId);
+
+  if (authUser && ownerId && authUser.id === ownerId) return null;
 
   const onClick = async (e: React.MouseEvent) => {
     e.stopPropagation();

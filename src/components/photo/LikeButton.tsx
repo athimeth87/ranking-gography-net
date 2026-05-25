@@ -1,15 +1,20 @@
 'use client';
 import { usePathname, useRouter } from 'next/navigation';
+import { useApp } from '@/providers/AppProvider';
 import { useLikeState } from '@/hooks/useLikeState';
 
 export interface LikeButtonProps {
   photoId: string;
+  ownerId?: string | null;
 }
 
-export function LikeButton({ photoId }: LikeButtonProps) {
+export function LikeButton({ photoId, ownerId }: LikeButtonProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const { authUser } = useApp();
   const { liked, count, toggle } = useLikeState(photoId);
+
+  if (authUser && ownerId && authUser.id === ownerId) return null;
 
   const onClick = async () => {
     const result = await toggle();

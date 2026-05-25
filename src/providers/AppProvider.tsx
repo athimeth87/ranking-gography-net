@@ -30,6 +30,32 @@ interface AppContextValue extends AppPrefs {
 
 const DEFAULTS: AppPrefs = { theme: 'light', mode: 'atelier', userState: 'guest', bannerPhotoId: 'p010', heroPhotoId: 'auto' };
 
+function clearAllUserData() {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.clear();
+    window.sessionStorage.clear();
+  } catch (e) {
+    console.error('Failed to clear web storage:', e);
+  }
+  // Wipe Supabase auth cookies (sb-*) at every parent path. Belt-and-suspenders
+  // alongside supabase.auth.signOut() — useful when signOut fails or partial.
+  try {
+    document.cookie.split(';').forEach((raw) => {
+      const eq = raw.indexOf('=');
+      const name = (eq > -1 ? raw.slice(0, eq) : raw).trim();
+      if (!name.startsWith('sb-')) return;
+      const expire = 'expires=Thu, 01 Jan 1970 00:00:00 GMT';
+      const host = window.location.hostname;
+      document.cookie = `${name}=; ${expire}; path=/`;
+      document.cookie = `${name}=; ${expire}; path=/; domain=${host}`;
+      document.cookie = `${name}=; ${expire}; path=/; domain=.${host}`;
+    });
+  } catch (e) {
+    console.error('Failed to clear auth cookies:', e);
+  }
+}
+
 const AppContext = createContext<AppContextValue | null>(null);
 
 export function useApp(): AppContextValue {
@@ -68,10 +94,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const handleSignOut = async () => {
-    const supabase = getSupabaseBrowserClient();
-    if (supabase) {
-      await supabase.auth.signOut();
+    try {
+      const supabase = getSupabaseBrowserClient();
+      if (supabase) await supabase.auth.signOut();
+    } catch (e) {
+      console.error('Sign out error:', e);
+    } finally {
       setAuthUser(null);
+      clearAllUserData();
+      // Full reload guarantees middleware re-evaluates protected routes and
+      // server components rehydrate without the stale session.
+      window.location.replace('/');
     }
   };
 

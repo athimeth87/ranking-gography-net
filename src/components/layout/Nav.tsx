@@ -1,25 +1,20 @@
 'use client';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useApp } from '@/providers/AppProvider';
-import { getPhotographer } from '@/lib/data';
 import { RoleRibbon } from './RoleRibbon';
 import { NotificationsBell } from './NotificationsBell';
 
-const LINKS: { to: string; label: string }[] = [
-  { to: '/', label: 'Home' },
-  { to: '/explore', label: 'Explore' },
+const CENTER_LINKS: { to: string; label: string }[] = [
   { to: '/hall-of-fame', label: 'Hall of Fame' },
+  { to: '/photographers', label: 'Photographers' },
   { to: '/for-customers', label: 'For Voyageurs' },
-  { to: '/about-ranking', label: 'Ranking' },
   { to: '/about', label: 'About' },
 ];
 
 export function Nav() {
   const pathname = usePathname();
-  const router = useRouter();
-  const { authUser, toggleSideMenu, theme, setTheme } = useApp();
-  const isDark = theme === 'dark';
+  const { authUser, toggleSideMenu } = useApp();
 
   const isActive = (to: string) =>
     pathname === to || (to !== '/' && pathname.startsWith(to));
@@ -49,7 +44,15 @@ export function Nav() {
                 <line x1="2" y1="13" x2="16" y2="13" />
               </svg>
             </button>
-            {LINKS.slice(0, 3).map((l) => (
+            <Link href="/" className="logo">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo-white.png" alt="" aria-hidden className="logo-img" />
+              <span>GOGRAPHY</span>
+            </Link>
+          </div>
+
+          <div className="nav-center">
+            {CENTER_LINKS.map((l) => (
               <Link
                 key={l.to}
                 href={l.to}
@@ -59,39 +62,15 @@ export function Nav() {
               </Link>
             ))}
           </div>
-          <Link href="/" className="logo">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo-white.png" alt="" aria-hidden className="logo-img" />
-            <span>GOGRAPHY</span>
-          </Link>
+
           <div className="nav-right">
-            {LINKS.slice(3).map((l) => (
-              <Link
-                key={l.to}
-                href={l.to}
-                className={'nav-link ' + (isActive(l.to) ? 'active' : '')}
-              >
-                {l.label}
-              </Link>
-            ))}
-            <button className="nav-link" onClick={() => router.push('/search')}>
-              Search
-            </button>
-            <button
-              className={`nav-theme-toggle ${isDark ? 'is-dark' : ''}`}
-              onClick={() => setTheme(isDark ? 'light' : 'dark')}
-              aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-              title={isDark ? 'Light mode' : 'Dark mode'}
-            >
-              <span className="nav-theme-toggle-knob" />
-            </button>
             {authUser && <NotificationsBell />}
             {!authUser ? (
-              <Link href="/login" className="btn btn-sm ml-2">
+              <Link href="/login" className="nav-link nav-signin whitespace-nowrap">
                 Sign in
               </Link>
             ) : (
-              <Link href="/me" className="ml-2 flex items-center gap-2">
+              <Link href="/me" className="ml-1 flex items-center">
                 <div className="w-7 h-7 rounded-full bg-tile overflow-hidden flex items-center justify-center border border-rule">
                   {avatarSrc ? (
                     /* eslint-disable-next-line @next/next/no-img-element */

@@ -8,11 +8,10 @@ interface NavLink { to: string; label: string }
 interface GroupProps { title: string; children: React.ReactNode }
 interface MenuRowProps { label: string; active: boolean; onClick: () => void }
 
-const PRIMARY: NavLink[] = [
-  { to: '/', label: 'Home' },
-  { to: '/explore', label: 'Explore' },
+const DISCOVER: NavLink[] = [
   { to: '/hall-of-fame', label: 'Hall of Fame' },
   { to: '/photographers', label: 'Photographers' },
+  { to: '/ambassadors', label: 'Ambassadors' },
 ];
 
 const CATEGORIES: NavLink[] = [
@@ -21,15 +20,10 @@ const CATEGORIES: NavLink[] = [
   { to: '/explore/bw', label: 'Black & White' },
 ];
 
-const CURATION: NavLink[] = [
-  { to: '/ambassadors', label: 'Ambassadors' },
-  { to: '/about-ranking', label: 'Ranking' },
-];
-
 const ABOUT: NavLink[] = [
-  { to: '/for-customers', label: 'For Voyageurs' },
+  { to: '/about-ranking', label: 'Ranking' },
   { to: '/about', label: 'About' },
-  { to: '/search', label: 'Search' },
+  { to: '/for-customers', label: 'For Voyageurs' },
 ];
 
 export function SideMenu() {
@@ -80,26 +74,6 @@ export function SideMenu() {
       >
         <div className="sidemenu-inner no-scrollbar">
 
-          {/* Top chrome — brand + close */}
-          <div className="sidemenu-chrome">
-            <div className="logo">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo-white.png" alt="" aria-hidden className="logo-img" />
-              <span>GOGRAPHY</span>
-            </div>
-            <button
-              className="sidemenu-close"
-              onClick={() => setSideMenuOpen(false)}
-              aria-label="Close menu"
-            >
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.4">
-                <line x1="2" y1="2" x2="12" y2="12" />
-                <line x1="12" y1="2" x2="2" y2="12" />
-              </svg>
-            </button>
-          </div>
-
-          {/* Identity */}
           <div className="sidemenu-identity">
             <div className="sidemenu-avatar" style={authUser && avatarSrc ? { backgroundImage: `url(${avatarSrc})`, backgroundSize: 'cover', backgroundPosition: 'center', border: '1px solid var(--rule)' } : {}}>
               {!authUser ? (
@@ -116,48 +90,42 @@ export function SideMenu() {
                 {!authUser ? 'Not signed in' : 'AUTHENTICATED'}
               </div>
             </div>
+            <button
+              className="sidemenu-close"
+              onClick={() => setSideMenuOpen(false)}
+              aria-label="Close menu"
+            >
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.4">
+                <line x1="2" y1="2" x2="12" y2="12" />
+                <line x1="12" y1="2" x2="2" y2="12" />
+              </svg>
+            </button>
           </div>
 
-          {/* CTA — sign in or go to account */}
           {!authUser ? (
             <button className="sidemenu-cta" onClick={() => go('/login')}>
               <span>Sign in with Google</span>
               <span className="arr">→</span>
             </button>
           ) : (
-            <>
-              <button className="sidemenu-cta" onClick={() => go('/me')}>
-                <span>Open your dashboard</span>
-                <span className="arr">→</span>
-              </button>
-              <button className="sidemenu-cta" onClick={() => { signOut?.(); setSideMenuOpen(false); }} style={{ marginTop: 8, background: 'transparent', color: 'var(--fg)', border: '1px solid var(--rule)' }}>
-                <span>Sign out</span>
-              </button>
-            </>
+            <button className="sidemenu-cta" onClick={() => go('/me')}>
+              <span>Open your dashboard</span>
+              <span className="arr">→</span>
+            </button>
           )}
 
-          {/* Group: Primary */}
-          <Group title="Browse">
-            {PRIMARY.map((l) => (
+          <Group title="Discover">
+            {DISCOVER.map((l) => (
               <MenuRow key={l.to} active={isActive(l.to)} onClick={() => go(l.to)} label={l.label} />
             ))}
           </Group>
 
-          {/* Group: Categories */}
           <Group title="Categories">
             {CATEGORIES.map((l) => (
               <MenuRow key={l.to} active={isActive(l.to)} onClick={() => go(l.to)} label={l.label} />
             ))}
           </Group>
 
-          {/* Group: Curation */}
-          <Group title="Curation">
-            {CURATION.map((l) => (
-              <MenuRow key={l.to} active={isActive(l.to)} onClick={() => go(l.to)} label={l.label} />
-            ))}
-          </Group>
-
-          {/* Group: About + utility */}
           <Group title="About">
             {ABOUT.map((l) => (
               <MenuRow key={l.to} active={isActive(l.to)} onClick={() => go(l.to)} label={l.label} />
@@ -183,7 +151,17 @@ export function SideMenu() {
                 </button>
               </div>
             </div>
-            <div className="sidemenu-version mono">GOGRAPHY RANKING · 2026</div>
+            <div className="flex items-center justify-between">
+              <div className="sidemenu-version mono">GOGRAPHY RANKING · 2026</div>
+              {authUser && (
+                <button
+                  className="text-[10px] uppercase tracking-[0.18em] opacity-55 hover:opacity-100"
+                  onClick={() => { signOut?.(); setSideMenuOpen(false); }}
+                >
+                  Sign out
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </aside>

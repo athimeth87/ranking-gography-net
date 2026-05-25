@@ -156,110 +156,145 @@ export function FeedTabs({ active, onChange }: { active: string; onChange: (id: 
   );
 }
 
-function BottomNavIcon({ name, size = 22 }: { name: string; size?: number }) {
-  const stroke = 1.7;
-  const icons: Record<string, JSX.Element> = {
-    home: (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={stroke} strokeLinecap="round" strokeLinejoin="round">
-        <path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z" />
-      </svg>
-    ),
-    explore: (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={stroke} strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="9" />
-        <path d="M15.5 8.5l-2 5-5 2 2-5z" />
-      </svg>
-    ),
-    pulse: (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={stroke} strokeLinecap="round" strokeLinejoin="round">
-        <path d="M3 12h4l2-7 4 14 2-7h6" />
-      </svg>
-    ),
-    profile: (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={stroke} strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="8" r="4" />
-        <path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" />
-      </svg>
-    ),
-  };
-  return icons[name] ?? null;
+type IconName = 'home' | 'explore' | 'search' | 'pulse' | 'profile' | 'heart' | 'upload';
+
+function BottomNavIcon({ name, size = 20 }: { name: IconName; size?: number }) {
+  const s = 1.5;
+  switch (name) {
+    case 'home':
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={s} strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z" />
+        </svg>
+      );
+    case 'explore':
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={s} strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M15.5 8.5l-2 5-5 2 2-5z" />
+        </svg>
+      );
+    case 'search':
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={s} strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="11" cy="11" r="7" />
+          <line x1="20" y1="20" x2="16.5" y2="16.5" />
+        </svg>
+      );
+    case 'pulse':
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={s} strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 12h4l2-7 4 14 2-7h6" />
+        </svg>
+      );
+    case 'profile':
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={s} strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="8" r="4" />
+          <path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" />
+        </svg>
+      );
+    case 'heart':
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={s} strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 20s-8-5.2-8-11.4A4.6 4.6 0 0 1 12 6a4.6 4.6 0 0 1 8 2.6C20 14.8 12 20 12 20z" />
+        </svg>
+      );
+    case 'upload':
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={s} strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="17 8 12 3 7 8" />
+          <line x1="12" y1="3" x2="12" y2="15" />
+        </svg>
+      );
+  }
 }
 
-export function BottomNav({ active }: { active?: 'home' | 'explore' | 'pulse' | 'profile' }) {
+type Slot = {
+  id: string;
+  label: string;
+  icon: IconName;
+  active: boolean;
+  onClick: () => void;
+};
+
+export function BottomNav() {
   const router = useRouter();
-  const pathname = usePathname();
-  const { theme, authUser, setUploadModalOpen } = useApp();
-  const dark = theme === 'dark';
-  const c = dark ? '#fff' : '#000';
-  const muted = dark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)';
-  const bg = dark ? 'rgba(10,10,10,0.96)' : 'rgba(255,255,255,0.96)';
+  const pathname = usePathname() ?? '';
+  const { authUser, setUploadModalOpen, userState } = useApp();
 
-  const items = [
-    { id: 'home',    icon: 'home',    label: 'Home',    href: '/' },
-    { id: 'explore', icon: 'explore', label: 'Explore', href: '/explore' },
-    { id: 'profile', icon: 'profile', label: 'Me',      href: authUser ? '/me' : '/login' },
-  ];
-  const resolvedActive = active
-    ?? (pathname === '/' ? 'home'
-      : pathname?.startsWith('/explore') ? 'explore'
-      : pathname?.startsWith('/me') ? 'profile'
-      : undefined);
+  if (pathname.startsWith('/admin')) return null;
+
+  const persona: 'guest' | 'user' | 'customer' | 'photographer' =
+    !authUser ? 'guest' : (userState === 'guest' ? 'user' : userState);
+
+  const starts = (p: string) => pathname === p || pathname.startsWith(p + '/');
+  const meActive = starts('/me') && !starts('/me/favorites');
+  const favActive = starts('/me/favorites');
+
+  const slotHome: Slot = { id: 'home', label: 'Home', icon: 'home',
+    active: pathname === '/', onClick: () => router.push('/') };
+  const slotExplore: Slot = { id: 'explore', label: 'Explore', icon: 'explore',
+    active: starts('/explore') || starts('/photographers'),
+    onClick: () => router.push('/explore') };
+  const slotSearch: Slot = { id: 'search', label: 'Search', icon: 'search',
+    active: starts('/search'), onClick: () => router.push('/search') };
+  const slotPulse: Slot = { id: 'pulse', label: 'Pulse', icon: 'pulse',
+    active: starts('/hall-of-fame'), onClick: () => router.push('/hall-of-fame') };
+  const slotUpload: Slot = { id: 'upload', label: 'Upload', icon: 'upload',
+    active: false, onClick: () => setUploadModalOpen(true) };
+  const slotFav: Slot = { id: 'fav', label: 'Favorites', icon: 'heart',
+    active: favActive, onClick: () => router.push('/me/favorites') };
+  const slotMe: Slot = { id: 'me', label: 'Me', icon: 'profile',
+    active: meActive, onClick: () => router.push('/me') };
+  const slotLogin: Slot = { id: 'login', label: 'Sign in', icon: 'profile',
+    active: starts('/login'), onClick: () => router.push('/login') };
+
+  const slots: Slot[] =
+    persona === 'photographer' ? [slotHome, slotExplore, slotUpload, slotPulse, slotMe] :
+    persona === 'customer'     ? [slotHome, slotExplore, slotUpload, slotFav, slotMe] :
+    persona === 'user'         ? [slotHome, slotExplore, slotUpload, slotFav, slotMe] :
+                                 [slotHome, slotExplore, slotUpload, slotPulse, slotLogin];
 
   return (
-    <nav className="md:hidden grid grid-cols-5" style={{
-      position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 40,
-      background: bg, backdropFilter: 'blur(12px)',
-      borderTop: `1px solid ${dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-      paddingTop: 8, paddingBottom: 10,
-      fontFamily: "'Inter', sans-serif",
-    }}>
-      <NavBtn item={items[0]} on={resolvedActive === 'home'} c={c} muted={muted} onClick={() => router.push(items[0].href)} />
-      <NavBtn item={items[1]} on={resolvedActive === 'explore'} c={c} muted={muted} onClick={() => router.push(items[1].href)} />
-      <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-        <button onClick={() => setUploadModalOpen(true)} aria-label="Upload a frame" style={{
-          width: 52, height: 52, padding: 0,
-          background: c, color: dark ? '#000' : '#fff',
-          border: 0, cursor: 'pointer',
-          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-          marginTop: -22,
-          boxShadow: dark
-            ? '0 6px 18px rgba(255,255,255,0.18), 0 0 0 4px #0a0a0a'
-            : '0 6px 18px rgba(0,0,0,0.18), 0 0 0 4px #fff',
-          position: 'relative',
-        }}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <polyline points="17 8 12 3 7 8" />
-            <line x1="12" y1="3" x2="12" y2="15" />
-          </svg>
-          <span style={{
-            position: 'absolute', bottom: -16, left: '50%', transform: 'translateX(-50%)',
-            fontFamily: "'IBM Plex Mono', monospace", fontSize: 9,
-            letterSpacing: '0.12em', textTransform: 'uppercase',
-            color: c, whiteSpace: 'nowrap',
-          }}>Upload</span>
-        </button>
+    <nav
+      className="md:hidden fixed inset-x-0 bottom-1 mx-4 z-40 rounded-md"
+      style={{
+        background: 'color-mix(in oklab, var(--bg) 32%, transparent)',
+        backdropFilter: 'saturate(180%) blur(32px)',
+        WebkitBackdropFilter: 'saturate(180%) blur(32px)',
+        borderColor: 'color-mix(in oklab, var(--fg) 10%, transparent)',
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+      }}
+      aria-label="Primary navigation"
+    >
+      <div className="grid grid-cols-5 h-[56px]">
+        {slots.map((s) => {
+          const isUpload = s.id === 'upload';
+          const highlight = isUpload || s.active;
+          return (
+            <button
+              key={s.id}
+              onClick={s.onClick}
+              aria-label={s.label}
+              aria-current={s.active ? 'page' : undefined}
+              className="flex flex-col items-center justify-center gap-1 min-h-[44px] transition-opacity active:opacity-60 focus-visible:outline focus-visible:outline-1 focus-visible:outline-fg focus-visible:-outline-offset-2"
+            >
+              <span className={highlight ? 'text-fg' : 'text-fg-soft'}>
+                <BottomNavIcon name={s.icon} size={20} />
+              </span>
+              <span
+                className={`caps ${highlight ? 'font-semibold text-fg' : 'text-fg-soft'}`}
+                style={{ fontSize: 8 }}
+              >
+                {s.label}
+              </span>
+            </button>
+          );
+        })}
       </div>
-      <NavBtn item={{ id: 'pulse', icon: 'pulse', label: 'Pulse', href: '/explore' }} on={resolvedActive === 'pulse'} c={c} muted={muted} onClick={() => router.push('/explore')} />
-      <NavBtn item={items[2]} on={resolvedActive === 'profile'} c={c} muted={muted} onClick={() => router.push(items[2].href)} />
     </nav>
-  );
-}
-
-function NavBtn({ item, on, c, muted, onClick }: { item: { icon: string; label: string }; on: boolean; c: string; muted: string; onClick: () => void }) {
-  return (
-    <button onClick={onClick} style={{
-      background: 'transparent', border: 0, cursor: 'pointer',
-      padding: '4px 0',
-      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
-      color: on ? c : muted,
-      fontFamily: "'IBM Plex Mono', monospace", fontSize: 9,
-      letterSpacing: '0.1em', textTransform: 'uppercase',
-      minHeight: 44,
-    }}>
-      <BottomNavIcon name={item.icon} size={20} />
-      <span style={{ fontWeight: on ? 600 : 400 }}>{item.label}</span>
-    </button>
   );
 }
 
@@ -317,7 +352,7 @@ function usePhotoLike(photoId: string) {
 
 export function FeedCard({ photo }: { photo: any }) {
   const router = useRouter();
-  const { theme } = useApp();
+  const { theme, authUser } = useApp();
   const dark = theme === 'dark';
   const photographer = PHOTOGRAPHERS.find(p => p.username === photo.by);
   const author = photographer?.name || photo.by;
@@ -327,6 +362,8 @@ export function FeedCard({ photo }: { photo: any }) {
   const c = dark ? '#fff' : '#000';
   const { liked, toggle } = usePhotoLike(photo.id);
   const [bookmark, setBookmark] = useState(false);
+  const ownerId = photo.photographer_id || photo.photographerId || null;
+  const isOwner = !!authUser && !!ownerId && authUser.id === ownerId;
 
   return (
     <article style={{ display: 'flex', flexDirection: 'column' }}>
@@ -351,19 +388,21 @@ export function FeedCard({ photo }: { photo: any }) {
               </svg>
             </div>
           )}
-          <button onClick={(e) => { e.stopPropagation(); setBookmark(!bookmark); }} aria-label="Bookmark" style={{
-            width: 28, height: 36, padding: 0, border: 0, cursor: 'pointer',
-            background: bookmark ? '#fff' : 'rgba(255,255,255,0.92)',
-            clipPath: 'polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%)',
-            display: 'inline-flex', alignItems: 'flex-start', justifyContent: 'center',
-            paddingTop: 6,
-          }}>
-            <svg width="14" height="14" viewBox="0 0 24 24"
-              fill={bookmark ? '#b08e54' : 'none'}
-              stroke="#b08e54" strokeWidth="1.6" strokeLinejoin="round">
-              <path d="M12 2l2.9 6.5 7.1.8-5.3 4.9 1.5 7-6.2-3.6L5.8 21l1.5-7L2 9.3l7.1-.8z" />
-            </svg>
-          </button>
+          {!isOwner && (
+            <button onClick={(e) => { e.stopPropagation(); setBookmark(!bookmark); }} aria-label="Bookmark" style={{
+              width: 28, height: 36, padding: 0, border: 0, cursor: 'pointer',
+              background: bookmark ? '#fff' : 'rgba(255,255,255,0.92)',
+              clipPath: 'polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%)',
+              display: 'inline-flex', alignItems: 'flex-start', justifyContent: 'center',
+              paddingTop: 6,
+            }}>
+              <svg width="14" height="14" viewBox="0 0 24 24"
+                fill={bookmark ? '#b08e54' : 'none'}
+                stroke="#b08e54" strokeWidth="1.6" strokeLinejoin="round">
+                <path d="M12 2l2.9 6.5 7.1.8-5.3 4.9 1.5 7-6.2-3.6L5.8 21l1.5-7L2 9.3l7.1-.8z" />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
 
@@ -402,17 +441,19 @@ export function FeedCard({ photo }: { photo: any }) {
             )}
           </div>
         </Link>
-        <button onClick={toggle} aria-label="Like" style={{
-          width: 36, height: 36, padding: 0, background: 'transparent',
-          border: 0, cursor: 'pointer', color: c,
-          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <svg width="22" height="20" viewBox="0 0 24 22"
-            fill={liked ? 'currentColor' : 'none'}
-            stroke="currentColor" strokeWidth="1.6">
-            <path d="M12 20s-8-5.2-8-11.4A4.6 4.6 0 0 1 12 6a4.6 4.6 0 0 1 8 2.6C20 14.8 12 20 12 20z" />
-          </svg>
-        </button>
+        {!isOwner && (
+          <button onClick={toggle} aria-label="Like" style={{
+            width: 36, height: 36, padding: 0, background: 'transparent',
+            border: 0, cursor: 'pointer', color: c,
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <svg width="22" height="20" viewBox="0 0 24 22"
+              fill={liked ? 'currentColor' : 'none'}
+              stroke="currentColor" strokeWidth="1.6">
+              <path d="M12 20s-8-5.2-8-11.4A4.6 4.6 0 0 1 12 6a4.6 4.6 0 0 1 8 2.6C20 14.8 12 20 12 20z" />
+            </svg>
+          </button>
+        )}
       </div>
     </article>
   );
