@@ -5,49 +5,30 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { PHOTOS, PHOTOGRAPHERS, pulseScore } from '@/lib/data';
 import { useApp } from '@/providers/AppProvider';
+import { useLikeState } from '@/hooks/useLikeState';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { MobileNav, MobileFooter, MobileMarquee, MobileSectionHeader, BottomNav } from './MobileShared';
 
 // Masonry photo tile with avatar+username overlay (left) and like button (right)
 export function MasonryTile({ photo }: { photo: any }) {
   const router = useRouter();
-  const [liked, setLiked] = useState(false);
   const { authUser } = useApp();
   const aspect = photo.w && photo.h ? `${photo.w} / ${photo.h}` : '4 / 5';
 
   const photographer = PHOTOGRAPHERS.find(p => p.username === photo.by);
   const avatarUrl = photo.avatarUrl || photographer?.avatar;
 
-  useEffect(() => {
-    try {
-      const map = JSON.parse(localStorage.getItem('gpa-liked') || '{}');
-      setLiked(Boolean(map[photo.id]));
-    } catch {}
-  }, [photo.id]);
+  const { liked, count, toggle } = useLikeState(photo.id);
 
   const toggleLike = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    const next = !liked;
-    setLiked(next);
-    try {
-      const map = JSON.parse(localStorage.getItem('gpa-liked') || '{}');
-      map[photo.id] = next;
-      localStorage.setItem('gpa-liked', JSON.stringify(map));
-    } catch {}
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(photo.id);
-    if (authUser?.id && isUuid) {
-      const supabase = getSupabaseBrowserClient();
-      if (next) {
-        await supabase.from('favorites').upsert({ user_id: authUser.id, photo_id: photo.id });
-      } else {
-        await supabase.from('favorites').delete().eq('user_id', authUser.id).eq('photo_id', photo.id);
-      }
+    const result = await toggle();
+    if (result.kind === 'unauth') {
+      router.push('/login');
     }
   };
 
-  const baseLikes = photo.likes || 0;
-  const likesShown = baseLikes + (liked ? 1 : 0);
-  const likesLabel = likesShown >= 1000 ? `${(likesShown / 1000).toFixed(1)}k` : likesShown;
+  const likesLabel = count >= 1000 ? `${(count / 1000).toFixed(1)}k` : count;
 
   return (
     <div
