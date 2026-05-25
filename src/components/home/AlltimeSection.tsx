@@ -52,7 +52,7 @@ export function AlltimeSection({ allPhotos, voyageurUsernames }: AlltimeSectionP
         </div>
         <CategoryChips value={alltimeCat} onChange={setAlltimeCat} showVoyageurs />
         <div className="mt-8">
-          <PhotoGrid photos={alltimeBoard} cols={4} showRank showRankDelta uniform pulseLabel="Pulse" showLike />
+          <PhotoGrid photos={alltimeBoard} cols={4} showRank showRankDelta uniform showLike />
         </div>
       </div>
     </section>

@@ -393,11 +393,11 @@ export function PhotoDetailClient({ id }: { id: string }) {
                 <button className="heart">Report</button>
               </div>
 
-              {/* Pulse breakdown */}
+              {/* Score breakdown */}
               <div className="mt-10 md:mt-14 py-6 md:py-8 border-t border-rule border-b border-rule">
                 <div className="grid gap-4 md:gap-8 items-baseline grid-cols-3 md:grid-cols-5">
                   <div>
-                    <div className="caps opacity-55 mb-2">Pulse</div>
+                    <div className="caps opacity-55 mb-2">Score</div>
                     <div className="mono font-medium leading-[1] text-[48px] tracking-[-.02em]">
                       {formatPulseDisplay(photo.pulse)}<span className="text-[24px] opacity-65">%</span>
                     </div>

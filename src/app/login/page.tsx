@@ -37,7 +37,7 @@ export default function LoginPage() {
             alt="Gography"
             className="w-[112px] h-[112px] object-contain"
           />
-          <div className="mono text-[20px] tracking-[.28em] uppercase opacity-70">
+          <div className="mono text-[26px] md:text-[30px] tracking-[.42em] uppercase">
             Ranking
           </div>
         </div>

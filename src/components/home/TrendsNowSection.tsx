@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { Photo } from '@/lib/types';
 import { getPhotographer } from '@/lib/data';
+import { formatPulseDisplay } from '@/lib/pulse-engine';
 import { TrendsHeart } from './TrendsHeart';
 
 interface TrendsNowSectionProps {
@@ -62,7 +63,7 @@ export function TrendsNowSection({ photos }: TrendsNowSectionProps) {
                       </span>
                       <span className="opacity-40 text-[10px]">·</span>
                       <span className="mono text-[11px] tabular-nums opacity-80">
-                        Pulse {Math.round(photo.pulse)}
+                        {formatPulseDisplay(photo.pulse)}%
                       </span>
                     </div>
                     <div className="mt-[10px]">
