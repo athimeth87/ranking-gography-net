@@ -23,7 +23,6 @@ export function PhotoCard({
   showLike = false,
   ownerId,
 }: PhotoCardProps) {
-  const router = useRouter();
   const photographer = getPhotographer(photo.by);
 
   return (
