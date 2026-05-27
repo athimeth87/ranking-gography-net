@@ -131,23 +131,26 @@ export function MobileMe({
       </div>
 
       {/* Header */}
-      <section style={{ padding: '0 16px 0', display: 'flex', alignItems: 'flex-end', gap: 16, marginTop: -32, position: 'relative', zIndex: 10 }}>
-        <label style={{ cursor: 'pointer', position: 'relative', display: 'block' }}>
-          {persona.avatar ? (
-            <img src={persona.avatar} alt="Profile" style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover', border: `3px solid ${dark ? '#0a0a0a' : '#fff'}` }} />
-          ) : (
-            <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--rule)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `3px solid ${dark ? '#0a0a0a' : '#fff'}` }}>
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-            </div>
-          )}
-          <input type="file" accept="image/*" className="hidden" disabled={uploadingAvatar} onChange={(e) => handleImageUpload(e, 'avatar')} />
-          {uploadingAvatar && (
-            <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '10px' }}>
-              ...
-            </div>
-          )}
-        </label>
-        <div style={{ paddingBottom: 4 }}>
+      <section style={{ padding: '0 16px', marginTop: -40, position: 'relative', zIndex: 10 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+          <label style={{ cursor: 'pointer', position: 'relative', display: 'block' }}>
+            {persona.avatar ? (
+              <img src={persona.avatar} alt="Profile" style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover', border: `4px solid ${dark ? '#0a0a0a' : '#fff'}` }} />
+            ) : (
+              <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--rule)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `4px solid ${dark ? '#0a0a0a' : '#fff'}` }}>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+              </div>
+            )}
+            <input type="file" accept="image/*" className="hidden" disabled={uploadingAvatar} onChange={(e) => handleImageUpload(e, 'avatar')} />
+            {uploadingAvatar && (
+              <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '10px' }}>
+                ...
+              </div>
+            )}
+          </label>
+        </div>
+        
+        <div style={{ marginTop: 12 }}>
           <div style={{
             fontFamily: "'IBM Plex Mono', monospace", fontSize: 11,
             letterSpacing: '0.18em', color: 'var(--fg-soft)', textTransform: 'uppercase',
@@ -156,7 +159,7 @@ export function MobileMe({
             margin: '6px 0 0',
             fontFamily: "'Playfair Display', serif", fontWeight: 400,
             fontSize: 28, lineHeight: 1, letterSpacing: '-0.025em',
-            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px'
+            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%'
           }}>{persona.name || authUser?.email?.split('@')[0]}</h1>
         </div>
       </section>
