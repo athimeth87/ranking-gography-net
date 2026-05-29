@@ -74,6 +74,15 @@ img { display: block; max-width: 100%; }
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }
 }
+@keyframes heart-burst {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(0); }
+  10%  { opacity: 1; transform: translate(-50%, -50%) scale(1.25); }
+  25%  { transform: translate(-50%, -50%) scale(0.9); }
+  38%  { transform: translate(-50%, -50%) scale(1.06); }
+  50%  { transform: translate(-50%, -50%) scale(1); }
+  72%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.2); }
+}
 
 @layer components {
   .caps { text-transform: uppercase; letter-spacing: .14em; font-size: 11px; font-weight: 500; }

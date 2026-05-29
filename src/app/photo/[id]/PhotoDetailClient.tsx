@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
@@ -10,7 +10,7 @@ import { Footer } from '@/components/layout/Footer';
 import { PickBadge } from '@/components/icons';
 import { Lightbox } from '@/components/photo/Lightbox';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
-import { LikeButton as DBLikeButton } from '@/components/photo/LikeButton';
+import { useLikeState } from '@/hooks/useLikeState';
 import { CommentSection } from '@/components/photo/CommentSection';
 import { useFollowState } from '@/hooks/useFollowState';
 import { useFavoriteState } from '@/hooks/useFavoriteState';
@@ -283,6 +283,33 @@ export function PhotoDetailClient({ id }: { id: string }) {
     }
   };
 
+  const likeState = useLikeState(isDbPhoto && photo?.id ? photo.id : '');
+  const onLikeClick = async () => {
+    const res = await likeState.toggle();
+    if (res.kind === 'unauth') {
+      router.push(`/login?next=${encodeURIComponent(pathname ?? '/')}`);
+    }
+  };
+
+  // Double-tap to like (IG-style). Single tap does nothing.
+  const [heartBurst, setHeartBurst] = useState(0);
+  const lastTapRef = useRef(0);
+  const onImageTap = () => {
+    if (!isDbPhoto) return;
+    const now = Date.now();
+    if (now - lastTapRef.current < 300) {
+      lastTapRef.current = 0;
+      if (!likeState.liked) {
+        likeState.toggle().then((res) => {
+          if (res.kind === 'unauth') router.push(`/login?next=${encodeURIComponent(pathname ?? '/')}`);
+        });
+      }
+      setHeartBurst((b) => b + 1);
+    } else {
+      lastTapRef.current = now;
+    }
+  };
+
   // Category slug for links
   const catSlug = photo ? photo.cat.toLowerCase() : '';
 
@@ -321,10 +348,10 @@ export function PhotoDetailClient({ id }: { id: string }) {
 
             {/* ---- Main column ---- */}
             <div>
-              {/* Photo image — click to open lightbox */}
+              {/* Photo image — double-tap to like */}
               <div
-                className="relative bg-tile cursor-zoom-in"
-                onClick={() => setLightboxOpen(true)}
+                className="relative bg-tile overflow-hidden select-none"
+                onClick={onImageTap}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -333,6 +360,19 @@ export function PhotoDetailClient({ id }: { id: string }) {
                   className="w-full h-auto block"
                   loading="lazy"
                 />
+                {heartBurst > 0 && (
+                  <svg
+                    key={heartBurst}
+                    viewBox="0 0 24 22"
+                    fill="#fff"
+                    width="110"
+                    height="110"
+                    aria-hidden="true"
+                    className="pointer-events-none absolute top-1/2 left-1/2 animate-[heart-burst_1s_ease-out_forwards] drop-shadow-[0_2px_16px_rgba(0,0,0,0.5)]"
+                  >
+                    <path d="M12 20s-8-5.2-8-11.4A4.6 4.6 0 0 1 12 6a4.6 4.6 0 0 1 8 2.6C20 14.8 12 20 12 20z" />
+                  </svg>
+                )}
               </div>
 
               {/* Title + picks */}
@@ -363,7 +403,25 @@ export function PhotoDetailClient({ id }: { id: string }) {
               {/* Engage strip */}
               <div className="flex gap-3 mt-8 items-center">
                 {isDbPhoto ? (
-                  <DBLikeButton photoId={photo.id} />
+                  <button
+                    className="heart"
+                    onClick={onLikeClick}
+                    aria-label={likeState.liked ? 'Unlike' : 'Like'}
+                    aria-pressed={likeState.liked}
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill={likeState.liked ? 'currentColor' : 'none'}
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      width="13"
+                      height="13"
+                      className={likeState.liked ? 'text-[#ff5d75]' : ''}
+                    >
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                    </svg>
+                    <span>{likeState.count.toLocaleString()}</span>
+                  </button>
                 ) : (
                   <span className="heart" aria-label="Likes (read-only seed)">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="13" height="13">
