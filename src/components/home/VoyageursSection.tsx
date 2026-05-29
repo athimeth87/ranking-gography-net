@@ -57,8 +57,8 @@ export function VoyageursSection({ featuredPhoto }: VoyageursSectionProps) {
   const router = useRouter();
   const t = useTranslations('VoyageursSection');
   const [content, setContent] = useState({
-    title: t('title'),
-    description: t('description'),
+    title: t.raw('title'),
+    description: t.raw('description'),
     reward1_amount: '50,000 THB',
     reward1_label: 'VOUCHER',
     reward1_sub: t('reward1_sub'),
