@@ -21,17 +21,18 @@ const TIME_OPTIONS = [
 
 type TimeRange = (typeof TIME_OPTIONS)[number]['v'];
 
-const SORT_OPTIONS: { v: SortKey; l: string }[] = [
-  { v: 'pulse', l: 'Pulse score' },
-  { v: 'recent', l: 'Most recent' },
-  { v: 'likes', l: 'Most liked' },
+const SORT_OPTIONS: { v: SortKey; l: string; short: string }[] = [
+  { v: 'pulse', l: 'Pulse score', short: 'Pulse' },
+  { v: 'recent', l: 'Most recent', short: 'Recent' },
+  { v: 'likes', l: 'Most liked', short: 'Liked' },
 ];
 
 const TABS = [
-  { id: null, label: 'All' },
-  { id: 'landscape', label: 'Landscape' },
-  { id: 'portrait', label: 'Portrait' },
-  { id: 'bw', label: 'Black & White' },
+  { id: null, label: 'All', gold: false },
+  { id: 'voyageurs', label: 'Voyageurs', gold: true },
+  { id: 'landscape', label: 'Landscape', gold: false },
+  { id: 'portrait', label: 'Portrait', gold: false },
+  { id: 'bw', label: 'Black & White', gold: false },
 ] as const;
 
 interface FilterDropdownProps {
@@ -59,14 +60,16 @@ function FilterDropdown({ label, value, options, onChange }: FilterDropdownProps
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex gap-[10px] items-center cursor-pointer text-[12px] tracking-[.12em] uppercase"
+        className={`flex gap-2 items-center cursor-pointer text-[11px] tracking-[.12em] uppercase border px-3.5 py-[7px] transition-colors duration-150 ${
+          open ? 'border-fg' : 'border-[var(--rule)] hover:border-fg'
+        }`}
       >
-        <span className="opacity-55">{label}</span>
+        <span className="opacity-45">{label}</span>
         <span className="font-medium">{current?.l}</span>
-        <span className="text-[9px] opacity-55">▾</span>
+        <span className={`text-[8px] opacity-45 transition-transform duration-150 ${open ? 'rotate-180' : ''}`}>▾</span>
       </button>
       {open && (
-        <div className="absolute top-[calc(100%+12px)] left-0 bg-bg border border-fg min-w-[200px] z-10">
+        <div className="absolute top-[calc(100%+8px)] left-0 bg-bg border border-fg min-w-[200px] z-10 shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
           {options.map((o) => (
             <button
               key={o.v}
@@ -98,6 +101,33 @@ function EmptyState() {
   );
 }
 
+function VoyageurCrown() {
+  return (
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M3 7l4.5 3L12 4l4.5 6L21 7l-1.6 11H4.6L3 7z" />
+    </svg>
+  );
+}
+
+const SKELETON_RATIOS = [
+  'aspect-[4/5]', 'aspect-[3/4]', 'aspect-[1/1]', 'aspect-[5/6]', 'aspect-[4/5]',
+  'aspect-[3/4]', 'aspect-[1/1]', 'aspect-[4/5]', 'aspect-[5/6]',
+];
+
+function SkeletonGrid() {
+  return (
+    <div className="gap-6 columns-1 md:columns-2 lg:columns-3" aria-hidden="true">
+      {SKELETON_RATIOS.map((r, i) => (
+        <div key={i} className="break-inside-avoid mb-8 animate-pulse motion-reduce:animate-none">
+          <div className={`w-full ${r} bg-tile`} />
+          <div className="mt-3 h-3 w-2/3 bg-tile" />
+          <div className="mt-2 h-2.5 w-1/3 bg-tile" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function ExplorePage() {
   const [sort, setSort] = useState<SortKey>('pulse');
   const [timeRange, setTimeRange] = useState<TimeRange>('week');
@@ -113,7 +143,7 @@ export default function ExplorePage() {
       const supabase = getSupabaseBrowserClient();
       const { data } = await supabase
         .from('photos')
-        .select('id, title, storage_url, category, likes_count, favorites_count, comments_count, uploaded_at, width, height, description, users:users!photos_photographer_id_fkey(username)');
+        .select('id, title, storage_url, category, likes_count, favorites_count, comments_count, uploaded_at, width, height, description, users:users!photos_photographer_id_fkey(username, is_customer)');
 
       if (data) {
         let mapped = data.map((p: any) => {
@@ -125,6 +155,7 @@ export default function ExplorePage() {
             src: p.storage_url,
             title: p.title,
             by: p.users?.username || 'Unknown',
+            isVoyageur: Boolean(p.users?.is_customer),
             cat: p.category || 'General',
             w: p.width || 4,
             h: p.height || 3,
@@ -172,7 +203,7 @@ export default function ExplorePage() {
       </div>
     <div className="page-fade hidden md:block">
       {/* ── Cinematic Hero Header ── */}
-      <section className="relative overflow-hidden bg-black" style={{ height: '42vh', minHeight: 340, maxHeight: 520 }}>
+      <section className="relative overflow-hidden bg-black h-[42vh] min-h-[340px] max-h-[520px]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={photos.length > 0 ? photos[0].src : 'https://ranking.gography.net/cover-of-the-week.jpg'}
@@ -181,20 +212,22 @@ export default function ExplorePage() {
           loading="eager"
         />
         {/* gradient overlay */}
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,.25)_0%,rgba(0,0,0,.1)_30%,rgba(0,0,0,.55)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,.32)_0%,rgba(0,0,0,.06)_38%,rgba(0,0,0,.74)_100%)]" />
 
         {/* content overlay */}
         <div className="absolute inset-0 flex flex-col justify-end">
-          <div className="wrap pb-10 md:pb-14">
+          <div className="wrap pb-10 md:pb-16">
             {/* eyebrow */}
-            <div className="mono text-[10px] tracking-[.28em] uppercase text-white/60 mb-4">
-              Explore · {photos.length * 7} photos
+            <div className="flex items-center gap-3 mb-5">
+              <span className="mono text-[10px] tracking-[.3em] uppercase text-white/75">Spring 2026</span>
+              <span className="h-px w-10 bg-white/30" />
+              <span className="mono text-[10px] tracking-[.3em] uppercase text-white/55 tabular-nums">{photos.length} frames</span>
             </div>
             {/* title */}
-            <h1 className="text-white font-light text-[clamp(40px,8vw,88px)] leading-[.92] tracking-[-.035em] m-0">
+            <h1 className="text-white font-light text-[clamp(48px,9vw,104px)] leading-[.9] tracking-[-.04em] m-0">
               Explore
             </h1>
-            <p className="th text-white/70 text-[15px] leading-[1.6] mt-4 mb-0 max-w-[440px]">
+            <p className="th text-white/75 text-[15px] leading-[1.6] mt-5 mb-0 max-w-[460px]">
               เลือกชมภาพถ่ายทั้งหมด — กรองตามหมวด เวลา และอันดับ
             </p>
           </div>
@@ -208,6 +241,21 @@ export default function ExplorePage() {
           <div className="flex items-center gap-0 overflow-x-auto no-scrollbar">
             {TABS.map((t) => {
               const active = t.id === null;
+              if (t.gold) {
+                return (
+                  <button
+                    key="voyageurs"
+                    onClick={() => router.push('/explore/voyageurs')}
+                    className="group relative py-[18px] px-5 cursor-pointer"
+                    aria-label="Voyageurs"
+                  >
+                    <span className="inline-flex items-center gap-1.5 bg-gold text-black px-3 py-[6px] text-[11px] tracking-[.16em] uppercase font-semibold transition-[filter] duration-150 group-hover:brightness-[1.06]">
+                      <VoyageurCrown />
+                      {t.label}
+                    </span>
+                  </button>
+                );
+              }
               return (
                 <button
                   key={t.id ?? 'all'}
@@ -239,50 +287,55 @@ export default function ExplorePage() {
           </div>
 
           {/* Filter Bar */}
-          <div className="flex flex-wrap items-center gap-3 py-3 border-t border-[var(--rule)]">
-            <div className="flex flex-wrap gap-2 items-center">
-              {/* Sort pill */}
-              <FilterDropdown
-                label="Sort"
-                value={sort}
-                options={SORT_OPTIONS}
-                onChange={(v) => setSort(v as SortKey)}
-              />
-              {/* divider */}
-              <span className="w-px h-4 bg-[var(--rule)] mx-1 hidden md:block" />
-              {/* Time pill */}
-              <FilterDropdown
-                label="Time"
-                value={timeRange}
-                options={TIME_OPTIONS as unknown as { v: string; l: string }[]}
-                onChange={(v) => setTimeRange(v as TimeRange)}
-              />
-              {/* divider */}
-              <span className="w-px h-4 bg-[var(--rule)] mx-1 hidden md:block" />
-              {/* Picks toggle */}
-              <label
-                className={`
-                  flex items-center gap-2 cursor-pointer text-[11px] tracking-[.14em] uppercase
-                  px-3 py-[6px] border border-[var(--rule)] rounded-none
-                  transition-all duration-150
-                  ${showPicksOnly
-                    ? 'bg-[var(--fg)] text-[var(--bg)] border-[var(--fg)]'
-                    : 'opacity-50 hover:opacity-80'
-                  }
-                `}
-              >
-                <input
-                  type="checkbox"
-                  checked={showPicksOnly}
-                  onChange={(e) => setShowPicksOnly(e.target.checked)}
-                  className="sr-only"
-                />
-                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M2 8.5L6 12.5L14 3.5" />
-                </svg>
-                Picks only
-              </label>
+          <div className="flex flex-wrap items-center gap-x-7 gap-y-3 py-[14px] border-t border-[var(--rule)]">
+            {/* Sort — segmented control */}
+            <div className="flex items-center gap-3">
+              <span className="mono text-[10px] tracking-[.22em] uppercase opacity-40">Sort</span>
+              <div className="flex items-center border border-[var(--rule)]">
+                {SORT_OPTIONS.map((o, i) => {
+                  const on = sort === o.v;
+                  return (
+                    <button
+                      key={o.v}
+                      onClick={() => setSort(o.v)}
+                      className={`px-3.5 py-[7px] text-[11px] tracking-[.12em] uppercase transition-colors duration-150 ${
+                        i > 0 ? 'border-l border-[var(--rule)]' : ''
+                      } ${on ? 'bg-fg text-bg' : 'opacity-55 hover:opacity-100'}`}
+                    >
+                      {o.short}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
+
+            {/* Time — dropdown pill */}
+            <FilterDropdown
+              label="Time"
+              value={timeRange}
+              options={TIME_OPTIONS as unknown as { v: string; l: string }[]}
+              onChange={(v) => setTimeRange(v as TimeRange)}
+            />
+
+            {/* Picks toggle */}
+            <label
+              className={`flex items-center gap-2 cursor-pointer text-[11px] tracking-[.12em] uppercase px-3.5 py-[7px] border transition-colors duration-150 ${
+                showPicksOnly
+                  ? 'bg-fg text-bg border-fg'
+                  : 'border-[var(--rule)] opacity-60 hover:opacity-100 hover:border-fg'
+              }`}
+            >
+              <input
+                type="checkbox"
+                checked={showPicksOnly}
+                onChange={(e) => setShowPicksOnly(e.target.checked)}
+                className="sr-only"
+              />
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M2 8.5L6 12.5L14 3.5" />
+              </svg>
+              Picks only
+            </label>
 
             {/* keyboard hint */}
             <div className="ml-auto mono text-[10px] opacity-35 hidden md:flex items-center gap-1">
@@ -295,10 +348,25 @@ export default function ExplorePage() {
       </section>
 
       {/* Grid */}
-      <section className="py-[40px] pb-[80px]">
+      <section className="py-10 md:py-14 pb-20">
         <div className="wrap">
+          {/* Result bar */}
+          {!isLoading && photos.length > 0 && (
+            <div className="flex items-baseline justify-between border-b border-rule pb-4 mb-10">
+              <div className="flex items-baseline gap-3">
+                <span className="mono text-[12px] tabular-nums tracking-[.1em]">
+                  {String(photos.length).padStart(3, '0')}
+                </span>
+                <span className="caps opacity-55">Frames</span>
+              </div>
+              <div className="mono text-[10px] tracking-[.16em] uppercase opacity-45">
+                {sort} · {timeRange}{showPicksOnly ? ' · picks' : ''}
+              </div>
+            </div>
+          )}
+
           {isLoading ? (
-            <div className="py-20 text-center text-fg-soft">Loading...</div>
+            <SkeletonGrid />
           ) : photos.length === 0 ? (
             <EmptyState />
           ) : (
@@ -307,12 +375,18 @@ export default function ExplorePage() {
         </div>
       </section>
 
-      {/* Load more (visual) */}
-      {photos.length > 0 && (
-        <section className="py-[40px] pb-[80px] text-center">
-          <button className="btn btn-ghost" disabled>
-            Loading more — infinite scroll
-          </button>
+      {/* End of results marker */}
+      {!isLoading && photos.length > 0 && (
+        <section className="pb-24">
+          <div className="wrap">
+            <div className="flex items-center justify-center gap-4 text-fg-faint">
+              <span className="h-px w-16 bg-rule" />
+              <span className="mono text-[10px] tracking-[.24em] uppercase tabular-nums">
+                End · {photos.length} frames
+              </span>
+              <span className="h-px w-16 bg-rule" />
+            </div>
+          </div>
         </section>
       )}
 

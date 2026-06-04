@@ -100,6 +100,8 @@
     "open_dashboard": "Open your dashboard",
     "discover": "Discover",
     "categories": "Categories",
+    "explore": "Explore",
+    "voyageurs": "Voyageurs",
     "theme": "Theme",
     "light": "Light",
     "dark": "Dark",
@@ -108,6 +110,8 @@
   "MobileShared": {
     "leaderboard": "Leaderboard",
     "trends_now": "Trends Now",
+    "for_you": "For You",
+    "following": "Following",
     "home": "Home",
     "explore": "Explore",
     "search": "Search",

@@ -100,6 +100,8 @@
     "open_dashboard": "ไปที่แดชบอร์ดของคุณ",
     "discover": "ค้นพบ",
     "categories": "หมวดหมู่",
+    "explore": "ภาพทั้งหมด",
+    "voyageurs": "Voyageurs",
     "theme": "ธีม",
     "light": "สว่าง",
     "dark": "มืด",
@@ -108,6 +110,8 @@
   "MobileShared": {
     "leaderboard": "ตารางคะแนน",
     "trends_now": "กำลังมาแรง",
+    "for_you": "For You",
+    "following": "Following",
     "home": "หน้าแรก",
     "explore": "ค้นพบ",
     "search": "ค้นหา",

@@ -97,7 +97,7 @@ export function MasonryTile({ photo }: { photo: any }) {
   );
 }
 
-const CATS = ['All', 'Landscape', 'Portrait', 'BW'] as const;
+const CATS = ['All', 'Voyageurs', 'Landscape', 'Portrait', 'BW'] as const;
 
 export function MobileExplore({ initialCategory = 'All', dbPhotos = [] }: { initialCategory?: typeof CATS[number], dbPhotos?: any[] }) {
   const router = useRouter();
@@ -110,7 +110,9 @@ export function MobileExplore({ initialCategory = 'All', dbPhotos = [] }: { init
   const dataSource = dbPhotos.length > 0 ? dbPhotos : PHOTOS;
 
   const filtered = useMemo(() => {
-    const base = cat === 'All' ? dataSource : dataSource.filter(p => p.cat === cat || p.cat.toLowerCase() === cat.toLowerCase());
+    const base = cat === 'All' ? dataSource
+      : cat === 'Voyageurs' ? dataSource.filter(p => p.isVoyageur)
+      : dataSource.filter(p => p.cat === cat || p.cat.toLowerCase() === cat.toLowerCase());
     return sort === 'Hirest'
       ? base.slice().sort((a, b) => (b.pulse !== undefined ? b.pulse : pulseScore(b)) - (a.pulse !== undefined ? a.pulse : pulseScore(a)))
       : base.slice().sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -150,57 +152,78 @@ export function MobileExplore({ initialCategory = 'All', dbPhotos = [] }: { init
         </p>
       </div>
 
-      {/* SortBlocks — 2-col */}
-      <div style={{ padding: '24px 16px 0' }}>
+      {/* Sort — segmented control */}
+      <div style={{ padding: '26px 16px 0' }}>
         <div style={{
-          display: 'grid', gridTemplateColumns: '1fr 1fr',
-          border: '1px solid var(--rule-strong)',
-        }}>
+          fontFamily: "'IBM Plex Mono', monospace", fontSize: 10,
+          letterSpacing: '0.22em', textTransform: 'uppercase',
+          opacity: 0.4, marginBottom: 11,
+        }}>Sort by</div>
+        <div style={{ display: 'flex', height: 46, border: '1px solid var(--rule-strong)' }}>
           {([
-            { k: 'Hirest', sub: 'Top pulse' },
-            { k: 'Fresh',  sub: 'Newest first' },
+            { k: 'Hirest', label: 'Top Pulse' },
+            { k: 'Fresh',  label: 'Newest' },
           ] as const).map((s, i) => {
             const active = sort === s.k;
             return (
               <button key={s.k} onClick={() => setSort(s.k)} style={{
-                padding: '16px 14px', cursor: 'pointer',
+                flex: 1, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
                 background: active ? (dark ? '#fff' : '#000') : 'transparent',
                 color: active ? (dark ? '#000' : '#fff') : (dark ? '#fff' : '#000'),
                 border: 0, borderRight: i === 0 ? '1px solid var(--rule-strong)' : 0,
-                textAlign: 'left', fontFamily: 'inherit',
-              }}>
-                <div style={{
-                  fontFamily: "'Playfair Display', serif", fontWeight: 700,
-                  fontSize: 22, letterSpacing: '-0.01em', lineHeight: 1,
-                }}>{s.k}</div>
-                <div style={{
-                  fontFamily: "'IBM Plex Mono', monospace", fontSize: 10,
-                  letterSpacing: '0.14em', textTransform: 'uppercase',
-                  marginTop: 8, opacity: 0.7,
-                }}>{s.sub}</div>
-              </button>
+                fontFamily: "'IBM Plex Mono', monospace", fontSize: 12,
+                letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 500,
+                transition: 'background .15s ease, color .15s ease',
+              }}>{s.label}</button>
             );
           })}
         </div>
       </div>
 
-      {/* Category chips — horizontal scroll */}
-      <div className="mobile-h-scroll" style={{ marginTop: 16 }}>
+      {/* Category — label + horizontal scroll chips */}
+      <div style={{ padding: '22px 16px 0' }}>
+        <div style={{
+          fontFamily: "'IBM Plex Mono', monospace", fontSize: 10,
+          letterSpacing: '0.22em', textTransform: 'uppercase',
+          opacity: 0.4, marginBottom: 11,
+        }}>Category</div>
+      </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, padding: '0 16px' }}>
         {CATS.map(c => {
           const active = cat === c;
+          const gold = c === 'Voyageurs';
+          const border = gold ? '#b08e54' : active ? (dark ? '#fff' : '#000') : 'var(--rule)';
+          const background = gold
+            ? '#b08e54'
+            : (active ? (dark ? '#fff' : '#000') : 'transparent');
+          const color = gold
+            ? '#1a1305'
+            : (active ? (dark ? '#000' : '#fff') : (dark ? 'rgba(255,255,255,0.78)' : 'rgba(0,0,0,0.72)'));
           return (
             <button key={c} onClick={() => {
               setCat(c);
               router.push(c === 'All' ? '/explore' : `/explore/${c.toLowerCase()}`);
             }} style={{
-              height: 36, padding: '0 14px',
-              border: `1px solid ${active ? (dark ? '#fff' : '#000') : 'var(--rule-strong)'}`,
-              background: active ? (dark ? '#fff' : '#000') : 'transparent',
-              color: active ? (dark ? '#000' : '#fff') : (dark ? '#fff' : '#000'),
+              height: 38, padding: '0 16px',
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              border: `1px solid ${border}`,
+              background,
+              color,
+              boxShadow: gold && active ? 'inset 0 0 0 1.5px #1a1305' : 'none',
               fontFamily: "'IBM Plex Mono', monospace", fontSize: 11,
-              letterSpacing: '0.12em', textTransform: 'uppercase',
-              cursor: 'pointer', flex: '0 0 auto', whiteSpace: 'nowrap',
-            }}>{c === 'BW' ? 'B&W' : c}</button>
+              letterSpacing: '0.14em', textTransform: 'uppercase',
+              cursor: 'pointer', whiteSpace: 'nowrap',
+              fontWeight: gold ? 600 : 400,
+              transition: 'background .15s ease, color .15s ease, border-color .15s ease, box-shadow .15s ease',
+            }}>
+              {gold && (
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M3 7l4.5 3L12 4l4.5 6L21 7l-1.6 11H4.6L3 7z" />
+                </svg>
+              )}
+              {c === 'BW' ? 'B&W' : c}
+            </button>
           );
         })}
       </div>
@@ -222,27 +245,33 @@ export function MobileExplore({ initialCategory = 'All', dbPhotos = [] }: { init
         <div style={{ padding: '32px 16px 0' }}>
           <MobileSectionHeader num="—" title="Trending photographers" link="All" href="/photographers" />
         </div>
-        <div className="mobile-h-scroll" style={{ marginTop: 18, padding: '0 16px 32px' }}>
-          {trending.map(p => (
-            <div
-              key={p.username}
-              onClick={() => router.push(`/photographer/${p.username}`)}
-              style={{ width: 140, flex: '0 0 140px', cursor: 'pointer' }}
-            >
-              <div style={{ aspectRatio: '1', background: 'var(--tile)', overflow: 'hidden' }}>
-                {p.avatar && <img src={p.avatar} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />}
+        <div style={{ marginTop: 18, padding: '0 0 32px', overflow: 'hidden' }}>
+          <div style={{ display: 'flex', width: 'max-content', animation: 'trendingSlide 80s linear infinite' }}>
+            {[0, 1].map(group => (
+              <div key={group} aria-hidden={group === 1} style={{ display: 'flex', gap: 16, paddingLeft: 16, paddingRight: 0 }}>
+                {trending.map(p => (
+                  <div
+                    key={`${group}-${p.username}`}
+                    onClick={() => router.push(`/photographer/${p.username}`)}
+                    style={{ width: 140, flex: '0 0 140px', cursor: 'pointer' }}
+                  >
+                    <div style={{ aspectRatio: '1', background: 'var(--tile)', overflow: 'hidden' }}>
+                      {p.avatar && <img src={p.avatar} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />}
+                    </div>
+                    <div style={{
+                      marginTop: 10, fontSize: 13, fontWeight: 500,
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    }}>{p.name}</div>
+                    <div style={{
+                      fontFamily: "'IBM Plex Mono', monospace", fontSize: 10,
+                      letterSpacing: '0.08em', color: 'var(--fg-soft)',
+                      marginTop: 2, textTransform: 'uppercase',
+                    }}>Pulse {p.pulse}</div>
+                  </div>
+                ))}
               </div>
-              <div style={{
-                marginTop: 10, fontSize: 13, fontWeight: 500,
-                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-              }}>{p.name}</div>
-              <div style={{
-                fontFamily: "'IBM Plex Mono', monospace", fontSize: 10,
-                letterSpacing: '0.08em', color: 'var(--fg-soft)',
-                marginTop: 2, textTransform: 'uppercase',
-              }}>Pulse {p.pulse}</div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 

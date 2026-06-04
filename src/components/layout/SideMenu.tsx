@@ -5,9 +5,9 @@ import { useApp } from '@/providers/AppProvider';
 import { getPhotographer } from '@/lib/data';
 import { useTranslations } from 'next-intl';
 
-interface NavLink { to: string; labelKey: string }
+interface NavLink { to: string; labelKey: string; gold?: boolean }
 interface GroupProps { title: string; children: React.ReactNode }
-interface MenuRowProps { label: string; active: boolean; onClick: () => void }
+interface MenuRowProps { label: string; active: boolean; onClick: () => void; gold?: boolean }
 
 const DISCOVER: NavLink[] = [
   { to: '/hall-of-fame', labelKey: 'hall_of_fame' },
@@ -16,9 +16,8 @@ const DISCOVER: NavLink[] = [
 ];
 
 const CATEGORIES: NavLink[] = [
-  { to: '/explore/landscape', labelKey: 'landscape' },
-  { to: '/explore/portrait', labelKey: 'portrait' },
-  { to: '/explore/bw', labelKey: 'bw' },
+  { to: '/explore', labelKey: 'explore' },
+  { to: '/explore/voyageurs', labelKey: 'voyageurs', gold: true },
 ];
 
 const ABOUT: NavLink[] = [
@@ -116,14 +115,17 @@ export function SideMenu() {
             </button>
           )}
 
-          <Group title={t('discover')}>
-            {DISCOVER.map((l) => (
-              <MenuRow key={l.to} active={isActive(l.to)} onClick={() => go(l.to)} label={t(l.labelKey)} />
-            ))}
+          <Group title={t('categories')}>
+            {CATEGORIES.map((l) => {
+              const active = l.to === '/explore' ? pathname === '/explore' : pathname.startsWith(l.to);
+              return (
+                <MenuRow key={l.to} active={active} gold={l.gold} onClick={() => go(l.to)} label={t(l.labelKey)} />
+              );
+            })}
           </Group>
 
-          <Group title={t('categories')}>
-            {CATEGORIES.map((l) => (
+          <Group title={t('discover')}>
+            {DISCOVER.map((l) => (
               <MenuRow key={l.to} active={isActive(l.to)} onClick={() => go(l.to)} label={t(l.labelKey)} />
             ))}
           </Group>
@@ -180,7 +182,23 @@ function Group({ title, children }: GroupProps) {
   );
 }
 
-function MenuRow({ label, active, onClick }: MenuRowProps) {
+function MenuRow({ label, active, onClick, gold }: MenuRowProps) {
+  if (gold) {
+    return (
+      <button
+        className={`sidemenu-row sidemenu-row-gold ${active ? 'is-active' : ''}`}
+        onClick={onClick}
+      >
+        <span className="sidemenu-row-label flex items-center gap-2">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M3 7l4.5 3L12 4l4.5 6L21 7l-1.6 11H4.6L3 7z" />
+          </svg>
+          {label}
+        </span>
+        <span className="sidemenu-row-arr">→</span>
+      </button>
+    );
+  }
   return (
     <button className={`sidemenu-row ${active ? 'is-active' : ''}`} onClick={onClick}>
       <span className="sidemenu-row-label">{label}</span>

@@ -594,7 +594,7 @@ export function PhotoDetailClient({ id }: { id: string }) {
               {more.length > 0 && photographer && (
                 <div className="py-7">
                   <div className="caps opacity-55 mb-4">
-                    {t('more_from', { name: photographer.name.split(' ')[0] })}
+                    {t('more_from', { name: photographer.name.split(' ')[0] ?? photographer.name })}
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     {more.map((p: Photo) => (
