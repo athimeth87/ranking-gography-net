@@ -134,7 +134,7 @@ export function MobileForCustomers() {
         <div style={{
           fontFamily: "'IBM Plex Mono', monospace", fontSize: 11,
           letterSpacing: '0.18em', textTransform: 'uppercase', opacity: 0.6,
-        }}>Season 04</div>
+        }}>Season 01</div>
         <h2 style={{
           margin: '14px 0 22px',
           fontFamily: "'Playfair Display', serif", fontWeight: 700,

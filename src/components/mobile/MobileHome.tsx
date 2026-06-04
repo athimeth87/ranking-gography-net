@@ -253,7 +253,7 @@ export function MobileHome({
       </section>
 
       <div style={{ marginTop: 40 }}>
-        <MobileMarquee text="★ Season 04 ★ 37 days left ★ Submit your frame ★" />
+        <MobileMarquee text="★ Season 01 ★ 37 days left ★ Submit your frame ★" />
       </div>
       <MobileFooter />
     </div>

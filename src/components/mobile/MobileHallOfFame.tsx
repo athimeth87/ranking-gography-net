@@ -49,7 +49,7 @@ export function MobileHallOfFame() {
       {/* Featured winner */}
       <section style={{ padding: '40px 16px 0' }}>
         <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, letterSpacing: '0.16em', color: 'var(--fg-soft)' }}>
-          Season 04 · Reigning
+          Season 01 · Reigning
         </div>
         <div style={{ marginTop: 14, aspectRatio: '4 / 5', background: 'var(--tile)', overflow: 'hidden' }}>
           <img src={winnerPhoto.src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />

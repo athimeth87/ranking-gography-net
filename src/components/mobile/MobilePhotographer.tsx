@@ -105,7 +105,7 @@ export function MobilePhotographer({ username }: { username: string }) {
             letterSpacing: '0.14em', textTransform: 'uppercase',
           }}>
             <span style={{ width: 6, height: 6, background: '#b08e54', transform: 'rotate(45deg)' }} />
-            Voyageur · Season 04
+            Voyageur · Season 01
           </div>
         )}
       </div>

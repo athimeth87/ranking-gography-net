@@ -201,16 +201,9 @@ img { display: block; max-width: 100%; }
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 14px;
     text-align: center;
   }
-  footer.footer-mini .footer-logo { display: inline-flex; align-items: center; gap: 12px; }
-  footer.footer-mini .footer-lockup { display: inline-flex; flex-direction: column; align-items: center; gap: 3px; line-height: 1; }
-  footer.footer-mini .logo-img { width: 30px; height: 30px; object-fit: contain; filter: brightness(0); }
-  [data-theme="dark"] footer.footer-mini .logo-img { filter: none; }
-  footer.footer-mini .footer-lockup small { font-size: 8px; letter-spacing: .2em; text-transform: uppercase; opacity: .55; }
-  footer.footer-mini .footer-word { font-family: var(--serif); font-weight: 700; font-size: 22px; letter-spacing: .3em; }
-  footer.footer-mini .footer-tag { font-family: var(--mono); font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: var(--fg-faint); margin: 0; }
+  footer.footer-mini .footer-tag { font-family: var(--mono); font-size: 12px; letter-spacing: .24em; text-transform: uppercase; color: var(--fg-soft); margin: 0; }
 
   /* Like button */
   .heart {
@@ -834,12 +827,11 @@ img { display: block; max-width: 100%; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 
-/* Footer responsive — minimal footer keeps the same centered layout, tighter spacing */
+/* Footer responsive — tighter spacing; clear the floating BottomNav on phones (<md) */
 @media (max-width: 1023px) {
   footer.footer-mini { margin-top: 80px; padding: 28px 0 30px; }
 }
 
-@media (max-width: 640px) {
-  footer.footer-mini { margin-top: 64px; padding: 26px 0 28px; }
-  footer.footer-mini .footer-word { font-size: 19px; }
+@media (max-width: 767px) {
+  footer.footer-mini { margin-top: 56px; padding: 26px 0 96px; }
 }
