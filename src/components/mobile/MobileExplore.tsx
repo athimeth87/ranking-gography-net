@@ -246,7 +246,7 @@ export function MobileExplore({ initialCategory = 'All', dbPhotos = [] }: { init
         </div>
       </section>
 
-      <MobileMarquee text={`◆ ${dataSource.length} frames ◆ Season 04 ◆ Updated continuously ◆`} />
+      <MobileMarquee text={`◆ ${dataSource.length} frames ◆ Season 01 ◆ Updated continuously ◆`} />
       <MobileFooter />
     </div>
   );

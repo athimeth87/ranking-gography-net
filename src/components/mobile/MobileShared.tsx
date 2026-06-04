@@ -30,7 +30,7 @@ export function MobileFooter() {
   return <Footer />;
 }
 
-export function MobileMarquee({ text = '★ Pulse rising ★ Season 04 ★ Submissions open until 12.31 ★' }) {
+export function MobileMarquee({ text = '★ Pulse rising ★ Season 01 ★ Submissions open until 12.31 ★' }) {
   const { theme } = useApp();
   const dark = theme === 'dark';
   return (

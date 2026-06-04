@@ -394,7 +394,7 @@ export function MobileUpload() {
           fontFamily: "'Noto Sans Thai', sans-serif",
           fontSize: 14, lineHeight: 1.65, color: 'var(--fg-soft)',
           maxWidth: '30ch', margin: '0 auto',
-        }}>ระบบอัพโหลดกำลังพัฒนา — เปิดรับช่างภาพรายแรกภายในต้น Season 04</p>
+        }}>ระบบอัพโหลดกำลังพัฒนา — เปิดรับช่างภาพรายแรกภายในต้น Season 01</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 32, maxWidth: 320, marginLeft: 'auto', marginRight: 'auto' }}>
           <button onClick={() => router.push('/apply-photographer')} style={{
             minHeight: 44, padding: '0 22px',
