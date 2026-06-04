@@ -1,6 +1,6 @@
 // @ts-nocheck
 'use client';
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { PHOTOS, PHOTOGRAPHERS, pulseScore, voyageurUsernames } from '@/lib/data';
@@ -23,23 +23,55 @@ export function MobileHome({
   const { theme } = useApp();
   const t = useTranslations('MobileHome');
   const dark = theme === 'dark';
-  const [tab, setTab] = useState('leaderboard');
+  const [tab, setTab] = useState('foryou');
+
+  // Local follow set (TikTok-style) — persisted in localStorage
+  const [following, setFollowing] = useState(() => new Set());
+  useEffect(() => {
+    try {
+      const raw = JSON.parse(localStorage.getItem('gpa-following') || '[]');
+      if (Array.isArray(raw)) setFollowing(new Set(raw));
+    } catch {}
+  }, []);
+  const toggleFollow = (username) => setFollowing(prev => {
+    const next = new Set(prev);
+    if (next.has(username)) next.delete(username); else next.add(username);
+    try { localStorage.setItem('gpa-following', JSON.stringify([...next])); } catch {}
+    return next;
+  });
 
   const pList = realPhotos.length > 0 ? realPhotos : PHOTOS;
   const photogList = realPhotographers.length > 0 ? realPhotographers : PHOTOGRAPHERS;
 
-  const fresh = pList
-    .slice()
-    .sort((a, b) => (b.date ? new Date(b.date).getTime() : 0) - (a.date ? new Date(a.date).getTime() : 0))
-    .slice(0, 12)
-    .map(ph => {
-      const photographer = photogList.find(p => p.username === ph.by);
-      return {
-        ...ph,
-        photographerName: photographer?.name || ph.by,
-        photographerAvatar: ph.avatarUrl || photographer?.avatar,
-      };
-    });
+  // For You — deterministic blend of pulse + recency + variety (TikTok-style FYP)
+  const forYouFeed = useMemo(() => {
+    const byDate = pList.slice().sort((a, b) => (b.date ? new Date(b.date).getTime() : 0) - (a.date ? new Date(a.date).getTime() : 0));
+    const recencyRank = new Map(byDate.map((p, i) => [p.id, byDate.length > 1 ? i / (byDate.length - 1) : 0]));
+    const maxPulse = Math.max(1, ...pList.map(p => p.pulse || pulseScore(p)));
+    const jitter = (s = '') => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return ((h >>> 0) % 1000) / 1000; };
+    const score = (p) =>
+      (p.pulse || pulseScore(p)) / maxPulse * 0.5
+      + (1 - (recencyRank.get(p.id) ?? 1)) * 0.35
+      + jitter(p.id || p.title || '') * 0.15;
+    return pList.slice().sort((a, b) => score(b) - score(a)).slice(0, 18);
+  }, [pList]);
+
+  // Following — photos only from creators you follow
+  const followingFeed = useMemo(() => {
+    if (following.size === 0) return [];
+    return pList.filter(p => following.has(p.by))
+      .slice()
+      .sort((a, b) => (b.date ? new Date(b.date).getTime() : 0) - (a.date ? new Date(a.date).getTime() : 0));
+  }, [pList, following]);
+
+  // Suggested creators for the empty Following state
+  const suggestions = useMemo(() =>
+    photogList
+      .map(p => ({ ...p, totalPulse: Math.round(pList.filter(ph => ph.by === p.username).reduce((s, ph) => s + (ph.pulse || pulseScore(ph)), 0)) }))
+      .filter(p => !following.has(p.username))
+      .sort((a, b) => b.totalPulse - a.totalPulse)
+      .slice(0, 8),
+  [photogList, pList, following]);
 
   const voyageurs = photogList
     .filter(p => p.isAmbassador || p.isCustomer)
@@ -80,13 +112,54 @@ export function MobileHome({
       <MobileNav />
       <FeedTabs active={tab} onChange={setTab} />
 
-      {/* FEED — 2-col masonry with avatar/like overlay */}
+      {/* FEED — For You / Following */}
       <section style={{ padding: '8px 6px 0' }}>
-        <div style={{ columnCount: 2, columnGap: 8 }}>
-          {fresh.map(p => (
-            <MasonryTile key={p.id} photo={p} />
-          ))}
-        </div>
+        {tab === 'following' && followingFeed.length === 0 ? (
+          <div style={{ padding: '36px 16px 8px' }}>
+            <div style={{ textAlign: 'center', marginBottom: 26 }}>
+              <div style={{ fontSize: 23, fontWeight: 300, letterSpacing: '-0.01em', marginBottom: 6 }}>Build your Following feed</div>
+              <p style={{ fontSize: 14, color: 'var(--fg-soft)', margin: 0 }}>เลือกช่างภาพที่อยากติดตาม</p>
+            </div>
+            <div>
+              {suggestions.map(s => (
+                <div key={s.username} style={{
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  padding: '12px 0', borderBottom: '1px solid var(--rule)',
+                }}>
+                  <div
+                    onClick={() => router.push(`/photographer/${s.username}`)}
+                    style={{ width: 44, height: 44, flexShrink: 0, borderRadius: '50%', overflow: 'hidden', background: 'var(--tile)', cursor: 'pointer' }}
+                  >
+                    {s.avatar && <img src={s.avatar} alt={s.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />}
+                  </div>
+                  <div onClick={() => router.push(`/photographer/${s.username}`)} style={{ flex: 1, minWidth: 0, cursor: 'pointer' }}>
+                    <div style={{ fontSize: 14, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {s.name}{(s.isAmbassador || s.isCustomer) && <span style={{ marginLeft: 6, color: '#b08e54' }}>◆</span>}
+                    </div>
+                    <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--fg-soft)', marginTop: 2 }}>
+                      {s.loc || 'Photographer'} · Pulse {s.totalPulse}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => toggleFollow(s.username)}
+                    style={{
+                      flexShrink: 0, minHeight: 36, padding: '0 18px', cursor: 'pointer',
+                      background: dark ? '#fff' : '#000', color: dark ? '#000' : '#fff', border: 0,
+                      fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, fontWeight: 600,
+                      letterSpacing: '0.12em', textTransform: 'uppercase',
+                    }}
+                  >Follow</button>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div style={{ columnCount: 2, columnGap: 8 }}>
+            {(tab === 'following' ? followingFeed : forYouFeed).map(p => (
+              <MasonryTile key={p.id} photo={p} />
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Season banner break — slim */}
