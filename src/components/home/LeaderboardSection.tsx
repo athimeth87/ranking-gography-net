@@ -19,7 +19,7 @@ export function LeaderboardSection({ allPhotos, voyageurUsernames }: Leaderboard
 
   let leaderboardSource: Photo[];
   if (leaderCat === 'All') leaderboardSource = allPhotos.slice();
-  else if (leaderCat === 'Voyageurs')
+  else if (leaderCat === 'Travellers')
     leaderboardSource = allPhotos.filter((p) => p.voyageurOnly);
   else leaderboardSource = allPhotos.filter((p) => p.cat === leaderCat);
   const leaderboard = leaderboardSource.slice(0, 8);
@@ -37,7 +37,7 @@ export function LeaderboardSection({ allPhotos, voyageurUsernames }: Leaderboard
           <button
             onClick={() =>
               router.push(
-                leaderCat === 'Voyageurs'
+                leaderCat === 'Travellers'
                   ? '/photographers/voyageurs'
                   : leaderCat === 'All'
                     ? '/explore'

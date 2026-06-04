@@ -283,8 +283,8 @@ export function MePhotos({ myPhotos, isPhotographer, isVoyageur, onPhotoUploaded
                 {isVoyageur && (
                   <div className="flex items-center justify-between border border-white/10 rounded-lg p-3 bg-white/5">
                     <div>
-                      <div className="th text-[12px] font-medium text-white">Voyageur Only</div>
-                      <div className="th text-[10px] text-white/50 mt-0.5">ภาพนี้จะเห็นได้เฉพาะสมาชิก Voyageur ด้วยกันเท่านั้น</div>
+                      <div className="th text-[12px] font-medium text-white">Traveller Only</div>
+                      <div className="th text-[10px] text-white/50 mt-0.5">ภาพนี้จะเห็นได้เฉพาะสมาชิก Traveller ด้วยกันเท่านั้น</div>
                     </div>
                     <Switch
                       checked={draft.voyageurOnly}

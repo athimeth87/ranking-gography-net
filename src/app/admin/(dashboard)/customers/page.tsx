@@ -336,7 +336,7 @@ export default function CustomerWhitelistPage() {
                   onChange={e => setNewRole(e.target.value)}
                   className="w-full px-3 py-2 border border-neutral-200 rounded-md focus:outline-none focus:ring-2 focus:ring-neutral-900 bg-white"
                 >
-                  <option value="voyageur">Voyageur (Customer)</option>
+                  <option value="voyageur">Traveller (Customer)</option>
                   <option value="photographer">Photographer</option>
                 </select>
               </div>

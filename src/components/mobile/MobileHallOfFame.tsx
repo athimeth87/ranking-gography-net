@@ -13,9 +13,9 @@ const seasons = [
 ];
 
 const tiers = [
-  { t: 'Voyageur III', p: '฿15,000', l: '8% cashback', tag: 'top tier' },
-  { t: 'Voyageur II',  p: '฿8,000',  l: '5% cashback', tag: '' },
-  { t: 'Voyageur I',   p: '฿3,000',  l: '3% cashback', tag: '' },
+  { t: 'Traveller III', p: '฿15,000', l: '8% cashback', tag: 'top tier' },
+  { t: 'Traveller II',  p: '฿8,000',  l: '5% cashback', tag: '' },
+  { t: 'Traveller I',   p: '฿3,000',  l: '3% cashback', tag: '' },
 ];
 
 export function MobileHallOfFame() {
@@ -65,7 +65,7 @@ export function MobileHallOfFame() {
           letterSpacing: '0.14em', textTransform: 'uppercase', color: '#b08e54',
         }}>
           <span style={{ width: 6, height: 6, background: '#b08e54', transform: 'rotate(45deg)' }} />
-          Anuwat Phon · Voyageur III
+          Anuwat Phon · Traveller III
         </div>
         <p style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--fg-soft)', marginTop: 16, maxWidth: '40ch' }}>
           Shot at 5:47am in Pang Mapha district. Three nights of waiting for the fog to break through the valley.
@@ -142,7 +142,7 @@ export function MobileHallOfFame() {
       {/* Tiers */}
       <section style={{ padding: '20px 0 0', background: dark ? '#131310' : 'var(--cream)' }}>
         <div style={{ padding: '16px 16px 0' }}>
-          <MobileSectionHeader num="02 / Tiers" title="Voyageur cashback" />
+          <MobileSectionHeader num="02 / Tiers" title="Traveller cashback" />
           <p style={{
             fontFamily: "'Noto Sans Thai', sans-serif",
             fontSize: 13, lineHeight: 1.55, color: 'var(--fg-soft)',

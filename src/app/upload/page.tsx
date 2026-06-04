@@ -432,16 +432,16 @@ export default function UploadPage() {
                             className="caps text-[9px] flex items-center gap-[6px]"
                             style={{ opacity: draft.forCustomerAwards ? 0.7 : 0.55 }} // runtime: selection
                           >
-                            <VoyageurMark size={7} /> Voyageurs
+                            <VoyageurMark size={7} /> Travellers
                           </div>
                           <div className="text-[15px] font-medium">หมวดลูกค้า</div>
                           <div className="th text-[11px] opacity-70 leading-[1.5]">
-                            แข่งเฉพาะ Voyageur · ลุ้น 50,000 THB
+                            แข่งเฉพาะ Traveller · ลุ้น 50,000 THB
                           </div>
                         </button>
                       </div>
                       <div className="mono mt-[10px] text-[10.5px] opacity-55">
-                        คุณเลือกได้เพราะคุณคือ Voyageur — ภาพเดียวเลือกได้เพียงหมวดเดียว
+                        คุณเลือกได้เพราะคุณคือ Traveller — ภาพเดียวเลือกได้เพียงหมวดเดียว
                       </div>
                     </Field2>
                   )}
@@ -453,7 +453,7 @@ export default function UploadPage() {
                         href="/for-customers"
                         className="caps opacity-60 text-[10px] border-b border-rule pb-[2px]"
                       >
-                        About Voyageurs →
+                        About Travellers →
                       </Link>
                     </div>
                   )}

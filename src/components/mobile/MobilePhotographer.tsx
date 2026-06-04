@@ -38,7 +38,7 @@ function ProfileTopBar({ username }: { username: string }) {
           <span style={{
             width: 6, height: 6, background: '#b08e54',
             transform: 'rotate(45deg)', display: 'inline-block', marginLeft: 4,
-          }} title="Voyageur active" />
+          }} title="Traveller active" />
         )}
       </div>
       <button onClick={toggleSideMenu} aria-label="Menu" style={{
@@ -105,7 +105,7 @@ export function MobilePhotographer({ username }: { username: string }) {
             letterSpacing: '0.14em', textTransform: 'uppercase',
           }}>
             <span style={{ width: 6, height: 6, background: '#b08e54', transform: 'rotate(45deg)' }} />
-            Voyageur · Season 01
+            Traveller · Season 01
           </div>
         )}
       </div>
@@ -153,7 +153,7 @@ export function MobilePhotographer({ username }: { username: string }) {
               letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 500,
             }}>
               <span style={{ width: 6, height: 6, background: '#b08e54', transform: 'rotate(45deg)' }} />
-              Voyageur
+              Traveller
             </span>
           )}
         </div>
@@ -269,7 +269,7 @@ export function MobilePhotographer({ username }: { username: string }) {
                     </div>
                   )}
                   {photoVoyageur && (
-                    <div style={{ width: 10, height: 10, background: '#b08e54', transform: 'rotate(45deg)', marginTop: 4 }} title="Voyageur" />
+                    <div style={{ width: 10, height: 10, background: '#b08e54', transform: 'rotate(45deg)', marginTop: 4 }} title="Traveller" />
                   )}
                 </div>
               )}

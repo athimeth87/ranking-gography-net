@@ -69,13 +69,13 @@ export default function Page() {
               desc="หมวดเปิดสำหรับทุกคน ส่งภาพได้ทุกแนว ทั้ง Landscape, Portrait หรือ Black & White มาประชันกันบนการจัดอันดับประจำสัปดาห์"
             />
             <DefRow
-              name="Voyager"
+              name="Traveller"
               desc="หมวดพิเศษเฉพาะลูกค้าที่เคยร่วมเดินทางกับ Gography ได้แข่งขันกันเองในกลุ่ม พร้อมลุ้นรางวัลพิเศษที่เราจัดเตรียมไว้ให้"
             />
           </div>
           <p className="text-[15px] leading-[1.85] text-fg-soft mt-[32px] m-0 max-w-[68ch]">
             ผู้ใช้ทั่วไปเข้าร่วมได้เฉพาะหมวด Classic ส่วนลูกค้าของ Gography เข้าถึงได้ทั้งสองหมวด
-            ร่วมสนุกและลุ้นรางวัลได้เต็มที่ทั้ง Classic และ Voyager
+            ร่วมสนุกและลุ้นรางวัลได้เต็มที่ทั้ง Classic และ Traveller
           </p>
         </div>
       </section>
@@ -90,8 +90,8 @@ export default function Page() {
               desc="นักเดินทางและช่างภาพทั่วไป ส่งภาพแข่งในหมวด Classic ได้"
             />
             <DefRow
-              name="Voyager"
-              desc="ลูกค้าที่เคยร่วมทริปกับ Gography เข้าถึงได้ทั้งหมวด Classic และ Voyager พร้อมสิทธิ์ลุ้นรางวัลพิเศษ"
+              name="Traveller"
+              desc="ลูกค้าที่เคยร่วมทริปกับ Gography เข้าถึงได้ทั้งหมวด Classic และ Traveller พร้อมสิทธิ์ลุ้นรางวัลพิเศษ"
             />
             <DefRow
               name="Rank Master"
@@ -109,7 +109,7 @@ export default function Page() {
       <section className="pt-[80px] pb-[120px] rule-top">
         <div className="wrap-narrow">
           <p className="font-serif text-[16px] leading-[1.85] text-fg-soft m-0 max-w-[68ch]">
-            และสำหรับ Voyager ทุก 4 เดือนเราคัดเลือกภาพที่ดีที่สุดแห่งฤดูกาล
+            และสำหรับ Traveller ทุก 4 เดือนเราคัดเลือกภาพที่ดีที่สุดแห่งฤดูกาล
             มอบ Voucher มูลค่า 50,000 บาท และจารึกไว้ใน Hall of Fame ตลอดไป
           </p>
           <p className="font-serif text-[clamp(24px,2.6vw,34px)] leading-[1.4] tracking-[-0.01em] text-fg mt-[40px] m-0 max-w-[68ch]">

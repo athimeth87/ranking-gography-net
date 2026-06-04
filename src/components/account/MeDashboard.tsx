@@ -51,7 +51,7 @@ export function MeDashboard({ persona, isVoyageur, isPhotographer, myPhotos, fol
         {t('following')} {following.toLocaleString()} · {t('favorites')} {totalFav.toLocaleString()}
       </div>
 
-      {/* Voyageur eligibility card */}
+      {/* Traveller eligibility card */}
       {isVoyageur && (
         <div className="mt-8 p-6 md:py-7 md:px-8 bg-cream border border-rule">
           <div className="flex items-center justify-between gap-4 pb-5 mb-5 border-b border-rule">

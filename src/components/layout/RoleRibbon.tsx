@@ -11,8 +11,8 @@ export function RoleRibbon() {
       <div className="bg-fg text-bg flex justify-between items-center px-10 py-2.5 text-[12px] tracking-[.12em] uppercase font-medium">
         <div className="flex items-center gap-3">
           <VoyageurMark size={8} />
-          <span>Voyageur · Pim Asanachinda</span>
-          <span className="th opacity-60 ml-3 tracking-[.1em]">— ส่งภาพเข้าหมวด Voyageurs · ฤดูกาล Spring 2026</span>
+          <span>Traveller · Pim Asanachinda</span>
+          <span className="th opacity-60 ml-3 tracking-[.1em]">— ส่งภาพเข้าหมวด Travellers · ฤดูกาล Spring 2026</span>
         </div>
         <div className="flex gap-5 items-center">
           <span className="opacity-60 font-mono">TODAY 0/1 · RESETS 00:00 ICT</span>

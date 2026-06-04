@@ -76,7 +76,7 @@ const PATH_STEPS = [
   {
     n: '02',
     t: 'สร้างบัญชีด้วย Gmail',
-    b: 'ใช้ Gmail เดียวกับที่จองทริป — Editorial teamจะเช็คและ mark สถานะ "Voyageur" ภายใน 7 วัน',
+    b: 'ใช้ Gmail เดียวกับที่จองทริป — Editorial teamจะเช็คและ mark สถานะ "Traveller" ภายใน 7 วัน',
     extra: null as null | string,
     cta: { label: 'Login with Gmail', to: '/login' },
   },
@@ -103,9 +103,9 @@ export default function Page() {
     <div className="page-fade">
       <PageCover
         photoId="p015"
-        eyebrow="For Voyageurs"
+        eyebrow="For Travellers"
         title={<>Your trip photos<br />are worth more</>}
-        subtitle="ลูกค้า GOGRAPHY ทุกคนได้สถานะ Voyageur — Submit ภาพในหมวดพิเศษ Voyageurs Awards — แข่งกันเฉพาะลูกค้าด้วยกัน รางวัลสูงสุด 50,000 บาท ต่อฤดูกาล"
+        subtitle="ลูกค้า GOGRAPHY ทุกคนได้สถานะ Traveller — Submit ภาพในหมวดพิเศษ Travellers Awards — แข่งกันเฉพาะลูกค้าด้วยกัน รางวัลสูงสุด 50,000 บาท ต่อฤดูกาล"
       />
 
       {/* Reward summary */}
@@ -201,11 +201,11 @@ export default function Page() {
                 ],
                 [
                   'ภาพต้องถ่ายจากทริป GOGRAPHY เท่านั้น?',
-                  'แนะนำให้ส่งภาพจากทริป GOGRAPHY — แต่หากต้องการส่งภาพอื่นด้วย คุณยังคงเข้าร่วมหมวดทั่วไป (Landscape/Portrait/BW) ได้ เพียงไม่นับเข้า Voyageurs Awards',
+                  'แนะนำให้ส่งภาพจากทริป GOGRAPHY — แต่หากต้องการส่งภาพอื่นด้วย คุณยังคงเข้าร่วมหมวดทั่วไป (Landscape/Portrait/BW) ได้ เพียงไม่นับเข้า Travellers Awards',
                 ],
                 [
                   'อัพโหลดได้กี่ภาพต่อวัน?',
-                  'วันละ 1 ภาพต่อบัญชี — เกณฑ์เดียวกับทุกคน (รวมหมวด Voyageurs Awards และหมวดทั่วไป) ระบบ reset เวลา 00:00 น. ทุกวัน',
+                  'วันละ 1 ภาพต่อบัญชี — เกณฑ์เดียวกับทุกคน (รวมหมวด Travellers Awards และหมวดทั่วไป) ระบบ reset เวลา 00:00 น. ทุกวัน',
                 ],
                 [
                   'โหวต (like) ภาพอื่นได้ไม่จำกัดใช่ไหม?',
@@ -221,7 +221,7 @@ export default function Page() {
                 ],
                 [
                   'ใครเป็นคนตัดสินว่าฉันชนะ?',
-                  'ทีม Editorial ของ GOGRAPHY Ranking — เกณฑ์เปิดเผยที่หน้า Pulse Score (แต่ Voyageurs Awards เน้นเรื่องราวมากกว่าตัวเลข)',
+                  'ทีม Editorial ของ GOGRAPHY Ranking — เกณฑ์เปิดเผยที่หน้า Pulse Score (แต่ Travellers Awards เน้นเรื่องราวมากกว่าตัวเลข)',
                 ],
               ] as [string, string][]
             ).map(([q, a], i) => (

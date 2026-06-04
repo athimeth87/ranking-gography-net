@@ -47,7 +47,7 @@ export function MobileHome({
     .map(p => ({
       username: p.username,
       name: p.name,
-      tier: p.isAmbassador ? 'Ambassador' : 'Voyageur',
+      tier: p.isAmbassador ? 'Ambassador' : 'Traveller',
       region: p.loc,
       cover: p.cover,
       pulse: Math.round(pList.filter(ph => ph.by === p.username).reduce((s, ph) => s + (ph.pulse || pulseScore(ph)), 0)),

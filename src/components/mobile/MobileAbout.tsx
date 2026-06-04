@@ -7,13 +7,13 @@ import { MobileNav, MobileFooter, MobileMarquee, MobileSectionHeader, BottomNav 
 const principles = [
   { n: '01', t: 'Pulse over reach',        b: 'Engagement velocity beats follower count. Time-decayed, transparent formula.' },
   { n: '02', t: 'One season, one winner',  b: 'Highest pulse across all categories. Not split — concentrated.' },
-  { n: '03', t: 'Travel is the medium',    b: 'Voyageurs photograph on the road. Cashback funds the next trip.' },
+  { n: '03', t: 'Travel is the medium',    b: 'Travellers photograph on the road. Cashback funds the next trip.' },
 ];
 
 const team = [
   { name: 'Tul Manoonpong', role: 'Founder · Curator', tag: 'Bangkok',       seed: 'team-tul' },
   { name: 'Praewa Suwan',   role: 'Editorial Lead',    tag: 'Chiang Mai',    seed: 'team-praewa' },
-  { name: 'Anuwat Phon',    role: 'Voyageur Liaison',  tag: 'Mae Hong Son',  seed: 'team-anuwat' },
+  { name: 'Anuwat Phon',    role: 'Traveller Liaison',  tag: 'Mae Hong Son',  seed: 'team-anuwat' },
   { name: 'Sirintra L.',    role: 'Community',         tag: 'Phuket',        seed: 'team-sirintra' },
 ];
 

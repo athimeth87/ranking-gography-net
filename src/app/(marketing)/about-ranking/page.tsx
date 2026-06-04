@@ -94,20 +94,20 @@ export default function Page() {
         </div>
       </section>
 
-      {/* Voyageurs */}
+      {/* Travellers */}
       <section className="py-[80px] section-alt rule-top rule-bot">
         <div className="wrap">
-          <SectionHeader eyebrow="Community" title="Voyageurs" />
+          <SectionHeader eyebrow="Community" title="Travellers" />
           <div className="max-w-[820px] space-y-[24px]">
             <Paragraph>
-              Voyageurs คือกลุ่มลูกค้าที่เคยร่วมเดินทางกับ Gography
+              Travellers คือกลุ่มลูกค้าที่เคยร่วมเดินทางกับ Gography
             </Paragraph>
             <Paragraph>
               สมาชิกกลุ่มนี้จะได้รับสิทธิ์พิเศษในการอัปโหลดภาพถ่ายเข้าสู่เว็บไซต์ได้
               ทั้งในหมวดภาพถ่ายทั่วไป และหมวดพิเศษสำหรับลูกค้า Gography โดยเฉพาะ
             </Paragraph>
             <Paragraph>
-              ในหมวด Voyageurs Ranking
+              ในหมวด Travellers Ranking
               ลูกค้าจะได้ร่วมสนุกกับการส่งภาพเข้าประกวด
               และแข่งขันกับลูกค้าที่เคยเดินทางกับ Gography ด้วยกันเอง
               โดยเว็บไซต์จะเป็นผู้กำหนดรางวัลพิเศษให้กับภาพที่ได้รับการคัดเลือก
