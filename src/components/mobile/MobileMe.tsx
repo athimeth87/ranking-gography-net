@@ -17,6 +17,7 @@ export function MobileMe({
   section: initialSection = 'dashboard',
   profile,
   myPhotos = [],
+  favs = [],
   isVoyageur = false,
   favoritesCount = 0,
 }: any) {
@@ -372,27 +373,44 @@ export function MobileMe({
       )}
 
       {activeTab === 'favorites' && (
-        <section style={{ padding: '48px 16px 0' }}>
-          <div style={{ textAlign: 'center', padding: '24px 0' }}>
-            <div style={{
-              width: 60, height: 60, margin: '0 auto 18px', borderRadius: 18,
-              background: dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 21s-8-5.2-8-11.4A4.6 4.6 0 0 1 12 7a4.6 4.6 0 0 1 8 2.6C20 15.8 12 21 12 21z" />
-              </svg>
+        <section style={{ padding: '24px 0 0' }}>
+          <div style={{
+            fontFamily: "'IBM Plex Mono', monospace", fontSize: 11,
+            letterSpacing: '0.16em', textTransform: 'uppercase',
+            color: 'var(--fg-soft)', marginBottom: 14, padding: '0 16px',
+          }}>{favs.length} {t('nav_favorites')}</div>
+          {favs.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '40px 16px' }}>
+              <div style={{
+                width: 60, height: 60, margin: '0 auto 18px', borderRadius: 18,
+                background: dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 21s-8-5.2-8-11.4A4.6 4.6 0 0 1 12 7a4.6 4.6 0 0 1 8 2.6C20 15.8 12 21 12 21z" />
+                </svg>
+              </div>
+              <div style={{ fontSize: 22, fontWeight: 300, letterSpacing: '-0.01em', marginBottom: 6 }}>No favorites yet</div>
+              <p style={{ fontSize: 13, color: 'var(--fg-soft)', margin: '0 0 22px', lineHeight: 1.6 }}>กดหัวใจบนภาพที่ชอบ เพื่อเก็บไว้ดูที่นี่</p>
+              <button className="ios-press" onClick={() => router.push('/explore')} style={{
+                minHeight: 46, padding: '0 24px', cursor: 'pointer', borderRadius: 13,
+                background: dark ? '#fff' : '#000', color: dark ? '#000' : '#fff', border: 0,
+                fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase',
+              }}>{t('discover_new')} →</button>
             </div>
-            <div style={{ fontSize: 22, fontWeight: 300, letterSpacing: '-0.01em', marginBottom: 6 }}>
-              {t('you_have_favorites', { count: favoritesCount })}
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
+              {favs.map(p => (
+                <div
+                  key={p.id}
+                  onClick={() => router.push(`/photo/${p.id}`)}
+                  className="ios-press" style={{ aspectRatio: '1', background: 'var(--tile)', overflow: 'hidden', cursor: 'pointer' }}
+                >
+                  <img src={p.src} alt={p.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
+                </div>
+              ))}
             </div>
-            <p style={{ fontSize: 13, color: 'var(--fg-soft)', margin: '0 0 22px', lineHeight: 1.6 }}>{t('mobile_favorites_coming_soon')}</p>
-            <button className="ios-press" onClick={() => router.push('/explore')} style={{
-              minHeight: 46, padding: '0 24px', cursor: 'pointer', borderRadius: 13,
-              background: dark ? '#fff' : '#000', color: dark ? '#000' : '#fff', border: 0,
-              fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase',
-            }}>{t('see_all')} →</button>
-          </div>
+          )}
         </section>
       )}
 

@@ -368,6 +368,7 @@ export default function Page({ params }: PageProps) {
             section={section}
             profile={profile}
             myPhotos={myPhotos}
+            favs={favs}
             isVoyageur={isVoyageur}
             favoritesCount={favs.length}
           />
