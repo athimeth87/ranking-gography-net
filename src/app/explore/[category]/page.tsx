@@ -23,17 +23,18 @@ const TIME_OPTIONS = [
 
 type TimeRange = (typeof TIME_OPTIONS)[number]['v'];
 
-const SORT_OPTIONS: { v: SortKey; l: string }[] = [
-  { v: 'pulse', l: 'Pulse score' },
-  { v: 'recent', l: 'Most recent' },
-  { v: 'likes', l: 'Most liked' },
+const SORT_OPTIONS: { v: SortKey; l: string; short: string }[] = [
+  { v: 'pulse', l: 'Pulse score', short: 'Pulse' },
+  { v: 'recent', l: 'Most recent', short: 'Recent' },
+  { v: 'likes', l: 'Most liked', short: 'Liked' },
 ];
 
 const TABS = [
-  { id: null, label: 'All' },
-  { id: 'landscape', label: 'Landscape' },
-  { id: 'portrait', label: 'Portrait' },
-  { id: 'bw', label: 'Black & White' },
+  { id: null, label: 'All', gold: false },
+  { id: 'voyageurs', label: 'Voyageurs', gold: true },
+  { id: 'landscape', label: 'Landscape', gold: false },
+  { id: 'portrait', label: 'Portrait', gold: false },
+  { id: 'bw', label: 'Black & White', gold: false },
 ] as const;
 
 /** Slug → Category mapping (matches source exactly) */
@@ -69,14 +70,16 @@ function FilterDropdown({ label, value, options, onChange }: FilterDropdownProps
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex gap-[10px] items-center cursor-pointer text-[12px] tracking-[.12em] uppercase"
+        className={`flex gap-2 items-center cursor-pointer text-[11px] tracking-[.12em] uppercase border px-3.5 py-[7px] transition-colors duration-150 ${
+          open ? 'border-fg' : 'border-[var(--rule)] hover:border-fg'
+        }`}
       >
-        <span className="opacity-55">{label}</span>
+        <span className="opacity-45">{label}</span>
         <span className="font-medium">{current?.l}</span>
-        <span className="text-[9px] opacity-55">▾</span>
+        <span className={`text-[8px] opacity-45 transition-transform duration-150 ${open ? 'rotate-180' : ''}`}>▾</span>
       </button>
       {open && (
-        <div className="absolute top-[calc(100%+12px)] left-0 bg-bg border border-fg min-w-[200px] z-10">
+        <div className="absolute top-[calc(100%+8px)] left-0 bg-bg border border-fg min-w-[200px] z-10 shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
           {options.map((o) => (
             <button
               key={o.v}
@@ -113,10 +116,11 @@ export default function ExploreCategoryPage({
 }: {
   params: { category: string };
 }) {
+  const isVoyageurFilter = params.category === 'voyageurs';
   const catKey = slugToCategory(params.category);
 
-  // notFound() on unknown category slug
-  if (!catKey) {
+  // notFound() on unknown slug (not a category and not the voyageurs filter)
+  if (!catKey && !isVoyageurFilter) {
     notFound();
   }
 
@@ -134,7 +138,7 @@ export default function ExploreCategoryPage({
       const supabase = getSupabaseBrowserClient();
       let query = supabase
         .from('photos')
-        .select('id, title, storage_url, category, likes_count, favorites_count, comments_count, uploaded_at, width, height, description, users:users!photos_photographer_id_fkey(username)');
+        .select('id, title, storage_url, category, likes_count, favorites_count, comments_count, uploaded_at, width, height, description, users:users!photos_photographer_id_fkey(username, is_customer)');
 
       if (catKey) {
         query = query.ilike('category', catKey);
@@ -152,6 +156,7 @@ export default function ExploreCategoryPage({
             src: p.storage_url,
             title: p.title,
             by: p.users?.username || 'Unknown',
+            isVoyageur: Boolean(p.users?.is_customer),
             cat: p.category || 'General',
             w: p.width || 4,
             h: p.height || 3,
@@ -179,6 +184,11 @@ export default function ExploreCategoryPage({
           mapped.sort((a, b) => b.likes - a.likes);
         }
 
+        // Voyageurs filter — photos by customer (Voyageur) accounts only
+        if (isVoyageurFilter) {
+          mapped = mapped.filter((p) => p.isVoyageur);
+        }
+
         // Filtering picks (mocked as empty array for now)
         if (showPicksOnly) {
           mapped = mapped.filter((p) => p.picks.length > 0);
@@ -190,17 +200,20 @@ export default function ExploreCategoryPage({
     };
 
     fetchPhotos();
-  }, [sort, timeRange, showPicksOnly, catKey]);
+  }, [sort, timeRange, showPicksOnly, catKey, isVoyageurFilter]);
 
-  const headingLabel = catKey === 'BW' ? 'Black & White' : catKey;
+  const headingLabel = isVoyageurFilter ? 'Voyageurs' : catKey === 'BW' ? 'Black & White' : catKey;
 
-  const coverPhotoId = catKey === 'Landscape' ? 'p010' : catKey === 'Portrait' ? 'p004' : 'p002';
-  const coverTitle = catKey === 'BW' ? 'Black & White' : catKey;
-  const coverSubtitle = `เลือกชมหมวด ${catKey === 'BW' ? 'Black & White' : catKey} — เรียงตามอันดับ ภาพล่าสุด หรือยอดโหวต`;
+  const coverPhotoId = isVoyageurFilter ? 'p007' : catKey === 'Landscape' ? 'p010' : catKey === 'Portrait' ? 'p004' : 'p002';
+  const coverTitle = isVoyageurFilter ? 'Voyageurs' : catKey === 'BW' ? 'Black & White' : catKey;
+  const coverSubtitle = isVoyageurFilter
+    ? 'ภาพถ่ายจากลูกค้าทัวร์ (Voyageurs) ของเรา — เรียงตามอันดับ ภาพล่าสุด หรือยอดโหวต'
+    : `เลือกชมหมวด ${catKey === 'BW' ? 'Black & White' : catKey} — เรียงตามอันดับ ภาพล่าสุด หรือยอดโหวต`;
 
   // Map category to MobileExplore's CAT type
-  const mobileInitial: 'All' | 'Landscape' | 'Portrait' | 'BW' =
-    catKey === 'Landscape' ? 'Landscape'
+  const mobileInitial: 'All' | 'Landscape' | 'Portrait' | 'BW' | 'Voyageurs' =
+    isVoyageurFilter ? 'Voyageurs'
+    : catKey === 'Landscape' ? 'Landscape'
     : catKey === 'Portrait' ? 'Portrait'
     : catKey === 'BW' ? 'BW'
     : 'All';
@@ -213,7 +226,7 @@ export default function ExploreCategoryPage({
     <div className="page-fade hidden md:block">
       <PageCover
         photoId={coverPhotoId}
-        eyebrow="Category"
+        eyebrow={isVoyageurFilter ? 'Collection' : 'Category'}
         title={coverTitle}
         subtitle={coverSubtitle}
       />
@@ -239,17 +252,22 @@ export default function ExploreCategoryPage({
           {/* Category tabs */}
           <div className="flex gap-5 md:gap-7 overflow-x-auto no-scrollbar border-b border-rule pb-0">
             {TABS.map((t) => {
-              const active =
-                (catKey !== null && catKey.toLowerCase() === t.id) ||
-                (catKey === null && t.id === null);
+              const active = isVoyageurFilter
+                ? t.id === 'voyageurs'
+                : (catKey !== null && catKey.toLowerCase() === t.id) ||
+                  (catKey === null && t.id === null);
               return (
                 <button
                   key={t.id ?? 'all'}
                   onClick={() => router.push(t.id ? `/explore/${t.id}` : '/explore')}
                   className={`py-4 text-[13px] tracking-[.14em] uppercase border-b-2 -mb-px cursor-pointer font-medium ${
-                    active
-                      ? 'border-fg opacity-100'
-                      : 'border-transparent opacity-55'
+                    t.gold
+                      ? active
+                        ? 'border-gold text-gold opacity-100'
+                        : 'border-transparent text-gold opacity-80 hover:opacity-100'
+                      : active
+                        ? 'border-fg opacity-100'
+                        : 'border-transparent opacity-55'
                   }`}
                 >
                   {t.label}
@@ -259,31 +277,54 @@ export default function ExploreCategoryPage({
           </div>
 
           {/* Filter bar */}
-          <div className="flex flex-wrap justify-between items-center gap-3 py-4 md:py-5 border-b border-rule">
-            <div className="flex flex-wrap gap-5 md:gap-8 items-center">
-              <FilterDropdown
-                label="Sort"
-                value={sort}
-                options={SORT_OPTIONS}
-                onChange={(v) => setSort(v as SortKey)}
-              />
+          <div className="flex flex-wrap justify-between items-center gap-x-7 gap-y-3 py-4 md:py-5 border-b border-rule">
+            <div className="flex flex-wrap gap-x-7 gap-y-3 items-center">
+              {/* Sort — segmented control */}
+              <div className="flex items-center gap-3">
+                <span className="mono text-[10px] tracking-[.22em] uppercase opacity-40">Sort</span>
+                <div className="flex items-center border border-[var(--rule)]">
+                  {SORT_OPTIONS.map((o, i) => {
+                    const on = sort === o.v;
+                    return (
+                      <button
+                        key={o.v}
+                        onClick={() => setSort(o.v)}
+                        className={`px-3.5 py-[7px] text-[11px] tracking-[.12em] uppercase transition-colors duration-150 ${
+                          i > 0 ? 'border-l border-[var(--rule)]' : ''
+                        } ${on ? 'bg-fg text-bg' : 'opacity-55 hover:opacity-100'}`}
+                      >
+                        {o.short}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Time — dropdown pill */}
               <FilterDropdown
                 label="Time"
                 value={timeRange}
                 options={TIME_OPTIONS as unknown as { v: string; l: string }[]}
                 onChange={(v) => setTimeRange(v as TimeRange)}
               />
-              {/* opacity is runtime-dynamic: depends on showPicksOnly state */}
+
+              {/* Picks toggle */}
               <label
-                style={{ opacity: showPicksOnly ? 1 : 0.65 }}
-                className="flex items-center gap-2 cursor-pointer text-[12px] tracking-[.12em] uppercase"
+                className={`flex items-center gap-2 cursor-pointer text-[11px] tracking-[.12em] uppercase px-3.5 py-[7px] border transition-colors duration-150 ${
+                  showPicksOnly
+                    ? 'bg-fg text-bg border-fg'
+                    : 'border-[var(--rule)] opacity-60 hover:opacity-100 hover:border-fg'
+                }`}
               >
                 <input
                   type="checkbox"
                   checked={showPicksOnly}
                   onChange={(e) => setShowPicksOnly(e.target.checked)}
-                  className="accent-fg"
+                  className="sr-only"
                 />
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M2 8.5L6 12.5L14 3.5" />
+                </svg>
                 Picks only
               </label>
             </div>
