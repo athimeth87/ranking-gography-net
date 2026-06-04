@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
+import { Footer } from '@/components/layout/Footer';
 
 export default function LoginPage() {
   const [busy, setBusy] = useState(false);
@@ -71,6 +72,7 @@ export default function LoginPage() {
           <Link href="/privacy" className="border-b border-current">PRIVACY POLICY</Link>
         </p>
       </div>
+      <Footer />
     </div>
   );
 }

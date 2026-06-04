@@ -7,6 +7,7 @@ import { useApp } from '@/providers/AppProvider';
 import { useTranslations } from 'next-intl';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { PHOTOGRAPHERS, voyageurUsernames } from '@/lib/data';
+import { Footer } from '@/components/layout/Footer';
 
 const SUPABASE_CONFIGURED = Boolean(
   process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
@@ -26,41 +27,7 @@ export function MobileNav() {
 }
 
 export function MobileFooter() {
-  const { theme } = useApp();
-  const dark = theme === 'dark';
-  return (
-    <footer style={{
-      background: dark ? '#000' : 'var(--cream)',
-      color: dark ? '#fff' : 'var(--fg)',
-      borderTop: `1px solid ${dark ? 'rgba(255,255,255,0.1)' : 'var(--rule)'}`,
-    }}>
-      <div style={{ padding: '10px 16px 12px', textAlign: 'center' }}>
-        {/* Logo + wordmark inline */}
-        <div style={{
-          display: 'inline-flex', alignItems: 'center', gap: 10,
-          marginBottom: 4,
-        }}>
-          <img
-            src="/logo-white.png"
-            alt="Gography"
-            style={{
-              width: 28, height: 28, objectFit: 'contain',
-              filter: dark ? 'none' : 'invert(1)',
-            }}
-          />
-          <div className="wordmark" style={{
-            fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 22,
-            letterSpacing: '-0.01em',
-          }}>GOGRAPHY</div>
-        </div>
-        <div className="mono" style={{
-          fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', opacity: 0.6,
-        }}>
-          Ranking · Season 04
-        </div>
-      </div>
-    </footer>
-  );
+  return <Footer />;
 }
 
 export function MobileMarquee({ text = '★ Pulse rising ★ Season 04 ★ Submissions open until 12.31 ★' }) {

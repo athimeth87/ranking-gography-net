@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useApp } from '@/providers/AppProvider';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { PageCover } from '@/components/layout/PageCover';
+import { Footer } from '@/components/layout/Footer';
 import { MeSidebar } from '@/components/account/MeSidebar';
 import { MeSidebarSkeleton, MeContentSkeleton } from '@/components/account/MeSkeleton';
 import { MeDashboard } from '@/components/account/MeDashboard';
@@ -430,6 +431,7 @@ export default function Page({ params }: PageProps) {
           </>
         )}
       </div>
+      <Footer />
     </div>
   );
 }
