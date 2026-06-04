@@ -7,6 +7,7 @@ import { PHOTOS, PHOTOGRAPHERS, COMMENTS, voyageurUsernames } from '@/lib/data';
 import { useApp } from '@/providers/AppProvider';
 import { MobileFooter, BottomNav } from './MobileShared';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
+import { useTranslations } from 'next-intl';
 
 const SUPABASE_CONFIGURED = Boolean(
   process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
@@ -17,6 +18,7 @@ export function MobilePhoto({ id }: { id: string }) {
   const { theme, authUser, toggleSideMenu } = useApp();
   const dark = theme === 'dark';
   const c = dark ? '#fff' : '#000';
+  const t = useTranslations('PhotoDetail');
 
   const photo = PHOTOS.find(p => p.id === id) || PHOTOS[0];
   const photographer = PHOTOGRAPHERS.find(p => p.username === photo.by);
@@ -96,7 +98,7 @@ export function MobilePhoto({ id }: { id: string }) {
         <div style={{
           fontFamily: "'IBM Plex Mono', monospace", fontSize: 10,
           letterSpacing: '0.14em', textTransform: 'uppercase', opacity: 0.65,
-        }}>Rank #{String(photo.rank || '—').padStart(3, '0')} · {photo.cat}</div>
+        }}>{t('rank')} #{String(photo.rank || '—').padStart(3, '0')} · {photo.cat}</div>
         <button onClick={toggleSideMenu} aria-label="Menu" style={{
           width: 36, height: 36, background: 'transparent', border: 0, cursor: 'pointer', color: c, padding: 0,
           display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
@@ -142,7 +144,7 @@ export function MobilePhoto({ id }: { id: string }) {
             <svg width="16" height="14" viewBox="0 0 24 22" fill={liked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.8">
               <path d="M12 20s-8-5.2-8-11.4A4.6 4.6 0 0 1 12 6a4.6 4.6 0 0 1 8 2.6C20 14.8 12 20 12 20z" />
             </svg>
-            {liked ? 'Liked' : 'Like'}
+            {liked ? t('liked') : t('like')}
           </button>
           <button onClick={() => {
             if (typeof navigator !== 'undefined' && (navigator as any).share) {
@@ -154,7 +156,7 @@ export function MobilePhoto({ id }: { id: string }) {
             border: `1px solid ${c}`, background: 'transparent', color: c,
             fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 500,
             letterSpacing: '0.04em', textTransform: 'uppercase', cursor: 'pointer',
-          }}>Share</button>
+          }}>{t('share')}</button>
         </div>
       </section>
 
@@ -193,10 +195,10 @@ export function MobilePhoto({ id }: { id: string }) {
           border: '1px solid var(--rule-strong)',
         }}>
           {[
-            [photo.likes?.toLocaleString() || '0', 'Likes'],
-            [photo.favorites?.toLocaleString() || '0', 'Favorites'],
-            [photo.comments?.toString() || '0', 'Comments'],
-            [photo.hours?.toString() || '—', 'Hours posted'],
+            [photo.likes?.toLocaleString() || '0', t('likes')],
+            [photo.favorites?.toLocaleString() || '0', t('favorites')],
+            [photo.comments?.toString() || '0', t('comments')],
+            [photo.hours?.toString() || '—', t('hours_posted')],
           ].map(([n, l], i) => (
             <div key={l} style={{
               padding: '16px 14px',
@@ -224,15 +226,15 @@ export function MobilePhoto({ id }: { id: string }) {
             fontFamily: "'IBM Plex Mono', monospace", fontSize: 11,
             letterSpacing: '0.14em', textTransform: 'uppercase',
             color: 'var(--fg-soft)', marginBottom: 8,
-          }}>EXIF</div>
+          }}>{t('capture')}</div>
           <dl style={{ margin: 0, fontFamily: "'IBM Plex Mono', monospace", fontSize: 12 }}>
             {[
-              ['Camera', photo.exif.camera],
-              ['Lens', photo.exif.lens],
-              ['Focal', photo.exif.focal],
-              ['Aperture', photo.exif.aperture],
-              ['Shutter', photo.exif.shutter],
-              ['ISO', photo.exif.iso],
+              [t('camera'), photo.exif.camera],
+              [t('lens'), photo.exif.lens],
+              [t('focal'), photo.exif.focal],
+              [t('aperture'), photo.exif.aperture],
+              [t('shutter'), photo.exif.shutter],
+              [t('iso'), photo.exif.iso],
             ].map(([k, v]) => v && (
               <div key={k as string} style={{
                 display: 'flex', justifyContent: 'space-between',
@@ -253,7 +255,7 @@ export function MobilePhoto({ id }: { id: string }) {
             fontFamily: "'IBM Plex Mono', monospace", fontSize: 11,
             letterSpacing: '0.14em', textTransform: 'uppercase',
             color: 'var(--fg-soft)',
-          }}>More from {photographer?.name}</div>
+          }}>{t('more_from', { name: photographer?.name })}</div>
           <div style={{ marginTop: 12, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
             {more.map(p => (
               <div
@@ -275,7 +277,7 @@ export function MobilePhoto({ id }: { id: string }) {
             fontFamily: "'IBM Plex Mono', monospace", fontSize: 11,
             letterSpacing: '0.14em', textTransform: 'uppercase',
             color: 'var(--fg-soft)', marginBottom: 12,
-          }}>{comments.length} Comments</div>
+          }}>{comments.length} {t('comments')}</div>
           {comments.slice(0, 6).map((cm: any, i: number) => (
             <div key={i} style={{
               padding: '14px 0',

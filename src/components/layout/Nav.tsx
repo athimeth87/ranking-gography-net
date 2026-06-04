@@ -1,19 +1,22 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTranslations, useLocale } from 'next-intl';
 import { useApp } from '@/providers/AppProvider';
 import { RoleRibbon } from './RoleRibbon';
 import { NotificationsBell } from './NotificationsBell';
 
-const CENTER_LINKS: { to: string; label: string }[] = [
-  { to: '/hall-of-fame', label: 'Hall of Fame' },
-  { to: '/photographers', label: 'Photographers' },
-  { to: '/for-customers', label: 'For Voyageurs' },
-  { to: '/about', label: 'About' },
+const CENTER_LINKS: { to: string; translationKey: string }[] = [
+  { to: '/hall-of-fame', translationKey: 'hall_of_fame' },
+  { to: '/photographers', translationKey: 'photographers' },
+  { to: '/for-customers', translationKey: 'for_voyageurs' },
+  { to: '/about', translationKey: 'about' },
 ];
 
 export function Nav() {
   const pathname = usePathname();
+  const t = useTranslations('Nav');
+  const locale = useLocale();
   const { authUser, toggleSideMenu } = useApp();
 
   const isActive = (to: string) =>
@@ -58,16 +61,27 @@ export function Nav() {
                 href={l.to}
                 className={'nav-link ' + (isActive(l.to) ? 'active' : '')}
               >
-                {l.label}
+                {t(l.translationKey)}
               </Link>
             ))}
           </div>
 
-          <div className="nav-right">
+          <div className="nav-right flex items-center gap-4">
+            <button
+              onClick={async () => {
+                const { setLocale } = await import('@/app/actions/locale');
+                const newLocale = locale === 'th' ? 'en' : 'th';
+                await setLocale(newLocale);
+                window.location.reload();
+              }}
+              className="text-[10px] font-mono tracking-widest uppercase opacity-70 hover:opacity-100 transition-opacity"
+            >
+              {locale === 'th' ? 'EN' : 'TH'}
+            </button>
             {authUser && <NotificationsBell />}
             {!authUser ? (
               <Link href="/login" className="nav-link nav-signin whitespace-nowrap">
-                Sign in
+                {t('login')}
               </Link>
             ) : (
               <Link href="/me" className="ml-1 flex items-center">

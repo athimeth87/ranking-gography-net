@@ -20,7 +20,7 @@ export function Lightbox({ src, alt, open, onOpenChange }: LightboxProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogPortal>
         {/* Backdrop: near-black, matches .lbox-overlay */}
-        <DialogOverlay className="bg-black/92 z-[200]" />
+        <DialogOverlay className="bg-black/90 z-[200]" />
 
         {/* Popup: full viewport, no card chrome, just the image centered */}
         <DialogPrimitive.Popup

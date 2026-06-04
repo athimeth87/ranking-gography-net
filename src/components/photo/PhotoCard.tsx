@@ -1,5 +1,6 @@
 'use client';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import type { Photo } from '@/lib/types';
 import { getPhotographer } from '@/lib/data';
 import { PickBadge } from '@/components/icons';
@@ -24,6 +25,7 @@ export function PhotoCard({
   ownerId,
 }: PhotoCardProps) {
   const router = useRouter();
+  const t = useTranslations('PhotoCard');
   const photographer = getPhotographer(photo.by);
 
   return (
@@ -43,11 +45,11 @@ export function PhotoCard({
             <div className="pimg-overlay-meta">
               <span>{photographer ? photographer.name : photo.by}</span>
               <span className="pimg-overlay-sep">·</span>
-              <span>{photo.exif?.camera || 'Unknown Camera'}</span>
+              <span>{photo.exif?.camera || t('unknown_camera')}</span>
             </div>
             <div className="pimg-overlay-pulse">
               <span className="pimg-overlay-pulse-num">{photo.likes}</span>
-              <span className="pimg-overlay-pulse-lab">{photo.likes === 1 ? 'like' : 'likes'}</span>
+              <span className="pimg-overlay-pulse-lab">{t('likes')}</span>
             </div>
           </div>
         </div>
@@ -70,11 +72,11 @@ export function PhotoCard({
         <div className="shrink-0 ml-4 text-right">
           <div className="pulse">
             <span className="big">{photo.likes}</span>
-            <span className="lab">{photo.likes === 1 ? 'like' : 'likes'}</span>
+            <span className="lab">{t('likes')}</span>
           </div>
           <div className="mono text-[10px] text-fg-soft mt-1 tracking-[.04em] flex gap-2 justify-end">
             {photo.favorites > 0 && <span>★ {photo.favorites}</span>}
-            {photo.comments > 0 && <span>· {photo.comments} comments</span>}
+            {photo.comments > 0 && <span>· {photo.comments} {t('comments')}</span>}
           </div>
         </div>
       </div>
@@ -93,7 +95,7 @@ export function PhotoCard({
       {photo.voyageurOnly && (
         <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-md text-[#d4af37] border border-[#d4af37]/30 text-[9px] tracking-widest font-medium uppercase px-2 py-1 rounded-sm flex items-center gap-1.5 z-10 shadow-lg pointer-events-none">
           <span className="text-[10px]">👑</span>
-          Voyageur Only
+          {t('voyageur_only')}
         </div>
       )}
     </div>

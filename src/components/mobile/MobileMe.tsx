@@ -4,19 +4,14 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useApp } from '@/providers/AppProvider';
+import { useTranslations } from 'next-intl';
 import { MobileFooter } from './MobileShared';
 import { MeSettings } from '../account/MeSettings';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
+import { getPresignedUploadUrl } from '@/app/actions/r2-upload';
+import { convertToWebP } from '@/lib/imageConvert';
 
-const SECTIONS = [
-  { id: 'dashboard', label: 'Overview' },
-  { id: 'photos',    label: 'Photos' },
-  { id: 'favorites', label: 'Favorites' },
-  { id: 'stats',     label: 'Stats' },
-  { id: 'settings',  label: 'Settings' },
-] as const;
-
-type SectionKey = typeof SECTIONS[number]['id'];
+type SectionKey = 'dashboard' | 'photos' | 'favorites' | 'stats' | 'settings';
 
 export function MobileMe({
   section: initialSection = 'dashboard',
@@ -28,6 +23,14 @@ export function MobileMe({
   const router = useRouter();
   const { theme, authUser, signOut } = useApp();
   const dark = theme === 'dark';
+  const t = useTranslations('MePage');
+  const SECTIONS = [
+    { id: 'dashboard', label: t('nav_overview') },
+    { id: 'photos',    label: t('nav_photos') },
+    { id: 'favorites', label: t('nav_favorites') },
+    { id: 'stats',     label: t('nav_stats') },
+    { id: 'settings',  label: t('nav_settings') },
+  ];
   const [activeTab, setActiveTab] = useState<SectionKey>(
     (SECTIONS.find(s => s.id === initialSection)?.id || 'dashboard') as SectionKey
   );
@@ -57,17 +60,19 @@ export function MobileMe({
     setUploading(true);
 
     try {
+      const webpFile = await convertToWebP(file);
       const supabase = getSupabaseBrowserClient();
-      const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-      const fileName = `${type}s/${authUser.id}-${Date.now()}.${fileExt}`;
+      const fileName = `${type}s/${authUser.id}-${Date.now()}.webp`;
 
-      const { error: uploadError } = await supabase.storage
-        .from('photos')
-        .upload(fileName, file, { upsert: true });
-      if (uploadError) throw uploadError;
+      const { success, url, publicUrl, error: uploadError } = await getPresignedUploadUrl(fileName, 'image/webp');
+      if (!success || !url || !publicUrl) throw new Error(uploadError || 'Failed to get upload URL');
 
-      const { data: pub } = supabase.storage.from('photos').getPublicUrl(fileName);
-      const publicUrl = pub.publicUrl;
+      const uploadRes = await fetch(url, {
+        method: 'PUT',
+        body: webpFile,
+        headers: { 'Content-Type': 'image/webp' },
+      });
+      if (!uploadRes.ok) throw new Error('Upload failed: ' + uploadRes.statusText);
 
       const column = type === 'avatar' ? 'avatar_url' : 'cover_url';
       const { error: updateError } = await supabase
@@ -125,7 +130,7 @@ export function MobileMe({
           borderRadius: '4px', fontSize: '10px', textTransform: 'uppercase',
           letterSpacing: '0.1em', cursor: 'pointer', zIndex: 20
         }}>
-          {uploadingCover ? 'Uploading...' : 'Change Cover'}
+          {uploadingCover ? t('uploading') : t('change_cover')}
           <input type="file" accept="image/*" className="hidden" disabled={uploadingCover} onChange={(e) => handleImageUpload(e, 'cover')} />
         </label>
       </div>
@@ -154,7 +159,7 @@ export function MobileMe({
           <div style={{
             fontFamily: "'IBM Plex Mono', monospace", fontSize: 11,
             letterSpacing: '0.18em', color: 'var(--fg-soft)', textTransform: 'uppercase',
-          }}>Welcome back</div>
+          }}>{t('welcome_back')}</div>
           <h1 style={{
             margin: '6px 0 0',
             fontFamily: "'Playfair Display', serif", fontWeight: 400,
@@ -200,10 +205,10 @@ export function MobileMe({
               border: '1px solid var(--rule-strong)',
             }}>
               {[
-                [String(myPhotos.length), 'Photos'],
-                [totalLikes.toLocaleString(), 'Likes'],
-                [totalFav.toLocaleString(), 'Favorites'],
-                [String(totalPulse), 'Pulse'],
+                [String(myPhotos.length), t('photos')],
+                [totalLikes.toLocaleString(), t('likes')],
+                [totalFav.toLocaleString(), t('favorites_noun')],
+                [String(totalPulse), t('pulse')],
               ].map(([n, l], i) => (
                 <div key={l} style={{
                   padding: '16px 14px',
@@ -238,7 +243,7 @@ export function MobileMe({
                   letterSpacing: '0.14em', textTransform: 'uppercase', color: '#b08e54',
                 }}>
                   <span style={{ width: 6, height: 6, background: '#b08e54', transform: 'rotate(45deg)' }} />
-                  Voyageur · Spring 2026
+                  {t('voyageurs_awards')}
                 </div>
                 <div style={{
                   marginTop: 10,
@@ -256,7 +261,7 @@ export function MobileMe({
                   <span style={{
                     fontFamily: "'IBM Plex Mono', monospace", fontSize: 10,
                     letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--fg-soft)',
-                  }}>Cashback tier</span>
+                  }}>{t('cashback')}</span>
                   <span style={{
                     fontFamily: "'IBM Plex Mono', monospace", fontSize: 24, fontWeight: 500,
                     color: '#b08e54',
@@ -272,12 +277,12 @@ export function MobileMe({
               fontFamily: "'IBM Plex Mono', monospace", fontSize: 11,
               letterSpacing: '0.14em', textTransform: 'uppercase',
               color: 'var(--fg-soft)', marginBottom: 12,
-            }}>Quick actions</div>
+            }}>{t('quick_actions')}</div>
             <div style={{ display: 'grid', gap: 0, border: '1px solid var(--rule-strong)' }}>
               {[
-                ['Submit new photo','1 upload per day',       () => alert('Submit · Coming soon')],
-                ['Vote & Favorite', 'Discover new photos',    () => router.push('/explore')],
-                ['View Hall of Fame','All photos of the season',() => router.push('/hall-of-fame')],
+                [t('submit_new_photo'), t('one_upload_per_day'), () => alert('Submit · Coming soon')],
+                [t('vote_favorite'), t('discover_new'), () => router.push('/explore')],
+                [t('view_hall_of_fame'), t('all_photos_season'), () => router.push('/hall-of-fame')],
               ].map(([t, sub, onClick], i, a) => (
                 <button key={t as string} onClick={onClick as any} style={{
                   padding: '16px 18px', textAlign: 'left',
@@ -300,13 +305,13 @@ export function MobileMe({
                 <div style={{
                   fontFamily: "'IBM Plex Mono', monospace", fontSize: 11,
                   letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--fg-soft)',
-                }}>Your photos this season</div>
+                }}>{t('your_photos_this_season')}</div>
                 <button onClick={() => router.push('/me/photos')} style={{
                   fontFamily: "'IBM Plex Mono', monospace", fontSize: 10,
                   letterSpacing: '0.14em', textTransform: 'uppercase',
                   background: 'transparent', border: 0, color: 'inherit', cursor: 'pointer',
                   borderBottom: '1px solid var(--rule)', paddingBottom: 2,
-                }}>See all →</button>
+                }}>{t('see_all')} →</button>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
                 {myPhotos.slice(0, 4).map(p => (
@@ -343,8 +348,8 @@ export function MobileMe({
       {activeTab === 'favorites' && (
         <section style={{ padding: '24px 16px 0' }}>
           <div style={{ textAlign: 'center', color: 'var(--fg-soft)', padding: '40px 0' }}>
-            <p>You have {favoritesCount} favorites.</p>
-            <p className="text-xs mt-2">Mobile favorites view coming soon</p>
+            <p>{t('you_have_favorites', { count: favoritesCount })}</p>
+            <p className="text-xs mt-2">{t('mobile_favorites_coming_soon')}</p>
           </div>
         </section>
       )}
@@ -355,15 +360,15 @@ export function MobileMe({
             fontFamily: "'IBM Plex Mono', monospace", fontSize: 11,
             letterSpacing: '0.14em', textTransform: 'uppercase',
             color: 'var(--fg-soft)', marginBottom: 12,
-          }}>Engagement breakdown</div>
+          }}>{t('engagement_breakdown')}</div>
           <dl style={{ margin: 0, fontFamily: "'IBM Plex Mono', monospace", fontSize: 13 }}>
             {[
-              ['Photos posted', myPhotos.length],
-              ['Total likes', totalLikes.toLocaleString()],
-              ['Total favorites', totalFav.toLocaleString()],
-              ['Total pulse', totalPulse],
-              ['Avg pulse/photo', myPhotos.length ? Math.round(totalPulse / myPhotos.length) : 0],
-              ['Rank Master', myPhotos.filter(p => p.picks?.includes('editor')).length],
+              [t('photos_posted'), myPhotos.length],
+              [t('total_likes'), totalLikes.toLocaleString()],
+              [t('total_favorites'), totalFav.toLocaleString()],
+              [t('total_pulse'), totalPulse],
+              [t('avg_pulse_photo'), myPhotos.length ? Math.round(totalPulse / myPhotos.length) : 0],
+              [t('rank_master'), myPhotos.filter(p => p.picks?.includes('editor')).length],
             ].map(([k, v]) => (
               <div key={k as string} style={{
                 display: 'flex', justifyContent: 'space-between',
@@ -399,7 +404,7 @@ export function MobileMe({
               letterSpacing: '0.04em', textTransform: 'uppercase',
               border: `1px solid ${dark ? '#fff' : '#000'}`, background: 'transparent',
               color: dark ? '#fff' : '#000', cursor: 'pointer',
-            }}>Sign out</button>
+            }}>{t('sign_out')}</button>
           )}
         </section>
       )}

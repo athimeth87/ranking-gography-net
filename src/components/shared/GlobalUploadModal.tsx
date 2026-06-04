@@ -8,6 +8,7 @@ import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { useApp } from '@/providers/AppProvider';
 import type { Category } from '@/lib/types';
 import { convertToWebP, MAX_UPLOAD_BYTES, formatBytes } from '@/lib/imageConvert';
+import { getPresignedUploadUrl } from '@/app/actions/r2-upload';
 
 export function GlobalUploadModal() {
   const router = useRouter();
@@ -93,17 +94,27 @@ export function GlobalUploadModal() {
 
     const fileName = `${authUser.id}/${Date.now()}.webp`;
 
-    const { error: uploadError } = await supabase.storage
-      .from('photos')
-      .upload(fileName, webpFile, { contentType: 'image/webp' });
-
-    if (uploadError) {
-      alert('Upload failed: ' + uploadError.message);
+    const { success, url, publicUrl, error: uploadError } = await getPresignedUploadUrl(fileName, 'image/webp');
+    
+    if (!success || !url || !publicUrl) {
+      alert('Failed to get upload URL: ' + uploadError);
       setIsUploading(false);
       return;
     }
 
-    const { data: publicUrlData } = supabase.storage.from('photos').getPublicUrl(fileName);
+    const uploadRes = await fetch(url, {
+      method: 'PUT',
+      body: webpFile,
+      headers: {
+        'Content-Type': 'image/webp',
+      },
+    });
+
+    if (!uploadRes.ok) {
+      alert('Upload failed: ' + uploadRes.statusText);
+      setIsUploading(false);
+      return;
+    }
 
     const slug = `${draft.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now()}`;
 
@@ -116,7 +127,7 @@ export function GlobalUploadModal() {
       voyageur_only: draft.voyageurOnly,
       camera: draft.camera,
       lens: draft.lens,
-      storage_url: publicUrlData.publicUrl,
+      storage_url: publicUrl,
       width: imgWidth,
       height: imgHeight,
       likes_count: 0,

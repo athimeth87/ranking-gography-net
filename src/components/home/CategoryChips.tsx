@@ -1,5 +1,6 @@
 'use client';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { CrownIcon } from '@/components/icons';
 
 interface ChipDef {
@@ -18,13 +19,14 @@ const GOLD = '#b08e54';
 
 export function CategoryChips({ value, onChange, showVoyageurs = false }: CategoryChipsProps) {
   const router = useRouter();
+  const t = useTranslations('CategoryChips');
   const cats: ChipDef[] = [
-    { v: 'All', l: 'All' },
-    { v: 'Landscape', l: 'Landscape' },
-    { v: 'Portrait', l: 'Portrait' },
-    { v: 'BW', l: 'Black & White' },
+    { v: 'All', l: t('all') },
+    { v: 'Landscape', l: t('landscape') },
+    { v: 'Portrait', l: t('portrait') },
+    { v: 'BW', l: t('bw') },
   ];
-  if (showVoyageurs) cats.push({ v: 'Voyageurs', l: 'Voyageurs', luxury: true });
+  if (showVoyageurs) cats.push({ v: 'Voyageurs', l: t('voyageurs'), luxury: true });
 
   return (
     <div className="flex justify-between items-center gap-3 flex-wrap">
@@ -65,7 +67,7 @@ export function CategoryChips({ value, onChange, showVoyageurs = false }: Catego
           );
         })}
       </div>
-      <div className="mono text-[10.5px] opacity-55 tracking-[.1em]">↗ OPENS FULL CATEGORY PAGE</div>
+      <div className="mono text-[10.5px] opacity-55 tracking-[.1em]">↗ {t('open_full')}</div>
     </div>
   );
 }

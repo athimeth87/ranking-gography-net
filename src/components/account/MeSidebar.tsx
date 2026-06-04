@@ -3,6 +3,7 @@ import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { VoyageurMark } from '@/components/icons';
 import { useApp } from '@/providers/AppProvider';
+import { useTranslations } from 'next-intl';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import type { Photographer } from '@/lib/types';
 
@@ -34,6 +35,7 @@ export function MeSidebar({
 }: MeSidebarProps) {
   const router = useRouter();
   const { authUser, signOut } = useApp();
+  const t = useTranslations('MePage');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [localAvatar, setLocalAvatar] = useState<string | null>(null);
@@ -117,7 +119,7 @@ export function MeSidebar({
             className="absolute inset-0 flex items-center justify-center text-white text-[9px] tracking-[.14em] uppercase font-medium bg-black/55 opacity-0 group-hover:opacity-100 transition-opacity"
             aria-hidden
           >
-            {uploading ? 'Uploading…' : 'Change'}
+            {uploading ? t('uploading_short') : t('change')}
           </span>
         </button>
         <input
@@ -145,7 +147,7 @@ export function MeSidebar({
           onClick={() => router.push(`/photographer/${persona.username}`)}
           className="caps mt-[14px] cursor-pointer border-b border-rule pb-[3px] opacity-65"
         >
-          View public profile →
+          {t('view_public_profile')} →
         </button>
       </div>
 
@@ -182,10 +184,10 @@ export function MeSidebar({
             className="btn btn-solid btn-sm w-full justify-center"
             onClick={() => router.push('/upload')}
           >
-            Upload photo
+            {t('upload_photo')}
           </button>
           <div className="mono text-[10px] opacity-55 mt-3 text-center leading-[1.6]">
-            TODAY 0/1 · RESETS 00:00 ICT
+            {t('upload_limit_reset')}
           </div>
         </div>
       )}
@@ -197,7 +199,7 @@ export function MeSidebar({
             className="btn btn-sm btn-ghost w-full justify-center"
             onClick={() => router.push('/apply-photographer')}
           >
-            Apply as photographer
+            {t('apply_photographer')}
           </button>
         </div>
       )}
@@ -207,7 +209,7 @@ export function MeSidebar({
         onClick={() => signOut?.()}
         className="caps mt-8 opacity-45 cursor-pointer"
       >
-        Sign out
+        {t('sign_out')}
       </button>
     </aside>
   );

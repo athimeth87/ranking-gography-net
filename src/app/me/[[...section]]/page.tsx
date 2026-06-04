@@ -11,6 +11,7 @@ import { MeFavorites } from '@/components/account/MeFavorites';
 import { MeStats } from '@/components/account/MeStats';
 import { MeSettings } from '@/components/account/MeSettings';
 import { MobileMe } from '@/components/mobile/MobileMe';
+import { useTranslations } from 'next-intl';
 import type { Photographer } from '@/lib/types';
 import { computePulse, type PickType } from '@/lib/pulse-engine';
 
@@ -57,6 +58,7 @@ function mapPhoto(p: any, username: string, fallbackEmail?: string) {
 
 export default function Page({ params }: PageProps) {
   const { authUser } = useApp();
+  const t = useTranslations('MePage');
   const [section, setSection] = useState<string>(params.section?.[0] ?? 'dashboard');
 
   const navigateSection = useCallback((id: string, path: string) => {
@@ -302,7 +304,7 @@ export default function Page({ params }: PageProps) {
   };
 
   if (!loading && !profile) {
-    return <div className="page-fade py-24 text-center opacity-50 caps">Please sign in</div>;
+    return <div className="page-fade py-24 text-center opacity-50 caps">{t('please_sign_in')}</div>;
   }
 
   const isVoyageur = profile?.is_customer ?? false;
@@ -325,11 +327,11 @@ export default function Page({ params }: PageProps) {
   } as Photographer;
 
   const sections = [
-    { id: 'dashboard', label: 'Dashboard', path: '/me' },
-    { id: 'photos', label: 'My Photos', path: '/me/photos', count: myPhotos.length },
-    { id: 'favorites', label: 'Favorites', path: '/me/favorites', count: favs.length },
-    { id: 'stats', label: 'Stats', path: '/me/stats' },
-    { id: 'settings', label: 'Settings', path: '/me/settings' },
+    { id: 'dashboard', label: t('nav_dashboard'), path: '/me' },
+    { id: 'photos', label: t('nav_photos'), path: '/me/photos', count: myPhotos.length },
+    { id: 'favorites', label: t('nav_favorites'), path: '/me/favorites', count: favs.length },
+    { id: 'stats', label: t('nav_stats'), path: '/me/stats' },
+    { id: 'settings', label: t('nav_settings'), path: '/me/settings' },
   ];
 
   return (
@@ -338,15 +340,15 @@ export default function Page({ params }: PageProps) {
         <PageCover
           photoId={profile?.cover_url ? undefined : "p013"}
           src={profile?.cover_url || undefined}
-          eyebrow="Your account"
-          title="Your dashboard"
+          eyebrow={t('your_account')}
+          title={t('your_dashboard')}
           subtitle="ภาพของคุณ คะแนน favorites ทริปกับ GOGRAPHY — รวมที่เดียว"
           height="38vh"
           minHeight={300}
           maxHeight={420}
         />
         <label className="absolute top-6 right-10 bg-black/50 text-white px-4 py-2 rounded text-[11px] tracking-[.1em] uppercase cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity z-20 hover:bg-black/80">
-          {uploadingCover ? 'Uploading...' : 'Change Cover'}
+          {uploadingCover ? t('uploading') : t('change_cover')}
           <input type="file" accept="image/*" className="hidden" disabled={uploadingCover} onChange={handleCoverUpload} />
         </label>
       </div>

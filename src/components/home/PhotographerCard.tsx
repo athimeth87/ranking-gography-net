@@ -2,6 +2,7 @@
 import { useRouter } from 'next/navigation';
 import type { Photographer, Photo } from '@/lib/types';
 import { VoyageurMark } from '@/components/icons';
+import { useTranslations } from 'next-intl';
 import { useFollowState } from '@/hooks/useFollowState';
 
 interface PhotographerCardProps {
@@ -16,6 +17,7 @@ export function PhotographerCard({
   photos,
 }: PhotographerCardProps) {
   const router = useRouter();
+  const t = useTranslations('PhotographerCard');
   const follow = useFollowState(photographer.id ?? null);
   
   // Prioritize uploaded cover image, then fallback to first photo, then default
@@ -47,19 +49,19 @@ export function PhotographerCard({
               <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M3 17l4-6 4 4 4-8 6 10H3z" />
               </svg>
-              <span className="text-[9px] uppercase tracking-widest font-medium">Ambassador</span>
+              <span className="text-[9px] uppercase tracking-widest font-medium">{t('ambassador')}</span>
             </div>
           )}
           {photographer.isCustomer && (
             <div className="bg-black/65 backdrop-blur-md px-2 py-1 rounded-sm flex items-center gap-1 border border-white/15">
               <VoyageurMark size={9} />
-              <span className="text-[9px] uppercase tracking-widest text-white/95">Voyageur</span>
+              <span className="text-[9px] uppercase tracking-widest text-white/95">{t('voyageur')}</span>
             </div>
           )}
           {!photographer.isAmbassador && !photographer.isCustomer && (
             <div className="bg-black/55 backdrop-blur-md px-2 py-1 rounded-sm flex items-center gap-1 border border-white/10">
               <span className="text-[10px] leading-none">★</span>
-              <span className="text-[9px] uppercase tracking-widest text-white/90">Photographer</span>
+              <span className="text-[9px] uppercase tracking-widest text-white/90">{t('photographer')}</span>
             </div>
           )}
         </div>
@@ -77,7 +79,7 @@ export function PhotographerCard({
             />
           </div>
           {follow.isSelf && variant !== 'voyageur' ? (
-            <button className="bg-neutral-800 text-white/50 px-5 py-1.5 rounded-full text-[13px] font-medium mb-2 tracking-tight" disabled>You</button>
+            <button className="bg-neutral-800 text-white/50 px-5 py-1.5 rounded-full text-[13px] font-medium mb-2 tracking-tight" disabled>{t('you')}</button>
           ) : (
             <button
               className={`px-5 py-1.5 rounded-full text-[13px] font-medium transition-colors mb-2 tracking-tight ${
@@ -100,7 +102,7 @@ export function PhotographerCard({
               }}
               disabled={follow.loading}
             >
-              {variant === 'voyageur' ? 'Collection' : (follow.following ? 'Following' : 'Follow')}
+              {variant === 'voyageur' ? t('collection') : (follow.following ? t('following') : t('follow'))}
             </button>
           )}
         </div>
@@ -128,11 +130,11 @@ export function PhotographerCard({
                 ? follow.followersCount.toLocaleString()
                 : photographer.followers.toLocaleString()}
             </span>
-            Followers
+            {t('followers')}
           </div>
           <div className="text-white/60 whitespace-nowrap">
             <span className="font-bold text-white mr-1.5">{photographer.photos}</span>
-            Photos
+            {t('photos')}
           </div>
         </div>
       </div>

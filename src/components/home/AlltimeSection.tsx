@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import type { Photo } from '@/lib/types';
 import { PhotoGrid } from '@/components/photo/PhotoGrid';
 import { SectionNumber } from '@/components/editorial/SectionNumber';
@@ -13,6 +14,7 @@ interface AlltimeSectionProps {
 
 export function AlltimeSection({ allPhotos, voyageurUsernames }: AlltimeSectionProps) {
   const router = useRouter();
+  const t = useTranslations('AlltimeSection');
   const [alltimeCat, setAlltimeCat] = useState('All');
 
   const computeAlltime = (p: Photo): number => p.likes;
@@ -33,21 +35,21 @@ export function AlltimeSection({ allPhotos, voyageurUsernames }: AlltimeSectionP
   return (
     <section className="pb-20">
       <div className="wrap">
-        <SectionNumber n={2} label="All-time · Beyond this week" />
+        <SectionNumber n={2} label={t('section_label')} />
         <div className="flex justify-between items-end pb-6 mb-6 border-b border-[var(--rule)]">
           <div>
             <h2 className="text-[48px] font-normal leading-none m-0 tracking-[-.025em]">
-              All-time
+              {t('title')}
             </h2>
             <p className="th mt-[14px] text-[13px] text-[var(--fg-soft)] max-w-[540px] leading-[1.6]">
-              Photos older than 1 week — ranked by lifetime likes, without time decay
+              {t('subtitle')}
             </p>
           </div>
           <button
             onClick={() => router.push('/explore')}
             className="caps cursor-pointer border-b border-[var(--fg)] pb-1"
           >
-            See archive →
+            {t('see_archive')} →
           </button>
         </div>
         <CategoryChips value={alltimeCat} onChange={setAlltimeCat} showVoyageurs />

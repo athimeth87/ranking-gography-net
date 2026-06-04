@@ -12,8 +12,9 @@ export type ToggleResult =
   | { kind: 'error'; message: string };
 
 export async function getLikeState(photoId: string, authUser: User | null): Promise<LikeState> {
+  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(photoId);
   const supabase = getSupabaseBrowserClient();
-  if (!supabase) return { liked: false, count: 0 };
+  if (!supabase || !isUUID) return { liked: false, count: 0 };
 
   const { data: photo } = await supabase
     .from('photos')
@@ -36,6 +37,8 @@ export async function getLikeState(photoId: string, authUser: User | null): Prom
 
 export async function toggleLike(photoId: string, authUser: User | null): Promise<ToggleResult> {
   if (!authUser) return { kind: 'unauth' };
+  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(photoId);
+  if (!isUUID) return { kind: 'error', message: 'Cannot like a mock photo' };
   const supabase = getSupabaseBrowserClient();
   if (!supabase) return { kind: 'error', message: 'Supabase not configured' };
 

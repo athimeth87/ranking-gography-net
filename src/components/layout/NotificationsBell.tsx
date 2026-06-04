@@ -4,20 +4,58 @@ import { useRouter } from 'next/navigation';
 import { useNotifications } from '@/hooks/useNotifications';
 import { formatNotificationBody } from '@/lib/data/notifications';
 
-function timeAgo(iso: string): string {
+import { useTranslations } from 'next-intl';
+
+export function TranslatedTimeAgo({ iso }: { iso: string }) {
+  const t = useTranslations('Notifications');
   const ms = Date.now() - new Date(iso).getTime();
   const s = Math.floor(ms / 1000);
-  if (s < 60) return `${s}s`;
+  if (s < 60) return <>{s}{t('seconds_ago')}</>;
   const m = Math.floor(s / 60);
-  if (m < 60) return `${m}m`;
+  if (m < 60) return <>{m}{t('minutes_ago')}</>;
   const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h`;
+  if (h < 24) return <>{h}{t('hours_ago')}</>;
   const d = Math.floor(h / 24);
-  return `${d}d`;
+  return <>{d}{t('days_ago')}</>;
+}
+
+export function TranslatedNotificationBody({ body }: { body: string }) {
+  const t = useTranslations('Notifications');
+  if (!body) return null;
+  if (body.endsWith('liked your photo')) {
+    const user = body.replace(' liked your photo', '');
+    return <><span className="font-semibold">{user}</span> {t('liked_your_photo')}</>;
+  }
+  if (body.endsWith('favorited your photo')) {
+    const user = body.replace(' favorited your photo', '');
+    return <><span className="font-semibold">{user}</span> {t('favorited_your_photo')}</>;
+  }
+  if (body.endsWith('commented on your photo')) {
+    const user = body.replace(' commented on your photo', '');
+    return <><span className="font-semibold">{user}</span> {t('commented_on_your_photo')}</>;
+  }
+  if (body.endsWith('replied to your comment')) {
+    const user = body.replace(' replied to your comment', '');
+    return <><span className="font-semibold">{user}</span> {t('replied_to_your_comment')}</>;
+  }
+  if (body.endsWith('started following you')) {
+    const user = body.replace(' started following you', '');
+    return <><span className="font-semibold">{user}</span> {t('started_following_you')}</>;
+  }
+
+  // Fallbacks
+  if (body === 'Someone liked your photo') return <>{t('someone_liked')}</>;
+  if (body === 'Someone favorited your photo') return <>{t('someone_favorited')}</>;
+  if (body === 'Someone commented on your photo') return <>{t('someone_commented')}</>;
+  if (body === 'Someone replied to your comment') return <>{t('someone_replied')}</>;
+  if (body === 'Someone started following you') return <>{t('someone_followed')}</>;
+
+  return <>{body}</>;
 }
 
 export function NotificationsBell() {
   const router = useRouter();
+  const t = useTranslations('Notifications');
   const { notifications, unreadCount, markRead, markAllRead } = useNotifications();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -54,18 +92,18 @@ export function NotificationsBell() {
       {open && (
         <div className="fixed md:absolute left-0 right-0 md:left-auto md:right-0 top-[61px] md:top-[calc(100%+8px)] w-full md:w-[320px] h-[calc(100vh-61px)] md:h-auto bg-bg border-b border-rule md:border shadow-none z-50 flex flex-col md:block">
           <div className="flex justify-between items-center px-4 py-3 border-b border-rule">
-            <span className="caps text-[11px] opacity-65">Notifications</span>
+            <span className="caps text-[11px] opacity-65">{t('title')}</span>
             <button
               className="text-[11px] uppercase tracking-[0.12em] opacity-65 hover:opacity-100 disabled:opacity-30"
               onClick={() => markAllRead()}
               disabled={unreadCount === 0}
             >
-              Mark all read
+              {t('mark_all_read')}
             </button>
           </div>
           <div className="flex-1 overflow-y-auto max-h-none md:max-h-[400px]">
             {notifications.length === 0 ? (
-              <div className="px-4 py-8 text-center opacity-50 text-[13px]">No notifications yet.</div>
+              <div className="px-4 py-8 text-center opacity-50 text-[13px]">{t('no_notifications')}</div>
             ) : (
               notifications.map((n) => (
                 <button
@@ -83,8 +121,8 @@ export function NotificationsBell() {
                     <div className="w-8 h-8 rounded-full bg-neutral-900 border border-neutral-800 shrink-0" />
                   )}
                   <div className="flex-1">
-                    <div className="text-[13px] leading-[1.4]">{formatNotificationBody(n)}</div>
-                    <div className="mono text-[10px] opacity-50 mt-1">{timeAgo(n.created_at)} ago</div>
+                    <div className="text-[13px] leading-[1.4]"><TranslatedNotificationBody body={formatNotificationBody(n)} /></div>
+                    <div className="mono text-[10px] opacity-50 mt-1"><TranslatedTimeAgo iso={n.created_at} /></div>
                   </div>
                 </button>
               ))

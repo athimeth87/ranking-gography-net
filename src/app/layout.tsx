@@ -63,9 +63,15 @@ const organizationSchema: WithContext<Organization> = {
   ]
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+import { getLocale, getMessages } from 'next-intl/server';
+import { NextIntlClientProvider } from 'next-intl';
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
-    <html lang="th" data-theme="light" className={cn(inter.variable, plexMono.variable, notoThai.variable, playfair.variable, "font-sans")} suppressHydrationWarning>
+    <html lang={locale} data-theme="light" className={cn(inter.variable, plexMono.variable, notoThai.variable, playfair.variable, "font-sans")} suppressHydrationWarning>
       <head>
         <script
           type="application/ld+json"
@@ -73,18 +79,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body suppressHydrationWarning>
-        <AppProvider>
-          <Nav />
-          <main>{children}</main>
-          <div className="md:hidden fixed bottom-0 left-0 right-0 z-40">
-            <BottomNav />
-          </div>
-          <SideMenu />
-          <NotificationsListener />
-          <Toaster />
-        </AppProvider>
-        <GlobalPopup />
-        <CookieConsent />
+        <NextIntlClientProvider messages={messages}>
+          <AppProvider>
+            <Nav />
+            <main>{children}</main>
+            <div className="md:hidden fixed bottom-0 left-0 right-0 z-40">
+              <BottomNav />
+            </div>
+            <SideMenu />
+            <NotificationsListener />
+            <Toaster />
+          </AppProvider>
+          <GlobalPopup />
+          <CookieConsent />
+        </NextIntlClientProvider>
       </body>
     </html>
   );

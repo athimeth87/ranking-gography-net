@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import type { Photo } from '@/lib/types';
 import { VoyageurMark, RewardIcon } from '@/components/icons';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
@@ -54,12 +55,13 @@ interface VoyageursSectionProps {
 
 export function VoyageursSection({ featuredPhoto }: VoyageursSectionProps) {
   const router = useRouter();
+  const t = useTranslations('VoyageursSection');
   const [content, setContent] = useState({
-    title: 'Travelled with us?<br />Become a Voyageur',
-    description: 'Customers who have travelled with GOGRAPHY earn <strong>Voyageur</strong> status — eligible to submit photos in a customer-only category. Each season the winner receives a 50,000 THB voucher, and the top 10 receive cashback on their next trip.',
+    title: t.raw('title'),
+    description: t.raw('description'),
     reward1_amount: '50,000 THB',
     reward1_label: 'VOUCHER',
-    reward1_sub: 'ต่อหมวด',
+    reward1_sub: t('reward1_sub'),
     reward2_amount: '3-15%',
     reward2_label: 'CASHBACK',
     reward2_sub: 'TOP 10',
@@ -83,9 +85,9 @@ export function VoyageursSection({ featuredPhoto }: VoyageursSectionProps) {
       <div className="wrap">
         <div className="flex justify-between items-baseline pb-8 border-b border-[var(--rule)] mb-14">
           <div className="caps opacity-55 flex items-center gap-2">
-            <VoyageurMark size={9} /> The Voyageurs Programme
+            <VoyageurMark size={9} /> {t('program_name')}
           </div>
-          <div className="mono text-[11px] opacity-55">EXCLUSIVE · VOYAGEURS ONLY</div>
+          <div className="mono text-[11px] opacity-55">{t('exclusive')}</div>
         </div>
 
         <div
@@ -103,14 +105,14 @@ export function VoyageursSection({ featuredPhoto }: VoyageursSectionProps) {
             <div className="flex gap-4 mb-12">
               <RewardBadge icon="voucher" label={content.reward1_amount} sub={`${content.reward1_label} · ${content.reward1_sub}`} />
               <RewardBadge icon="cashback" label={content.reward2_amount} sub={`${content.reward2_label} · ${content.reward2_sub}`} />
-              <RewardBadge icon="star" label="Voyageur" sub="PUBLIC BADGE · ตลอดชีพ" />
+              <RewardBadge icon="star" label="Voyageur" sub={t('badge_sub')} />
             </div>
             <div className="flex gap-3 mt-10 flex-wrap">
               <button className="btn btn-solid" onClick={() => router.push('/for-customers')}>
-                How to join Voyageurs
+                {t('how_to_join')}
               </button>
               <Link href="/hall-of-fame" className="btn">
-                Past winners
+                {t('past_winners')}
               </Link>
             </div>
           </div>
@@ -133,7 +135,7 @@ export function VoyageursSection({ featuredPhoto }: VoyageursSectionProps) {
               </div>
               <div className="absolute top-4 left-4 bg-[var(--bg)] px-[10px] py-[6px] flex items-center gap-[6px]">
                 <VoyageurMark size={8} />
-                <div className="caps text-[9px]">Voyageur Pick</div>
+                <div className="caps text-[9px]">{t('voyageur_pick')}</div>
               </div>
             </div>
           </div>
@@ -141,22 +143,22 @@ export function VoyageursSection({ featuredPhoto }: VoyageursSectionProps) {
 
         {/* Steps */}
         <div className="mt-20 pt-14 border-t border-[var(--rule)]">
-          <div className="caps opacity-55 mb-8">How it works · 3 steps</div>
+          <div className="caps opacity-55 mb-8">{t('how_it_works')}</div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-14">
             <Step
               n="01"
-              t="รับการยืนยันสถานะ"
-              b="หลังจบทริป ทีม GOGRAPHY จะ mark บัญชีของคุณเป็น Voyageur ภายใน 7 วัน"
+              t={t('step1_title')}
+              b={t('step1_desc')}
             />
             <Step
               n="02"
-              t="อัพโหลดภาพจากทริป"
-              b="ส่งได้วันละ 1 รูปต่อบัญชี · ส่งสะสมต่อเนื่องตลอดฤดูกาล (4 เดือน)"
+              t={t('step2_title')}
+              b={t('step2_desc')}
             />
             <Step
               n="03"
-              t="ลุ้นรางวัล"
-              b="ปลายฤดูกาล ทีมงานเลือกภาพดีที่สุดต่อหมวด — ผู้ชนะ 50,000 THB voucher และ Top 10 ได้ cashback 3–15%"
+              t={t('step3_title')}
+              b={t('step3_desc')}
             />
           </div>
         </div>

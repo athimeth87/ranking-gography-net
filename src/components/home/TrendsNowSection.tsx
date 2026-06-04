@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import type { Photo } from '@/lib/types';
 import { getPhotographer } from '@/lib/data';
 import { TrendsHeart } from './TrendsHeart';
@@ -8,6 +9,7 @@ interface TrendsNowSectionProps {
 }
 
 export function TrendsNowSection({ photos }: TrendsNowSectionProps) {
+  const t = useTranslations('TrendsNowSection');
   const top9 = photos.slice(0, 9);
   if (top9.length === 0) return null;
 
@@ -17,14 +19,14 @@ export function TrendsNowSection({ photos }: TrendsNowSectionProps) {
         <div className="flex items-end justify-between pb-[20px] mb-[28px] border-b border-rule">
           <div className="flex items-baseline gap-[16px]">
             <h2 className="text-[36px] md:text-[44px] font-normal tracking-[-.02em] leading-none m-0">
-              Trends Now
+              {t('title')}
             </h2>
             <span className="mono text-[11px] tracking-[.18em] uppercase opacity-55 hidden sm:inline">
-              Past Week · Top 9
+              {t('subtitle')}
             </span>
           </div>
           <Link href="/explore" className="caps border-b border-current pb-1 whitespace-nowrap">
-            See all →
+            {t('see_all')} →
           </Link>
         </div>
 
@@ -62,7 +64,7 @@ export function TrendsNowSection({ photos }: TrendsNowSectionProps) {
                       </span>
                       <span className="opacity-40 text-[10px]">·</span>
                       <span className="mono text-[11px] tabular-nums opacity-80">
-                        {photo.likes} {photo.likes === 1 ? 'like' : 'likes'}
+                        {photo.likes} {t('likes')}
                       </span>
                     </div>
                     <div className="mt-[10px]">

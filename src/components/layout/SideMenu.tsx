@@ -3,32 +3,34 @@ import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useApp } from '@/providers/AppProvider';
 import { getPhotographer } from '@/lib/data';
+import { useTranslations } from 'next-intl';
 
-interface NavLink { to: string; label: string }
+interface NavLink { to: string; labelKey: string }
 interface GroupProps { title: string; children: React.ReactNode }
 interface MenuRowProps { label: string; active: boolean; onClick: () => void }
 
 const DISCOVER: NavLink[] = [
-  { to: '/hall-of-fame', label: 'Hall of Fame' },
-  { to: '/photographers', label: 'Photographers' },
-  { to: '/ambassadors', label: 'Ambassadors' },
+  { to: '/hall-of-fame', labelKey: 'hall_of_fame' },
+  { to: '/photographers', labelKey: 'photographers' },
+  { to: '/ambassadors', labelKey: 'ambassadors' },
 ];
 
 const CATEGORIES: NavLink[] = [
-  { to: '/explore/landscape', label: 'Landscape' },
-  { to: '/explore/portrait', label: 'Portrait' },
-  { to: '/explore/bw', label: 'Black & White' },
+  { to: '/explore/landscape', labelKey: 'landscape' },
+  { to: '/explore/portrait', labelKey: 'portrait' },
+  { to: '/explore/bw', labelKey: 'bw' },
 ];
 
 const ABOUT: NavLink[] = [
-  { to: '/about-ranking', label: 'Ranking' },
-  { to: '/about', label: 'About' },
-  { to: '/for-customers', label: 'For Voyageurs' },
+  { to: '/about-ranking', labelKey: 'ranking' },
+  { to: '/about', labelKey: 'about' },
+  { to: '/for-customers', labelKey: 'for_voyageurs' },
 ];
 
 export function SideMenu() {
   const router = useRouter();
   const pathname = usePathname();
+  const t = useTranslations('SideMenu');
   const { sideMenuOpen, setSideMenuOpen, theme, setTheme, authUser, signOut } = useApp();
 
   // Close on ESC + lock body scroll while open
@@ -52,7 +54,7 @@ export function SideMenu() {
   const isActive = (to: string) => to === '/' ? pathname === '/' : pathname.startsWith(to);
 
   const avatarSrc = authUser?.user_metadata?.avatar_url || '';
-  const displayName = authUser?.user_metadata?.full_name || authUser?.email || 'Registered User';
+  const displayName = authUser?.user_metadata?.full_name || authUser?.email || t('registered_user');
 
   if (pathname?.startsWith('/admin')) {
     return null;
@@ -84,10 +86,10 @@ export function SideMenu() {
             </div>
             <div className="sidemenu-identity-meta">
               <div className="sidemenu-identity-name">
-                {!authUser ? 'Guest' : displayName}
+                {!authUser ? t('guest') : displayName}
               </div>
               <div className="sidemenu-identity-sub mono">
-                {!authUser ? 'Not signed in' : 'AUTHENTICATED'}
+                {!authUser ? t('not_signed_in') : t('authenticated')}
               </div>
             </div>
             <button
@@ -104,50 +106,50 @@ export function SideMenu() {
 
           {!authUser ? (
             <button className="sidemenu-cta" onClick={() => go('/login')}>
-              <span>Sign in with Google</span>
+              <span>{t('sign_in')}</span>
               <span className="arr">→</span>
             </button>
           ) : (
             <button className="sidemenu-cta" onClick={() => go('/me')}>
-              <span>Open your dashboard</span>
+              <span>{t('open_dashboard')}</span>
               <span className="arr">→</span>
             </button>
           )}
 
-          <Group title="Discover">
+          <Group title={t('discover')}>
             {DISCOVER.map((l) => (
-              <MenuRow key={l.to} active={isActive(l.to)} onClick={() => go(l.to)} label={l.label} />
+              <MenuRow key={l.to} active={isActive(l.to)} onClick={() => go(l.to)} label={t(l.labelKey)} />
             ))}
           </Group>
 
-          <Group title="Categories">
+          <Group title={t('categories')}>
             {CATEGORIES.map((l) => (
-              <MenuRow key={l.to} active={isActive(l.to)} onClick={() => go(l.to)} label={l.label} />
+              <MenuRow key={l.to} active={isActive(l.to)} onClick={() => go(l.to)} label={t(l.labelKey)} />
             ))}
           </Group>
 
-          <Group title="About">
+          <Group title={t('about')}>
             {ABOUT.map((l) => (
-              <MenuRow key={l.to} active={isActive(l.to)} onClick={() => go(l.to)} label={l.label} />
+              <MenuRow key={l.to} active={isActive(l.to)} onClick={() => go(l.to)} label={t(l.labelKey)} />
             ))}
           </Group>
 
           {/* Footer — theme + version */}
           <div className="sidemenu-footer">
             <div className="sidemenu-theme">
-              <span className="caps opacity-55">Theme</span>
+              <span className="caps opacity-55">{t('theme')}</span>
               <div className="sidemenu-theme-toggle">
                 <button
                   className={theme === 'light' ? 'is-on' : ''}
                   onClick={() => setTheme('light')}
                 >
-                  Light
+                  {t('light')}
                 </button>
                 <button
                   className={theme === 'dark' ? 'is-on' : ''}
                   onClick={() => setTheme('dark')}
                 >
-                  Dark
+                  {t('dark')}
                 </button>
               </div>
             </div>
@@ -158,7 +160,7 @@ export function SideMenu() {
                   className="text-[10px] uppercase tracking-[0.18em] opacity-55 hover:opacity-100"
                   onClick={() => { signOut?.(); setSideMenuOpen(false); }}
                 >
-                  Sign out
+                  {t('sign_out')}
                 </button>
               )}
             </div>

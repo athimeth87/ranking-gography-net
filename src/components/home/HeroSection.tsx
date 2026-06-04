@@ -6,6 +6,8 @@ import { ViewfinderFrame } from '@/components/photo/ViewfinderFrame';
 import { PulseCountUp } from '@/components/editorial/PulseCountUp';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 
+import { useTranslations } from 'next-intl';
+
 interface HeroSectionProps {
   banner: Photo;
   top: Photo;
@@ -15,9 +17,10 @@ interface HeroSectionProps {
 
 export function HeroSection({ banner, top, bannerPhotographer, topPhotographer }: HeroSectionProps) {
   const router = useRouter();
+  const t = useTranslations('HeroSection');
   const [content, setContent] = useState({
-    headline: 'Photographs<br />that tell stories',
-    description: 'A photography ranking platform by photographers and travellers — vote, discover, and help choose the photo of the season.'
+    headline: t('headline'),
+    description: t('description')
   });
 
   useEffect(() => {
@@ -49,7 +52,7 @@ export function HeroSection({ banner, top, bannerPhotographer, topPhotographer }
             GOGRAPHY Ranking
           </div>
           <div className="mono text-[11px] tracking-[.22em] uppercase opacity-85">
-            Spring 2026 · Live
+            {t('season_live', { season: 'Spring 2026' })}
           </div>
         </div>
         {/* Bottom copy */}
@@ -68,13 +71,13 @@ export function HeroSection({ banner, top, bannerPhotographer, topPhotographer }
                   onClick={() => router.push('/explore')}
                   className="px-[22px] py-3 bg-white text-black text-[11px] tracking-[.14em] uppercase font-medium cursor-pointer border-0"
                 >
-                  Explore the gallery
+                  {t('explore')}
                 </button>
                 <button
                   onClick={() => router.push('/about-ranking')}
                   className="px-[22px] py-3 text-[11px] tracking-[.14em] uppercase font-medium cursor-pointer bg-[rgba(255,255,255,.08)] text-white border border-[rgba(255,255,255,.45)] w-full sm:w-auto"
                 >
-                  How ranking works
+                  {t('how_ranking_works')}
                 </button>
               </div>
             </div>
@@ -83,7 +86,7 @@ export function HeroSection({ banner, top, bannerPhotographer, topPhotographer }
         {/* Banner credit */}
         <div className="absolute bottom-3 right-4 md:right-10 text-white/55 hidden sm:block">
           <div className="mono text-[10px] tracking-[.18em] uppercase">
-            Banner: &quot;{banner.title}&quot; by {bannerPhotographer?.name}
+            {t('banner_credit', { title: banner.title, name: bannerPhotographer?.name || '' })}
           </div>
         </div>
       </div>
@@ -92,7 +95,7 @@ export function HeroSection({ banner, top, bannerPhotographer, topPhotographer }
       <div className="bg-black text-white py-20">
         {/* Viewfinder top strip — frame/aperture/shutter metadata */}
         <div className="wrap flex justify-between items-baseline pb-6 text-white/65">
-          <div className="caps opacity-85">Cover of the week</div>
+          <div className="caps opacity-85">{t('cover_of_week')}</div>
           <div className="mono text-[11px] tracking-[.18em] uppercase">
             ★ #1 · <PulseCountUp value={top.likes} decimals={0} suffix=" LIKES" />
           </div>
@@ -121,14 +124,14 @@ export function HeroSection({ banner, top, bannerPhotographer, topPhotographer }
             &quot;{top.title}&quot;
           </h2>
           <div className="mono text-[12px] tracking-[.12em] uppercase mt-4 flex items-baseline gap-3 flex-wrap">
-            <span className="opacity-80">by {topPhotographer?.name}</span>
+            <span className="opacity-80">{t('by', { name: topPhotographer?.name || '' })}</span>
             <span className="opacity-40">·</span>
             <span className="opacity-60">{top.exif.camera} · {top.exif.focal}</span>
             <button
               onClick={() => router.push(`/photo/${top.id}`)}
               className="caps cursor-pointer border-b border-white/85 pb-1 ml-auto text-white"
             >
-              View photo →
+              {t('view_photo')} →
             </button>
           </div>
         </div>

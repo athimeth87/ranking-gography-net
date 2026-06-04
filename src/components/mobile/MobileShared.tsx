@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useApp } from '@/providers/AppProvider';
+import { useTranslations } from 'next-intl';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { PHOTOGRAPHERS, voyageurUsernames } from '@/lib/data';
 
@@ -114,12 +115,13 @@ export function MobileSectionHeader({ num, title, link, href }: { num?: string; 
 
 export function FeedTabs({ active, onChange }: { active: string; onChange: (id: string) => void }) {
   const { theme } = useApp();
+  const t = useTranslations('MobileShared');
   const dark = theme === 'dark';
   const c = dark ? '#fff' : '#000';
   const muted = dark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)';
   const tabs = [
-    { id: 'leaderboard', label: 'Leaderboard' },
-    { id: 'trendsnow', label: 'Trends Now' },
+    { id: 'leaderboard', label: t('leaderboard') },
+    { id: 'trendsnow', label: t('trends_now') },
   ];
   return (
     <div style={{
@@ -223,6 +225,7 @@ export function BottomNav() {
   const router = useRouter();
   const pathname = usePathname() ?? '';
   const { authUser, setUploadModalOpen, userState } = useApp();
+  const t = useTranslations('MobileShared');
 
   if (pathname.startsWith('/admin')) return null;
 
@@ -233,22 +236,22 @@ export function BottomNav() {
   const meActive = starts('/me') && !starts('/me/favorites');
   const favActive = starts('/me/favorites');
 
-  const slotHome: Slot = { id: 'home', label: 'Home', icon: 'home',
+  const slotHome: Slot = { id: 'home', label: t('home'), icon: 'home',
     active: pathname === '/', onClick: () => router.push('/') };
-  const slotExplore: Slot = { id: 'explore', label: 'Explore', icon: 'explore',
+  const slotExplore: Slot = { id: 'explore', label: t('explore'), icon: 'explore',
     active: starts('/explore') || starts('/photographers'),
     onClick: () => router.push('/explore') };
-  const slotSearch: Slot = { id: 'search', label: 'Search', icon: 'search',
+  const slotSearch: Slot = { id: 'search', label: t('search'), icon: 'search',
     active: starts('/search'), onClick: () => router.push('/search') };
-  const slotPulse: Slot = { id: 'pulse', label: 'Pulse', icon: 'pulse',
+  const slotPulse: Slot = { id: 'pulse', label: t('pulse'), icon: 'pulse',
     active: starts('/hall-of-fame'), onClick: () => router.push('/hall-of-fame') };
-  const slotUpload: Slot = { id: 'upload', label: 'Upload', icon: 'upload',
+  const slotUpload: Slot = { id: 'upload', label: t('upload'), icon: 'upload',
     active: false, onClick: () => setUploadModalOpen(true) };
-  const slotFav: Slot = { id: 'fav', label: 'Favorites', icon: 'heart',
+  const slotFav: Slot = { id: 'fav', label: t('favorites'), icon: 'heart',
     active: favActive, onClick: () => router.push('/me/favorites') };
-  const slotMe: Slot = { id: 'me', label: 'Me', icon: 'profile',
+  const slotMe: Slot = { id: 'me', label: t('me'), icon: 'profile',
     active: meActive, onClick: () => router.push('/me') };
-  const slotLogin: Slot = { id: 'login', label: 'Sign in', icon: 'profile',
+  const slotLogin: Slot = { id: 'login', label: t('sign_in'), icon: 'profile',
     active: starts('/login'), onClick: () => router.push('/login') };
 
   const slots: Slot[] =

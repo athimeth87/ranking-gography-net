@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { PHOTOS, PHOTOGRAPHERS, pulseScore, voyageurUsernames } from '@/lib/data';
+import { useTranslations } from 'next-intl';
 import { useApp } from '@/providers/AppProvider';
 import {
   MobileNav, MobileFooter, MobileMarquee, MobileSectionHeader,
@@ -20,6 +21,7 @@ export function MobileHome({
 }) {
   const router = useRouter();
   const { theme } = useApp();
+  const t = useTranslations('MobileHome');
   const dark = theme === 'dark';
   const [tab, setTab] = useState('leaderboard');
 
@@ -99,7 +101,7 @@ export function MobileHome({
           fontFamily: "'IBM Plex Mono', monospace", fontSize: 10,
           letterSpacing: '0.18em', color: 'var(--fg-soft)', textTransform: 'uppercase',
         }}>
-          Season 04 · 37 days left
+          {t('season_banner')}
         </div>
       </section>
 
@@ -109,10 +111,10 @@ export function MobileHome({
         borderBottom: '1px solid var(--rule)',
       }}>
         {[
-          [String(pList.length).padStart(2, '0'), 'Frames'],
-          [String(photogList.length).padStart(2, '0'), 'Photographers'],
-          ['04', 'Seasons'],
-          ['37', 'Days left'],
+          [String(pList.length).padStart(2, '0'), t('stats_frames')],
+          [String(photogList.length).padStart(2, '0'), t('stats_photographers')],
+          ['04', t('stats_seasons')],
+          ['37', t('stats_days_left')],
         ].map(([n, l], i) => (
           <div key={l} style={{
             padding: '20px 16px',
@@ -134,12 +136,12 @@ export function MobileHome({
 
       {/* STEPS */}
       <section style={{ padding: '40px 16px 0' }}>
-        <MobileSectionHeader num="01 / How it works" title="Three steps. One season." />
+        <MobileSectionHeader num={`01 / ${t('how_it_works_num')}`} title={t('how_it_works_title')} />
         <div style={{ marginTop: 20 }}>
           {[
-            { n: '01', t: 'Submit your frame', b: 'Upload up to 12 photos per season. Tag location and category.' },
-            { n: '02', t: 'Earn pulse',         b: 'Likes × 1, likes 24h × 3, curation bonus. Time-decayed.' },
-            { n: '03', t: 'Win the season',     b: 'Highest pulse across all categories takes Season Winner.' },
+            { n: '01', t: t('step1_title'), b: t('step1_desc') },
+            { n: '02', t: t('step2_title'), b: t('step2_desc') },
+            { n: '03', t: t('step3_title'), b: t('step3_desc') },
           ].map((s, i, a) => (
             <div key={s.n} style={{
               padding: '20px 0',
@@ -148,7 +150,7 @@ export function MobileHome({
               <div style={{
                 fontFamily: "'IBM Plex Mono', monospace", fontSize: 11,
                 letterSpacing: '0.16em', color: 'var(--fg-soft)',
-              }}>STEP {s.n}</div>
+              }}>{t('step')} {s.n}</div>
               <h3 style={{
                 margin: '8px 0 6px',
                 fontFamily: "'Playfair Display', serif", fontWeight: 700,
@@ -169,7 +171,7 @@ export function MobileHome({
         background: dark ? '#131310' : 'var(--cream)',
       }}>
         <div style={{ padding: '32px 16px 0' }}>
-          <MobileSectionHeader num="02 / Voyageurs" title="On the road this season" link="All" href="/photographers/voyageurs" />
+          <MobileSectionHeader num={`02 / ${t('voyageurs_num')}`} title={t('voyageurs_title')} link={t('all')} href="/photographers/voyageurs" />
         </div>
         <div style={{ 
           marginTop: 18, padding: '0 16px 24px',
@@ -217,7 +219,7 @@ export function MobileHome({
                   fontFamily: "'IBM Plex Mono', monospace", fontSize: 10,
                   letterSpacing: '0.12em', textTransform: 'uppercase',
                   color: 'var(--fg-soft)',
-                }}>Pulse</span>
+                }}>{t('pulse')}</span>
                 <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 12 }}>{v.pulse}</span>
               </div>
             </article>
@@ -232,14 +234,14 @@ export function MobileHome({
             border: `1px solid ${dark ? '#fff' : '#000'}`,
             background: 'transparent', color: dark ? '#fff' : '#000',
             textDecoration: 'none',
-          }}>Become a Voyageur</Link>
+          }}>{t('become_voyageur')}</Link>
         </div>
       </section>
 
       {/* LEADERBOARD — 2-col photo masonry */}
       <section style={{ padding: '40px 6px 16px' }}>
         <div style={{ padding: '0 10px' }}>
-          <MobileSectionHeader num="03 / Leaderboard" title="Pulse this week" link="See all" href="/explore" />
+          <MobileSectionHeader num={`03 / ${t('leaderboard_num')}`} title={t('leaderboard_title')} link={t('see_all')} href="/explore" />
         </div>
         <div style={{
           columnCount: 2, columnGap: 8, marginTop: 16,
