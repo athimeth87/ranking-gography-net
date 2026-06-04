@@ -236,27 +236,33 @@ export function MobileExplore({ initialCategory = 'All', dbPhotos = [] }: { init
         <div style={{ padding: '32px 16px 0' }}>
           <MobileSectionHeader num="—" title="Trending photographers" link="All" href="/photographers" />
         </div>
-        <div className="mobile-h-scroll" style={{ marginTop: 18, padding: '0 16px 32px' }}>
-          {trending.map(p => (
-            <div
-              key={p.username}
-              onClick={() => router.push(`/photographer/${p.username}`)}
-              style={{ width: 140, flex: '0 0 140px', cursor: 'pointer' }}
-            >
-              <div style={{ aspectRatio: '1', background: 'var(--tile)', overflow: 'hidden' }}>
-                {p.avatar && <img src={p.avatar} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />}
+        <div style={{ marginTop: 18, padding: '0 0 32px', overflow: 'hidden' }}>
+          <div style={{ display: 'flex', width: 'max-content', animation: 'trendingSlide 80s linear infinite' }}>
+            {[0, 1].map(group => (
+              <div key={group} aria-hidden={group === 1} style={{ display: 'flex', gap: 16, paddingLeft: 16, paddingRight: 0 }}>
+                {trending.map(p => (
+                  <div
+                    key={`${group}-${p.username}`}
+                    onClick={() => router.push(`/photographer/${p.username}`)}
+                    style={{ width: 140, flex: '0 0 140px', cursor: 'pointer' }}
+                  >
+                    <div style={{ aspectRatio: '1', background: 'var(--tile)', overflow: 'hidden' }}>
+                      {p.avatar && <img src={p.avatar} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />}
+                    </div>
+                    <div style={{
+                      marginTop: 10, fontSize: 13, fontWeight: 500,
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    }}>{p.name}</div>
+                    <div style={{
+                      fontFamily: "'IBM Plex Mono', monospace", fontSize: 10,
+                      letterSpacing: '0.08em', color: 'var(--fg-soft)',
+                      marginTop: 2, textTransform: 'uppercase',
+                    }}>Pulse {p.pulse}</div>
+                  </div>
+                ))}
               </div>
-              <div style={{
-                marginTop: 10, fontSize: 13, fontWeight: 500,
-                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-              }}>{p.name}</div>
-              <div style={{
-                fontFamily: "'IBM Plex Mono', monospace", fontSize: 10,
-                letterSpacing: '0.08em', color: 'var(--fg-soft)',
-                marginTop: 2, textTransform: 'uppercase',
-              }}>Pulse {p.pulse}</div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 

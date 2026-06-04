@@ -75,8 +75,9 @@ export function MobileMarquee({ text = '★ Pulse rising ★ Season 04 ★ Submi
       fontFamily: "'IBM Plex Mono', monospace", fontSize: 12,
       letterSpacing: '0.18em', textTransform: 'uppercase',
     }}>
-      <div style={{ animation: 'mobileMarquee 30s linear infinite', display: 'inline-block' }}>
-        {Array(4).fill(text).join('   ')}
+      <div style={{ animation: 'mobileMarquee 30s linear infinite', display: 'inline-flex' }}>
+        <span>{Array(2).fill(text).join('   ') + '   '}</span>
+        <span>{Array(2).fill(text).join('   ') + '   '}</span>
       </div>
     </div>
   );

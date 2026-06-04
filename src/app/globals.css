@@ -75,6 +75,14 @@ img { display: block; max-width: 100%; }
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }
 }
+@keyframes mobileMarquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@keyframes trendingSlide {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
 @keyframes heart-burst {
   0%   { opacity: 0; transform: translate(-50%, -50%) scale(0); }
   10%  { opacity: 1; transform: translate(-50%, -50%) scale(1.25); }
