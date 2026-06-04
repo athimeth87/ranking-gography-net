@@ -1,4 +1,5 @@
 import { PageCover } from '@/components/layout/PageCover';
+import { Footer } from '@/components/layout/Footer';
 
 export default function PrivacyPage() {
   const sections = [
@@ -101,6 +102,7 @@ export default function PrivacyPage() {
 
         </div>
       </div>
+      <Footer />
     </>
   );
 }

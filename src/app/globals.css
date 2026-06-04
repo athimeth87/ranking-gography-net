@@ -203,7 +203,7 @@ img { display: block; max-width: 100%; }
     align-items: center;
     text-align: center;
   }
-  footer.footer-mini .footer-tag { font-family: var(--mono); font-size: 12px; letter-spacing: .24em; text-transform: uppercase; color: var(--fg-faint); margin: 0; }
+  footer.footer-mini .footer-tag { font-family: var(--mono); font-size: 12px; letter-spacing: .24em; text-transform: uppercase; color: var(--fg-soft); margin: 0; }
 
   /* Like button */
   .heart {
@@ -827,11 +827,11 @@ img { display: block; max-width: 100%; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 
-/* Footer responsive — minimal footer keeps the same centered layout, tighter spacing */
+/* Footer responsive — tighter spacing; clear the floating BottomNav on phones (<md) */
 @media (max-width: 1023px) {
   footer.footer-mini { margin-top: 80px; padding: 28px 0 30px; }
 }
 
-@media (max-width: 640px) {
-  footer.footer-mini { margin-top: 64px; padding: 26px 0 28px; }
+@media (max-width: 767px) {
+  footer.footer-mini { margin-top: 56px; padding: 26px 0 96px; }
 }
