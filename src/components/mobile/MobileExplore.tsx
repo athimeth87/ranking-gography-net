@@ -195,10 +195,10 @@ export function MobileExplore({ initialCategory = 'All', dbPhotos = [] }: { init
           const gold = c === 'Voyageurs';
           const border = gold ? '#b08e54' : active ? (dark ? '#fff' : '#000') : 'var(--rule)';
           const background = gold
-            ? (active ? '#b08e54' : 'rgba(176,142,84,0.10)')
+            ? '#b08e54'
             : (active ? (dark ? '#fff' : '#000') : 'transparent');
           const color = gold
-            ? (active ? '#1a1305' : '#b08e54')
+            ? '#1a1305'
             : (active ? (dark ? '#000' : '#fff') : (dark ? 'rgba(255,255,255,0.78)' : 'rgba(0,0,0,0.72)'));
           return (
             <button key={c} onClick={() => {
@@ -206,15 +206,24 @@ export function MobileExplore({ initialCategory = 'All', dbPhotos = [] }: { init
               router.push(c === 'All' ? '/explore' : `/explore/${c.toLowerCase()}`);
             }} style={{
               height: 38, padding: '0 16px',
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
               border: `1px solid ${border}`,
               background,
               color,
+              boxShadow: gold && active ? 'inset 0 0 0 1.5px #1a1305' : 'none',
               fontFamily: "'IBM Plex Mono', monospace", fontSize: 11,
               letterSpacing: '0.14em', textTransform: 'uppercase',
               cursor: 'pointer', whiteSpace: 'nowrap',
               fontWeight: gold ? 600 : 400,
-              transition: 'background .15s ease, color .15s ease, border-color .15s ease',
-            }}>{c === 'BW' ? 'B&W' : c}</button>
+              transition: 'background .15s ease, color .15s ease, border-color .15s ease, box-shadow .15s ease',
+            }}>
+              {gold && (
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M3 7l4.5 3L12 4l4.5 6L21 7l-1.6 11H4.6L3 7z" />
+                </svg>
+              )}
+              {c === 'BW' ? 'B&W' : c}
+            </button>
           );
         })}
       </div>

@@ -97,6 +97,14 @@ function FilterDropdown({ label, value, options, onChange }: FilterDropdownProps
   );
 }
 
+function VoyageurCrown() {
+  return (
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M3 7l4.5 3L12 4l4.5 6L21 7l-1.6 11H4.6L3 7z" />
+    </svg>
+  );
+}
+
 function EmptyState() {
   return (
     <div className="py-[120px] text-center">
@@ -256,18 +264,31 @@ export default function ExploreCategoryPage({
                 ? t.id === 'voyageurs'
                 : (catKey !== null && catKey.toLowerCase() === t.id) ||
                   (catKey === null && t.id === null);
+              if (t.gold) {
+                return (
+                  <button
+                    key="voyageurs"
+                    onClick={() => router.push('/explore/voyageurs')}
+                    className="group flex items-center self-center cursor-pointer"
+                    aria-label="Voyageurs"
+                  >
+                    <span className={`inline-flex items-center gap-1.5 bg-gold text-black px-3 py-[6px] text-[11px] tracking-[.16em] uppercase font-semibold transition-[filter,box-shadow] duration-150 group-hover:brightness-[1.06] ${
+                      active ? 'ring-1 ring-fg ring-offset-2 ring-offset-[var(--bg)]' : ''
+                    }`}>
+                      <VoyageurCrown />
+                      {t.label}
+                    </span>
+                  </button>
+                );
+              }
               return (
                 <button
                   key={t.id ?? 'all'}
                   onClick={() => router.push(t.id ? `/explore/${t.id}` : '/explore')}
                   className={`py-4 text-[13px] tracking-[.14em] uppercase border-b-2 -mb-px cursor-pointer font-medium ${
-                    t.gold
-                      ? active
-                        ? 'border-gold text-gold opacity-100'
-                        : 'border-transparent text-gold opacity-80 hover:opacity-100'
-                      : active
-                        ? 'border-fg opacity-100'
-                        : 'border-transparent opacity-55'
+                    active
+                      ? 'border-fg opacity-100'
+                      : 'border-transparent opacity-55'
                   }`}
                 >
                   {t.label}

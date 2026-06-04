@@ -101,6 +101,33 @@ function EmptyState() {
   );
 }
 
+function VoyageurCrown() {
+  return (
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M3 7l4.5 3L12 4l4.5 6L21 7l-1.6 11H4.6L3 7z" />
+    </svg>
+  );
+}
+
+const SKELETON_RATIOS = [
+  'aspect-[4/5]', 'aspect-[3/4]', 'aspect-[1/1]', 'aspect-[5/6]', 'aspect-[4/5]',
+  'aspect-[3/4]', 'aspect-[1/1]', 'aspect-[4/5]', 'aspect-[5/6]',
+];
+
+function SkeletonGrid() {
+  return (
+    <div className="gap-6 columns-1 md:columns-2 lg:columns-3" aria-hidden="true">
+      {SKELETON_RATIOS.map((r, i) => (
+        <div key={i} className="break-inside-avoid mb-8 animate-pulse motion-reduce:animate-none">
+          <div className={`w-full ${r} bg-tile`} />
+          <div className="mt-3 h-3 w-2/3 bg-tile" />
+          <div className="mt-2 h-2.5 w-1/3 bg-tile" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function ExplorePage() {
   const [sort, setSort] = useState<SortKey>('pulse');
   const [timeRange, setTimeRange] = useState<TimeRange>('week');
@@ -176,7 +203,7 @@ export default function ExplorePage() {
       </div>
     <div className="page-fade hidden md:block">
       {/* ── Cinematic Hero Header ── */}
-      <section className="relative overflow-hidden bg-black" style={{ height: '42vh', minHeight: 340, maxHeight: 520 }}>
+      <section className="relative overflow-hidden bg-black h-[42vh] min-h-[340px] max-h-[520px]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={photos.length > 0 ? photos[0].src : 'https://ranking.gography.net/cover-of-the-week.jpg'}
@@ -185,20 +212,22 @@ export default function ExplorePage() {
           loading="eager"
         />
         {/* gradient overlay */}
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,.25)_0%,rgba(0,0,0,.1)_30%,rgba(0,0,0,.55)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,.32)_0%,rgba(0,0,0,.06)_38%,rgba(0,0,0,.74)_100%)]" />
 
         {/* content overlay */}
         <div className="absolute inset-0 flex flex-col justify-end">
-          <div className="wrap pb-10 md:pb-14">
+          <div className="wrap pb-10 md:pb-16">
             {/* eyebrow */}
-            <div className="mono text-[10px] tracking-[.28em] uppercase text-white/60 mb-4">
-              Explore · {photos.length * 7} photos
+            <div className="flex items-center gap-3 mb-5">
+              <span className="mono text-[10px] tracking-[.3em] uppercase text-white/75">Spring 2026</span>
+              <span className="h-px w-10 bg-white/30" />
+              <span className="mono text-[10px] tracking-[.3em] uppercase text-white/55 tabular-nums">{photos.length} frames</span>
             </div>
             {/* title */}
-            <h1 className="text-white font-light text-[clamp(40px,8vw,88px)] leading-[.92] tracking-[-.035em] m-0">
+            <h1 className="text-white font-light text-[clamp(48px,9vw,104px)] leading-[.9] tracking-[-.04em] m-0">
               Explore
             </h1>
-            <p className="th text-white/70 text-[15px] leading-[1.6] mt-4 mb-0 max-w-[440px]">
+            <p className="th text-white/75 text-[15px] leading-[1.6] mt-5 mb-0 max-w-[460px]">
               เลือกชมภาพถ่ายทั้งหมด — กรองตามหมวด เวลา และอันดับ
             </p>
           </div>
@@ -212,6 +241,21 @@ export default function ExplorePage() {
           <div className="flex items-center gap-0 overflow-x-auto no-scrollbar">
             {TABS.map((t) => {
               const active = t.id === null;
+              if (t.gold) {
+                return (
+                  <button
+                    key="voyageurs"
+                    onClick={() => router.push('/explore/voyageurs')}
+                    className="group relative py-[18px] px-5 cursor-pointer"
+                    aria-label="Voyageurs"
+                  >
+                    <span className="inline-flex items-center gap-1.5 bg-gold text-black px-3 py-[6px] text-[11px] tracking-[.16em] uppercase font-semibold transition-[filter] duration-150 group-hover:brightness-[1.06]">
+                      <VoyageurCrown />
+                      {t.label}
+                    </span>
+                  </button>
+                );
+              }
               return (
                 <button
                   key={t.id ?? 'all'}
@@ -219,11 +263,9 @@ export default function ExplorePage() {
                   className={`
                     relative py-[18px] px-5 text-[12px] tracking-[.16em] uppercase cursor-pointer font-medium
                     transition-all duration-200
-                    ${t.gold
-                      ? 'text-gold opacity-100 hover:opacity-80'
-                      : active
-                        ? 'opacity-100'
-                        : 'opacity-40 hover:opacity-70'
+                    ${active
+                      ? 'opacity-100'
+                      : 'opacity-40 hover:opacity-70'
                     }
                   `}
                 >
@@ -306,10 +348,25 @@ export default function ExplorePage() {
       </section>
 
       {/* Grid */}
-      <section className="py-[40px] pb-[80px]">
+      <section className="py-10 md:py-14 pb-20">
         <div className="wrap">
+          {/* Result bar */}
+          {!isLoading && photos.length > 0 && (
+            <div className="flex items-baseline justify-between border-b border-rule pb-4 mb-10">
+              <div className="flex items-baseline gap-3">
+                <span className="mono text-[12px] tabular-nums tracking-[.1em]">
+                  {String(photos.length).padStart(3, '0')}
+                </span>
+                <span className="caps opacity-55">Frames</span>
+              </div>
+              <div className="mono text-[10px] tracking-[.16em] uppercase opacity-45">
+                {sort} · {timeRange}{showPicksOnly ? ' · picks' : ''}
+              </div>
+            </div>
+          )}
+
           {isLoading ? (
-            <div className="py-20 text-center text-fg-soft">Loading...</div>
+            <SkeletonGrid />
           ) : photos.length === 0 ? (
             <EmptyState />
           ) : (
@@ -318,12 +375,18 @@ export default function ExplorePage() {
         </div>
       </section>
 
-      {/* Load more (visual) */}
-      {photos.length > 0 && (
-        <section className="py-[40px] pb-[80px] text-center">
-          <button className="btn btn-ghost" disabled>
-            Loading more — infinite scroll
-          </button>
+      {/* End of results marker */}
+      {!isLoading && photos.length > 0 && (
+        <section className="pb-24">
+          <div className="wrap">
+            <div className="flex items-center justify-center gap-4 text-fg-faint">
+              <span className="h-px w-16 bg-rule" />
+              <span className="mono text-[10px] tracking-[.24em] uppercase tabular-nums">
+                End · {photos.length} frames
+              </span>
+              <span className="h-px w-16 bg-rule" />
+            </div>
+          </div>
         </section>
       )}
 
