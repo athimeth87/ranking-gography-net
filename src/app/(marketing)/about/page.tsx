@@ -1,5 +1,6 @@
-// About — manifesto-style brand story page
+// About — Gography Photo Ranking brand story
 
+import Link from 'next/link';
 import { PageCover } from '@/components/layout/PageCover';
 import { Footer } from '@/components/layout/Footer';
 
@@ -7,18 +8,18 @@ import { Footer } from '@/components/layout/Footer';
 
 function SectionHeader({ eyebrow, title }: { eyebrow?: string; title: string }) {
   return (
-    <div className="mb-[48px]">
+    <div className="mb-[40px]">
       {eyebrow && <div className="caps mb-[16px] opacity-55">{eyebrow}</div>}
-      <h2 className="text-[36px] font-normal tracking-[-0.02em] m-0 leading-[1.15]">{title}</h2>
+      <h2 className="text-[32px] md:text-[36px] font-normal tracking-[-0.02em] m-0 leading-[1.15]">{title}</h2>
     </div>
   );
 }
 
-function BigStat({ n, l }: { n: string; l: string }) {
+function DefRow({ name, desc }: { name: string; desc: string }) {
   return (
-    <div>
-      <div className="text-[56px] font-medium tracking-[-0.03em] leading-[1]">{n}</div>
-      <div className="mono text-[11px] tracking-[.16em] uppercase opacity-55 mt-[16px]">{l}</div>
+    <div className="pb-[28px] border-b border-[var(--rule)]">
+      <h4 className="text-[22px] font-normal tracking-[-0.015em] m-0">{name}</h4>
+      <p className="text-[15px] leading-[1.85] text-fg-soft mt-[12px] m-0">{desc}</p>
     </div>
   );
 }
@@ -31,88 +32,91 @@ export default function Page() {
       <PageCover
         photoId="p013"
         eyebrow="About"
-        title={<>A platform for photographers<br />who never stop travelling</>}
-        subtitle="GOGRAPHY Ranking — เวทีสำหรับช่างภาพและนักเดินทาง ภาพต้องหายใจได้ ไม่ใช่ภาพที่ algorithm จัดการ"
+        title={<>Gography<br />Photo Ranking</>}
+        subtitle="โซเชียลมีเดียของคนไทยที่ให้คุณค่ากับศิลปะของภาพถ่าย — ที่ที่ทุกเฟรมได้รับการมองเห็น"
       />
 
-      <section className="pt-[96px] pb-[120px]">
+      {/* Brand story */}
+      <section className="pt-[96px] pb-[80px]">
         <div className="wrap-narrow">
-          <p
-            className="text-[clamp(22px,2.4vw,30px)] leading-[1.5] tracking-[-0.01em] text-[var(--fg)] max-w-[68ch] m-0"
-            style={{ fontFamily: 'var(--serif)' }}
-          >
-            GOGRAPHY เริ่มต้นจากบริษัททัวร์ — เราออกแบบทริปถ่ายภาพในที่ที่นักเดินทางไม่กี่คนได้ไป
-            Patagonia, Iceland, Atacama, Mongolia เราอยากเห็นภาพเหล่านั้นมารวมตัวอยู่ในที่เดียว
+          <p className="font-serif text-[clamp(22px,2.4vw,30px)] leading-[1.5] tracking-[-0.01em] text-fg max-w-[68ch] m-0">
+            GOGRAPHY เริ่มต้นจากบริษัททัวร์ กว่า 10 ปีที่เราพานักเดินทางนับพันไปเก็บภาพในสถานที่สวยงามทั่วโลก
+            ในที่ที่คนไม่กี่คนได้ไป จนวันหนึ่งเราเริ่มถามตัวเองว่า — ภาพเหล่านั้นควรไปอยู่ที่ไหน
           </p>
           <div className="magrule my-[64px]" />
           <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr] gap-[48px] md:gap-[64px]">
-            <p
-              className="text-[16px] leading-[1.85] text-[var(--fg-soft)] m-0"
-              style={{ fontFamily: 'var(--serif)' }}
-            >
-              500px ถูกขายไปนานแล้ว Instagram
-              กลายเป็นที่ของ reel ที่เร่งจังหวะให้เร็วเกินกว่าภาพจะหายใจ
-              เราเห็นช่องว่าง — ที่สำหรับภาพถ่ายที่ทำด้วยใจ ไม่ใช่ algorithm
+            <p className="font-serif text-[16px] leading-[1.85] text-fg-soft m-0">
+              เราอยากสร้างโซเชียลมีเดียของคนไทยที่ให้คุณค่ากับศิลปะของภาพถ่ายอย่างแท้จริง
+              ที่ที่ทุกเฟรมได้รับการมองเห็น ไม่ถูกกลบด้วยฟีดที่เร่งรีบ
+              และเป็นที่รวมผลงานและเรื่องราวดี ๆ จากชุมชนนักเดินทาง
             </p>
-            <p
-              className="text-[16px] leading-[1.85] text-[var(--fg-soft)] m-0"
-              style={{ fontFamily: 'var(--serif)' }}
-            >
-              GOGRAPHY Ranking คือเวทีที่นั่น คะแนนจัดอันดับเปิดเผยทั้งหมด
-              ทุก 4 เดือนเราเลือกภาพที่ดีที่สุดของฤดูกาล มอบ Voucher 50,000 บาท
-              และเก็บไว้ใน Hall of Fame ตลอดไป
+            <p className="font-serif text-[16px] leading-[1.85] text-fg-soft m-0">
+              Gography Photo Ranking คือคำตอบของคำถามนั้น ทุกสัปดาห์เราจัดอันดับภาพที่ดีที่สุด
+              เพื่อค้นหาผลงานที่โดดเด่นและส่งต่อสู่เวที Tournament ในระดับต่าง ๆ
+              ไม่ว่าคุณจะเป็นช่างภาพมืออาชีพ หรือนักเดินทางที่เพิ่งกลับจากทริป ทุกภาพมีโอกาสได้ขึ้นสู่อันดับเสมอ
             </p>
           </div>
         </div>
       </section>
 
-      <section className="py-[96px] bg-[var(--cream)] rule-top rule-bot">
-        <div className="wrap">
-          <div className="mono grid grid-cols-[repeat(4,1fr)] gap-[48px]">
-            <BigStat n="2026" l="Launched" />
-            <BigStat n="3" l="Categories at launch" />
-            <BigStat n="50K" l="THB voucher per season" />
-            <BigStat n="∞" l="Hall of Fame slots" />
-          </div>
-        </div>
-      </section>
-
-      <section className="py-[96px]">
+      {/* Two competition categories */}
+      <section className="py-[80px] rule-top">
         <div className="wrap-narrow">
-          <SectionHeader title="Editorial team" eyebrow="Editorial team" />
-          <div className="grid grid-cols-[1fr_1fr] gap-[48px]">
-            {(
-              [
-                { name: 'Anan Khamthuan', role: 'Editor in Chief', loc: 'Bangkok' },
-                { name: 'Sasin Phongphan', role: 'Curation Director', loc: 'Chiang Mai' },
-                { name: 'Vichai Sasiprapha', role: 'Travel Lead, GOGRAPHY', loc: 'Bangkok' },
-                { name: 'Naree Suwannapong', role: 'Community', loc: 'Bangkok' },
-              ] as { name: string; role: string; loc: string }[]
-            ).map((p) => (
-              <div
-                key={p.name}
-                className="pb-[32px] border-b border-[var(--rule)]"
-              >
-                <h4 className="text-[22px] font-normal tracking-[-0.015em] m-0">{p.name}</h4>
-                <div className="caps opacity-55 mt-[8px]">
-                  {p.role} · {p.loc}
-                </div>
-              </div>
-            ))}
+          <SectionHeader eyebrow="Categories" title="สองหมวดการแข่งขัน" />
+          <div className="grid grid-cols-1 gap-[32px]">
+            <DefRow
+              name="Classic"
+              desc="หมวดเปิดสำหรับทุกคน ส่งภาพได้ทุกแนว ทั้ง Landscape, Portrait หรือ Black & White มาประชันกันบนการจัดอันดับประจำสัปดาห์"
+            />
+            <DefRow
+              name="Voyager"
+              desc="หมวดพิเศษเฉพาะลูกค้าที่เคยร่วมเดินทางกับ Gography ได้แข่งขันกันเองในกลุ่ม พร้อมลุ้นรางวัลพิเศษที่เราจัดเตรียมไว้ให้"
+            />
+          </div>
+          <p className="text-[15px] leading-[1.85] text-fg-soft mt-[32px] m-0 max-w-[68ch]">
+            ผู้ใช้ทั่วไปเข้าร่วมได้เฉพาะหมวด Classic ส่วนลูกค้าของ Gography เข้าถึงได้ทั้งสองหมวด
+            ร่วมสนุกและลุ้นรางวัลได้เต็มที่ทั้ง Classic และ Voyager
+          </p>
+        </div>
+      </section>
+
+      {/* Four member types */}
+      <section className="py-[80px] rule-top">
+        <div className="wrap-narrow">
+          <SectionHeader eyebrow="Members" title="ผู้ใช้ 4 ประเภท" />
+          <div className="grid grid-cols-1 gap-[32px]">
+            <DefRow
+              name="User"
+              desc="นักเดินทางและช่างภาพทั่วไป ส่งภาพแข่งในหมวด Classic ได้"
+            />
+            <DefRow
+              name="Voyager"
+              desc="ลูกค้าที่เคยร่วมทริปกับ Gography เข้าถึงได้ทั้งหมวด Classic และ Voyager พร้อมสิทธิ์ลุ้นรางวัลพิเศษ"
+            />
+            <DefRow
+              name="Rank Master"
+              desc="ช่างภาพที่รักษาอันดับ 1 ถึง 3 ได้ต่อเนื่อง 4 สัปดาห์ จะได้รับตรา Rank Master พร้อมสิทธิ์เข้าร่วม Tournament ประจำเดือน Season และประจำปี โดยสถานะนี้อยู่กับคุณตลอดทั้ง Season เป็นเกียรติยศที่พิชิตมาด้วยผลงานล้วน ๆ"
+            />
+            <DefRow
+              name="Ambassador"
+              desc="ช่างภาพที่ทีมงาน Gography คัดเลือกด้วยตัวเองจากฝีมือที่เป็นที่ประจักษ์ โดยไม่ต้องผ่านการจัดอันดับ สถานะนี้อยู่ตลอดทั้ง Season เช่นกัน"
+            />
           </div>
         </div>
       </section>
 
-      <section className="pt-[96px] pb-[120px] rule-top">
-        <div className="wrap-narrow text-center">
-          <h2
-            className="text-[44px] font-normal tracking-[-0.02em] m-0 leading-[1.15]"
-          >
-            Want to join us?
-          </h2>
-          <div className="flex justify-center gap-[16px] mt-[32px]">
-            <button className="btn btn-solid">Apply as photographer</button>
-            <button className="btn">Travel with GOGRAPHY</button>
+      {/* Seasonal reward + closing CTA */}
+      <section className="pt-[80px] pb-[120px] rule-top">
+        <div className="wrap-narrow">
+          <p className="font-serif text-[16px] leading-[1.85] text-fg-soft m-0 max-w-[68ch]">
+            และสำหรับ Voyager ทุก 4 เดือนเราคัดเลือกภาพที่ดีที่สุดแห่งฤดูกาล
+            มอบ Voucher มูลค่า 50,000 บาท และจารึกไว้ใน Hall of Fame ตลอดไป
+          </p>
+          <p className="font-serif text-[clamp(24px,2.6vw,34px)] leading-[1.4] tracking-[-0.01em] text-fg mt-[40px] m-0 max-w-[68ch]">
+            เริ่มต้นส่งภาพของคุณวันนี้ แล้วให้ทุกเฟรมได้อยู่ในที่ที่มันควรอยู่
+          </p>
+          <div className="mt-[36px]">
+            <Link href="/upload" className="btn btn-solid">เริ่มส่งภาพ</Link>
           </div>
         </div>
       </section>
