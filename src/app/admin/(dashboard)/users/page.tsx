@@ -60,7 +60,7 @@ export default function AdminUsersPage() {
         <div>
           <h1 className="text-4xl font-light tracking-tight mb-2">Network Directory</h1>
           <p className="text-neutral-500 font-mono text-xs uppercase tracking-widest">
-            Manage Photographers, Voyageurs, and Admin Team
+            Manage Photographers, Travellers, and Admin Team
           </p>
         </div>
         <div className="flex gap-2">
@@ -91,7 +91,7 @@ export default function AdminUsersPage() {
                   <Label htmlFor="role" className="font-mono text-xs uppercase tracking-widest text-neutral-500">Assign Role</Label>
                   <select id="role" className="flex h-10 w-full border border-neutral-300 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 rounded-none">
                     <option value="photographer">Photographer</option>
-                    <option value="voyageur">Voyageur (Customer)</option>
+                    <option value="voyageur">Traveller (Customer)</option>
                   </select>
                 </div>
               </div>
@@ -108,7 +108,7 @@ export default function AdminUsersPage() {
           <TabsList className="rounded-none bg-neutral-100 p-1 h-auto">
             <TabsTrigger value="all" className="rounded-none font-mono text-[10px] uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm px-4 py-2">All</TabsTrigger>
             <TabsTrigger value="photographers" className="rounded-none font-mono text-[10px] uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm px-4 py-2">Photographers</TabsTrigger>
-            <TabsTrigger value="voyageurs" className="rounded-none font-mono text-[10px] uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm px-4 py-2">Voyageurs</TabsTrigger>
+            <TabsTrigger value="voyageurs" className="rounded-none font-mono text-[10px] uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm px-4 py-2">Travellers</TabsTrigger>
             <TabsTrigger value="members" className="rounded-none font-mono text-[10px] uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm px-4 py-2">Members</TabsTrigger>
           </TabsList>
           

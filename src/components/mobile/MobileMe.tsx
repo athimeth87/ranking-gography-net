@@ -229,7 +229,7 @@ export function MobileMe({
             </div>
           </section>
 
-          {/* Voyageur banner */}
+          {/* Traveller banner */}
           {isVoyageur && (
             <section style={{ padding: '24px 16px 0' }}>
               <div style={{

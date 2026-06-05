@@ -79,7 +79,7 @@ export function MobileHome({
     .map(p => ({
       username: p.username,
       name: p.name,
-      tier: p.isAmbassador ? 'Ambassador' : 'Voyageur',
+      tier: p.isAmbassador ? 'Ambassador' : 'Traveller',
       region: p.loc,
       cover: p.cover,
       pulse: Math.round(pList.filter(ph => ph.by === p.username).reduce((s, ph) => s + (ph.pulse || pulseScore(ph)), 0)),
@@ -245,6 +245,10 @@ export function MobileHome({
       }}>
         <div style={{ padding: '32px 16px 0' }}>
           <MobileSectionHeader num={`02 / ${t('voyageurs_num')}`} title={t('voyageurs_title')} link={t('all')} href="/photographers/voyageurs" />
+          <p className="th" style={{
+            marginTop: 14, maxWidth: 480,
+            fontSize: 13.5, lineHeight: 1.7, color: 'var(--fg-soft)',
+          }}>{t('voyageurs_desc')}</p>
         </div>
         <div style={{ 
           marginTop: 18, padding: '0 16px 24px',

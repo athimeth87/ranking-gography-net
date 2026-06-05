@@ -172,8 +172,8 @@ export function MeSettings({ persona, isVoyageur }: MeSettingsProps) {
           onChange={(v) => set('email_picks', v)}
         />
         <ToggleRow
-          label="Email — Voyageurs Awards updates"
-          sub="เฉพาะ Voyageur"
+          label="Email — Travellers Awards updates"
+          sub="เฉพาะ Traveller"
           value={form.email_voyageur === true}
           onChange={(v) => set('email_voyageur', v)}
           disabled={!isVoyageur}

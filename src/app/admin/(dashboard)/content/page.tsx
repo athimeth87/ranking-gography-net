@@ -14,8 +14,8 @@ export default function AdminContentPage() {
   const [heroImageFile, setHeroImageFile] = useState<File | null>(null);
   
   const [voySettings, setVoySettings] = useState({
-    title: 'Travelled with us?\\nBecome a Voyageur',
-    description: 'Customers who have travelled with GOGRAPHY earn Voyageur status — eligible to submit photos in a customer-only category. Each season the winner receives a 50,000 THB voucher, and the top 10 receive cashback on their next trip.',
+    title: 'Travelled with us?\\nBecome a Traveller',
+    description: 'Customers who have travelled with GOGRAPHY earn Traveller status — eligible to submit photos in a customer-only category. Each season the winner receives a 50,000 THB voucher, and the top 10 receive cashback on their next trip.',
     reward1_amount: '50,000 THB',
     reward1_label: 'VOUCHER',
     reward1_sub: 'ต่อหมวด',
@@ -65,7 +65,7 @@ export default function AdminContentPage() {
       const fileName = `voyageur-featured-${Date.now()}.${fileExt}`;
       const { error } = await supabase.storage.from('photos').upload(fileName, imageFile);
       if (error) {
-        alert('Failed to upload Voyageurs image: ' + error.message);
+        alert('Failed to upload Travellers image: ' + error.message);
         setIsSaving(false);
         return;
       }
@@ -203,7 +203,7 @@ export default function AdminContentPage() {
               <Crown className="text-amber-500 w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold tracking-tight text-amber-900">Voyageurs Section</h2>
+              <h2 className="text-lg font-semibold tracking-tight text-amber-900">Travellers Section</h2>
               <p className="text-xs text-amber-700/70 mt-0.5">Exclusive content and rewards for past customers</p>
             </div>
           </div>

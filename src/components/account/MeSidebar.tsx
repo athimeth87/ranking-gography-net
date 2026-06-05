@@ -132,7 +132,7 @@ export function MeSidebar({
         <div className="flex flex-col gap-[6px] mb-3">
           {isVoyageur && (
             <span className="inline-flex items-center gap-[5px] px-[7px] py-[3px] bg-[#b08e54] text-white text-[9.5px] tracking-[.14em] uppercase font-medium self-start">
-              <VoyageurMark size={7} /> Voyageur
+              <VoyageurMark size={7} /> Traveller
             </span>
           )}
           {isPhotographer && (

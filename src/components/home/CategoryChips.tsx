@@ -26,7 +26,7 @@ export function CategoryChips({ value, onChange, showVoyageurs = false }: Catego
     { v: 'Portrait', l: t('portrait') },
     { v: 'BW', l: t('bw') },
   ];
-  if (showVoyageurs) cats.push({ v: 'Voyageurs', l: t('voyageurs'), luxury: true });
+  if (showVoyageurs) cats.push({ v: 'Travellers', l: t('voyageurs'), luxury: true });
 
   return (
     <div className="flex justify-between items-center gap-3 flex-wrap">
@@ -52,7 +52,7 @@ export function CategoryChips({ value, onChange, showVoyageurs = false }: Catego
                 <button
                   onClick={() =>
                     router.push(
-                      c.v === 'Voyageurs'
+                      c.v === 'Travellers'
                         ? '/photographers/voyageurs'
                         : `/explore/${c.v.toLowerCase()}`,
                     )

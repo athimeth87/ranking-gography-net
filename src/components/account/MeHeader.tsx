@@ -133,7 +133,7 @@ export function MeHeader({
             </div>
             {isVoyageur && (
               <span className="inline-flex items-center gap-[5px] px-[7px] py-[3px] bg-[#b08e54] text-white text-[9px] md:text-[9.5px] tracking-[.14em] uppercase font-medium">
-                <VoyageurMark size={7} /> Voyageur
+                <VoyageurMark size={7} /> Traveller
               </span>
             )}
             {isPhotographer && (

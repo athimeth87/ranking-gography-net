@@ -93,7 +93,7 @@ export default function PhotographersPage() {
 
   const filterChips: { v: FilterValue; l: string; n: number }[] = [
     { v: 'all', l: 'All', n: allPhotographers.length },
-    { v: 'voyageurs', l: 'Voyageurs ◆', n: allPhotographers.filter((p: Photographer) => p.isCustomer).length },
+    { v: 'voyageurs', l: 'Travellers ◆', n: allPhotographers.filter((p: Photographer) => p.isCustomer).length },
     { v: 'ambassadors', l: 'Ambassadors ★', n: allPhotographers.filter((p: Photographer) => p.isAmbassador).length },
     { v: 'general', l: 'Photographers', n: allPhotographers.filter((p: Photographer) => !p.isCustomer && !p.isAmbassador).length },
   ];
@@ -104,7 +104,7 @@ export default function PhotographersPage() {
         photoId="p018"
         eyebrow="Directory"
         title="All photographers"
-        subtitle="รวมช่างภาพและ Voyageurs ที่อยู่บนเวที GOGRAPHY Ranking — แยกตามสถานะหรือเรียงตามที่คุณต้องการ"
+        subtitle="รวมช่างภาพและ Travellers ที่อยู่บนเวที GOGRAPHY Ranking — แยกตามสถานะหรือเรียงตามที่คุณต้องการ"
       />
 
       {/* Filter / Sort bar */}
