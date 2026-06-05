@@ -222,7 +222,7 @@ export function PhotographerClient({ username }: { username: string }) {
 
   const eyebrowParts = [
     photographer.isAmbassador ? 'Ambassador' : null,
-    photographer.isCustomer ? 'Voyageur' : 'Photographer',
+    photographer.isCustomer ? 'Traveller' : 'Photographer',
     `@${photographer.username}`,
   ].filter(Boolean).join(' · ');
 
@@ -254,7 +254,7 @@ export function PhotographerClient({ username }: { username: string }) {
               )}
               {photographer.isCustomer && (
                 <span className="inline-flex items-center gap-[6px] px-[11px] py-[5px] bg-fg text-bg text-[10.5px] tracking-[.16em] uppercase font-medium">
-                  <VoyageurMark size={7} /> Voyageur
+                  <VoyageurMark size={7} /> Traveller
                 </span>
               )}
               <span className="mono text-[11px] tracking-[.18em] uppercase opacity-55">@{photographer.username}</span>
@@ -365,10 +365,10 @@ export function PhotographerClient({ username }: { username: string }) {
                     <div className="p-6 md:p-[32px_36px] bg-cream border border-rule mb-8 md:mb-[48px] grid gap-8 md:gap-[48px] items-center grid-cols-1 md:grid-cols-[1.5fr_1fr]">
                       <div>
                         <div className="caps opacity-55 mb-3 flex items-center gap-2">
-                          <VoyageurMark size={9} /> Voyageur
+                          <VoyageurMark size={9} /> Traveller
                         </div>
                         <h3 className="th text-[26px] font-normal tracking-[-0.015em] m-0 leading-[1.25]">
-                          ลูกค้าทริป GOGRAPHY — มีสิทธิ์ลุ้นรางวัล Voyageurs Awards
+                          ลูกค้าทริป GOGRAPHY — มีสิทธิ์ลุ้นรางวัล Travellers Awards
                         </h3>
                         <div className="mono mt-5 text-[12px] leading-[1.9]">
                           <div className="opacity-55 mb-2">TRIPS COMPLETED</div>
@@ -378,7 +378,7 @@ export function PhotographerClient({ username }: { username: string }) {
                         </div>
                       </div>
                       <div className="border-l border-rule pl-8">
-                        <div className="caps opacity-55 mb-3">Voyageurs · Spring 2026</div>
+                        <div className="caps opacity-55 mb-3">Travellers · Spring 2026</div>
                         <div className="th text-[13px] leading-[1.7]">
                           <div className="flex justify-between py-2 border-b border-rule">
                             <span>Photos submitted</span>

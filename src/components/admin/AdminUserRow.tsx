@@ -85,7 +85,7 @@ export function AdminUserRow({ user, onUpdate }: { user: UserProps, onUpdate?: (
       <div className="flex items-center gap-2">
         {user.isCustomer ? (
           <Badge variant="outline" className="rounded-none px-2 py-0.5 text-[10px] font-mono uppercase tracking-widest border-neutral-300 text-neutral-700 bg-neutral-50">
-            Voyageur
+            Traveller
           </Badge>
         ) : user.photographerStatus === 'approved' ? (
           <Badge variant="outline" className="rounded-none px-2 py-0.5 text-[10px] font-mono uppercase tracking-widest bg-neutral-900 text-white border-neutral-900">
@@ -157,7 +157,7 @@ export function AdminUserRow({ user, onUpdate }: { user: UserProps, onUpdate?: (
                 <select id="role" value={role} onChange={(e) => setRole(e.target.value)} className="flex h-10 w-full border border-neutral-300 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 rounded-none">
                   <option value="member">Member</option>
                   <option value="photographer">Photographer</option>
-                  <option value="voyageur">Voyageur (Customer)</option>
+                  <option value="voyageur">Traveller (Customer)</option>
                 </select>
               </div>
             </div>

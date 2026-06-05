@@ -48,7 +48,7 @@ export async function sendWelcomeEmail(userEmail: string, userName: string = 'Ph
                       <ul style="margin: 0; padding-left: 16px; font-size: 14px; line-height: 1.6; color: #444444;">
                         <li style="margin-bottom: 4px;">Vote for your favorite photographs</li>
                         <li style="margin-bottom: 4px;">Save photos to your personal gallery</li>
-                        <li>Join the Voyageur rewards program</li>
+                        <li>Join the Traveller rewards program</li>
                       </ul>
                     </div>
 
