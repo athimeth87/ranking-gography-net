@@ -7,8 +7,9 @@ import { Switch } from '@/components/ui/switch';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { useApp } from '@/providers/AppProvider';
 import type { Category } from '@/lib/types';
-import { convertToWebP, MAX_UPLOAD_BYTES, formatBytes } from '@/lib/imageConvert';
+import { MAX_UPLOAD_BYTES, formatBytes, convertToWebP } from '@/lib/imageConvert';
 import { getPresignedUploadUrl } from '@/app/actions/r2-upload';
+import { toast } from 'sonner';
 
 export function GlobalUploadModal() {
   const router = useRouter();
@@ -64,7 +65,7 @@ export function GlobalUploadModal() {
     const f = e.target.files?.[0];
     if (!f) return;
     if (f.size > MAX_UPLOAD_BYTES) {
-      alert(`ไฟล์ใหญ่เกินไป (${formatBytes(f.size)}) — สูงสุด 5 MB`);
+      toast.error(`ไฟล์ใหญ่เกินไป (${formatBytes(f.size)}) — สูงสุด 5 MB`);
       return;
     }
     setDraft(d => ({ ...d, file: f, previewUrl: URL.createObjectURL(f) }));
@@ -87,7 +88,7 @@ export function GlobalUploadModal() {
       imgWidth = result.width;
       imgHeight = result.height;
     } catch (err) {
-      alert('Image conversion failed: ' + (err instanceof Error ? err.message : 'unknown'));
+      toast.error('Image conversion failed: ' + (err instanceof Error ? err.message : 'unknown'));
       setIsUploading(false);
       return;
     }
@@ -97,7 +98,7 @@ export function GlobalUploadModal() {
     const { success, url, publicUrl, error: uploadError } = await getPresignedUploadUrl(fileName, 'image/webp');
     
     if (!success || !url || !publicUrl) {
-      alert('Failed to get upload URL: ' + uploadError);
+      toast.error('Failed to get upload URL: ' + uploadError);
       setIsUploading(false);
       return;
     }
@@ -111,7 +112,7 @@ export function GlobalUploadModal() {
     });
 
     if (!uploadRes.ok) {
-      alert('Upload failed: ' + uploadRes.statusText);
+      toast.error('Upload failed: ' + uploadRes.statusText);
       setIsUploading(false);
       return;
     }
@@ -135,7 +136,7 @@ export function GlobalUploadModal() {
     });
 
     if (dbError) {
-      alert('Database error: ' + dbError.message);
+      toast.error('Database error: ' + dbError.message);
       setIsUploading(false);
       return;
     }
@@ -143,6 +144,7 @@ export function GlobalUploadModal() {
     setIsUploading(false);
     setUploadModalOpen(false);
     setDraft({ title: '', cat: 'Landscape', caption: '', voyageurOnly: false, file: null, previewUrl: '', camera: '', lens: '' });
+    toast.success('อัปโหลดสำเร็จแล้ว!', { description: 'รูปภาพของคุณถูกส่งเข้าสู่ระบบแล้ว' });
     
     // Refresh page data if we are on a page that needs it
     if (pathname.includes('/me') || pathname === '/') {

@@ -9,6 +9,9 @@ import { Switch } from '@/components/ui/switch';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { useApp } from '@/providers/AppProvider';
 import type { Photographer, Photo, Category } from '@/lib/types';
+import { MAX_UPLOAD_BYTES, formatBytes, convertToWebP } from '@/lib/imageConvert';
+import { getPresignedUploadUrl } from '@/app/actions/r2-upload';
+import { toast } from 'sonner';
 
 interface MePhotosProps {
   persona: Photographer;
@@ -65,9 +68,12 @@ export function MePhotos({ myPhotos, isPhotographer, isVoyageur, onPhotoUploaded
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
-    if (f) {
-      setDraft(d => ({ ...d, file: f, previewUrl: URL.createObjectURL(f) }));
+    if (!f) return;
+    if (f.size > MAX_UPLOAD_BYTES) {
+      toast.error(`ไฟล์ใหญ่เกินไป (${formatBytes(f.size)}) — สูงสุด 5 MB`);
+      return;
     }
+    setDraft(d => ({ ...d, file: f, previewUrl: URL.createObjectURL(f) }));
   };
 
   const handleUploadSubmit = async (e: React.FormEvent) => {
@@ -76,24 +82,46 @@ export function MePhotos({ myPhotos, isPhotographer, isVoyageur, onPhotoUploaded
 
     setIsUploading(true);
     const supabase = getSupabaseBrowserClient();
-    
-    const fileExt = draft.file.name.split('.').pop();
-    const fileName = `${authUser.id}/${Date.now()}.${fileExt}`;
-    
-    const { error: uploadError } = await supabase.storage
-      .from('photos')
-      .upload(fileName, draft.file);
 
-    if (uploadError) {
-      alert('Upload failed: ' + uploadError.message);
+    // Convert to WebP before uploading
+    let webpFile: File;
+    let imgWidth = 4;
+    let imgHeight = 3;
+    try {
+      const result = await convertToWebP(draft.file, { quality: 0.85 });
+      webpFile = result.file;
+      imgWidth = result.width;
+      imgHeight = result.height;
+    } catch (err) {
+      toast.error('Image conversion failed: ' + (err instanceof Error ? err.message : 'unknown'));
       setIsUploading(false);
       return;
     }
 
-    const { data: publicUrlData } = supabase.storage.from('photos').getPublicUrl(fileName);
-    
+    const fileName = `${authUser.id}/${Date.now()}.webp`;
+
+    const { success, url, publicUrl, error: uploadError } = await getPresignedUploadUrl(fileName, 'image/webp');
+
+    if (!success || !url || !publicUrl) {
+      toast.error('Failed to get upload URL: ' + uploadError);
+      setIsUploading(false);
+      return;
+    }
+
+    const uploadRes = await fetch(url, {
+      method: 'PUT',
+      body: webpFile,
+      headers: { 'Content-Type': 'image/webp' },
+    });
+
+    if (!uploadRes.ok) {
+      toast.error('Upload failed: ' + uploadRes.statusText);
+      setIsUploading(false);
+      return;
+    }
+
     const slug = `${draft.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now()}`;
-    
+
     const { error: dbError } = await supabase.from('photos').insert({
       photographer_id: authUser.id,
       title: draft.title,
@@ -103,15 +131,15 @@ export function MePhotos({ myPhotos, isPhotographer, isVoyageur, onPhotoUploaded
       voyageur_only: draft.voyageurOnly,
       camera: draft.camera,
       lens: draft.lens,
-      storage_url: publicUrlData.publicUrl,
-      width: 4, 
-      height: 3, 
+      storage_url: publicUrl,
+      width: imgWidth,
+      height: imgHeight,
       likes_count: 0,
       favorites_count: 0
     });
 
     if (dbError) {
-      alert('Database error: ' + dbError.message);
+      toast.error('Database error: ' + dbError.message);
       setIsUploading(false);
       return;
     }
@@ -119,9 +147,9 @@ export function MePhotos({ myPhotos, isPhotographer, isVoyageur, onPhotoUploaded
     setIsUploading(false);
     setIsModalOpen(false);
     setDraft({ title: '', cat: 'Landscape', caption: '', voyageurOnly: false, file: null, previewUrl: '', camera: '', lens: '' });
+    toast.success('อัปโหลดสำเร็จแล้ว!', { description: 'รูปภาพของคุณถูกส่งเข้าสู่ระบบแล้ว' });
     checkUploadLimit();
-    
-    // Refresh without full page reload
+
     if (onPhotoUploaded) {
       onPhotoUploaded();
     }

@@ -10,6 +10,7 @@ import type { Category } from '@/lib/types';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { MAX_UPLOAD_BYTES, formatBytes } from '@/lib/imageConvert';
 import { getPresignedUploadUrl } from '@/app/actions/r2-upload';
+import { toast } from 'sonner';
 
 // ---------------------------------------------------------------------------
 // Upload page — single photo upload form with daily limit
@@ -301,7 +302,8 @@ export default function UploadPage() {
       file: null,
       actualFile: null,
     });
-    alert('Upload successful!');
+    toast.success('อัปโหลดสำเร็จแล้ว!', { description: 'รูปภาพของคุณถูกส่งเข้าสู่ระบบแล้ว' });
+    router.push(profilePath);
   };
 
   const profilePath =

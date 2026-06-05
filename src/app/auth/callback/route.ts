@@ -3,19 +3,20 @@ import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { sendWelcomeEmail } from '@/lib/email';
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
+  const { searchParams } = new URL(request.url);
+  const origin = request.nextUrl.origin;
   const code = searchParams.get('code');
   const next = searchParams.get('next') ?? '/';
 
   if (!code) {
-    return NextResponse.redirect(`${origin}/login?error=Authentication%20failed`);
+    return NextResponse.redirect(`${request.nextUrl.origin}/login?error=Authentication%20failed`);
   }
 
   const supabase = getSupabaseServerClient();
   const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error || !data?.session?.user) {
-    return NextResponse.redirect(`${origin}/login?error=Authentication%20failed`);
+    return NextResponse.redirect(`${request.nextUrl.origin}/login?error=Authentication%20failed`);
   }
 
   const user = data.session.user;
@@ -52,5 +53,5 @@ export async function GET(request: Request) {
     );
   }
 
-  return NextResponse.redirect(`${origin}${next}`);
+  return NextResponse.redirect(`${request.nextUrl.origin}${next}`);
 }
