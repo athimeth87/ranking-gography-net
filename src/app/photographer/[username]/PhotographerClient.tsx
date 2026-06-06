@@ -316,7 +316,7 @@ export function PhotographerClient({ username }: { username: string }) {
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.45) 100%)' }} />
           {photographer.isAmbassador && (
             <div style={{
-              position: 'absolute', left: 14, bottom: 12, zIndex: 2,
+              position: 'absolute', right: 14, top: 12, zIndex: 2,
               display: 'inline-flex', alignItems: 'center', gap: 5,
               background: '#b08e54', color: '#fff',
               padding: '3px 8px',
@@ -326,7 +326,7 @@ export function PhotographerClient({ username }: { username: string }) {
           )}
           {photographer.isCustomer && !photographer.isAmbassador && (
             <div style={{
-              position: 'absolute', left: 14, bottom: 12, zIndex: 2,
+              position: 'absolute', right: 14, top: 12, zIndex: 2,
               display: 'inline-flex', alignItems: 'center', gap: 5,
               color: '#b08e54', background: 'rgba(0,0,0,0.5)',
               padding: '3px 8px', backdropFilter: 'blur(4px)',
