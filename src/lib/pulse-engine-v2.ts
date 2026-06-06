@@ -33,9 +33,27 @@ export const PULSE_V2 = {
   TRENDING_MIN_VIEWS: 50,
   TRENDING_MAX_AGE_HOURS: 48,
   GEM_MIN_VIEWS: 30,
+  // Anti-collusion vote weighting (merged from v1 — down-weights gamed likes).
+  VOTE_WEIGHT: {
+    BASE: 1.0,
+    FOLLOWER_FACTOR: 0.6,        // a follower's like counts less than a stranger's
+    NON_FOLLOWER_FACTOR: 1.0,
+    ACTIVITY_MIN: 0.5,
+    ACTIVITY_MAX: 1.2,
+    RECIPROCITY_FACTOR: 0.4,     // owner recently voted on this voter → discount
+    ANTI_COLLUSION_FACTOR: 0.3,  // pair voted on each other too often → heavy discount
+    ANTI_COLLUSION_THRESHOLD: 5,
+  },
 } as const;
 
 export type Badge = 'top_field' | 'popular' | 'trending' | 'hidden_gem' | null;
+
+export interface PulseVote {
+  voter_follows_owner?: boolean;
+  voter_total_votes?: number;
+  owner_voted_on_voter_recently?: boolean;
+  collusion_pair_count?: number;
+}
 
 export interface PhotoInput {
   id: string;
@@ -45,6 +63,7 @@ export interface PhotoInput {
   impressions_count: number;   // = views (§2.3 LOCKED: impressions are the divisor)
   created_at: string | Date;
   pick_type?: PickType;
+  votes?: PulseVote[];         // optional per-like detail → enables anti-collusion weighting
 }
 
 export interface EcosystemStats {
@@ -52,11 +71,33 @@ export interface EcosystemStats {
   medianViews30d: number;  // m (raw median; floor applied in adjustedRate)
 }
 
-// ── Layer 1 — weighted engagement (3:2:1) ────────────────────────────────────
-export function engagement(p: Pick<PhotoInput, 'likes_count' | 'favorites_count' | 'comments_count'>): number {
+// Per-like quality weight (0..~1.2): discounts follower / reciprocal / collusive
+// likes so a coordinated ring can't farm the score. 1.0 = a normal stranger like.
+export function voteWeight(v: PulseVote): number {
+  const w = PULSE_V2.VOTE_WEIGHT;
+  const follower = v.voter_follows_owner ? w.FOLLOWER_FACTOR : w.NON_FOLLOWER_FACTOR;
+  const activityRaw = typeof v.voter_total_votes === 'number'
+    ? Math.log10(v.voter_total_votes + 1) / 2
+    : 1.0;
+  const activity = Math.max(w.ACTIVITY_MIN, Math.min(w.ACTIVITY_MAX, activityRaw));
+  const reciprocity = v.owner_voted_on_voter_recently ? w.RECIPROCITY_FACTOR : 1.0;
+  const collusion = (v.collusion_pair_count ?? 0) >= w.ANTI_COLLUSION_THRESHOLD
+    ? w.ANTI_COLLUSION_FACTOR : 1.0;
+  return w.BASE * follower * activity * reciprocity * collusion;
+}
+
+// Effective likes: sum of quality-weighted votes when detail is present, else raw count.
+export function effectiveLikes(p: Pick<PhotoInput, 'likes_count' | 'votes'>): number {
+  return p.votes && p.votes.length > 0
+    ? p.votes.reduce((s, v) => s + voteWeight(v), 0)
+    : p.likes_count;
+}
+
+// ── Layer 1 — weighted engagement (3:2:1, anti-collusion on likes) ────────────
+export function engagement(p: Pick<PhotoInput, 'likes_count' | 'favorites_count' | 'comments_count' | 'votes'>): number {
   return PULSE_V2.W_COMMENT * p.comments_count
     + PULSE_V2.W_FAVORITE * p.favorites_count
-    + PULSE_V2.W_LIKE * p.likes_count;
+    + PULSE_V2.W_LIKE * effectiveLikes(p);
 }
 
 export function engagementRate(p: PhotoInput): number {

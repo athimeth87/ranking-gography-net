@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   engagement, adjustedRate, decay, rankingScore, computeEcosystemStats,
-  assignBadge, rankField, statusFromBadge,
+  assignBadge, rankField, statusFromBadge, voteWeight, effectiveLikes,
   type PhotoInput, type EcosystemStats,
 } from '@/lib/pulse-engine-v2';
 
@@ -17,6 +17,24 @@ describe('v2 L1 — weighted engagement 3:2:1', () => {
     expect(engagement({ likes_count: 1, favorites_count: 1, comments_count: 1 })).toBe(6);
     expect(engagement({ likes_count: 10, favorites_count: 0, comments_count: 0 })).toBe(10);
     expect(engagement({ likes_count: 0, favorites_count: 0, comments_count: 10 })).toBe(30);
+  });
+});
+
+describe('v2 — anti-collusion vote weighting (merged from v1)', () => {
+  it('a normal stranger like ≈ 1.0; follower/reciprocal/collusion are discounted', () => {
+    expect(voteWeight({})).toBeCloseTo(1.0, 5);
+    expect(voteWeight({ voter_follows_owner: true })).toBeCloseTo(0.6, 5);
+    expect(voteWeight({ owner_voted_on_voter_recently: true })).toBeCloseTo(0.4, 5);
+    expect(voteWeight({ collusion_pair_count: 5 })).toBeCloseTo(0.3, 5);
+  });
+  it('effectiveLikes uses weighted votes when present, else the raw count', () => {
+    expect(effectiveLikes({ likes_count: 9 })).toBe(9);                      // no detail → raw
+    expect(effectiveLikes({ likes_count: 0, votes: [{}, {}, {}] })).toBeCloseTo(3, 5); // 3 clean likes
+  });
+  it('a colluding ring scores far below the same number of honest likes', () => {
+    const honest = engagement({ likes_count: 0, favorites_count: 0, comments_count: 0, votes: Array.from({ length: 10 }, () => ({})) });
+    const ring = engagement({ likes_count: 0, favorites_count: 0, comments_count: 0, votes: Array.from({ length: 10 }, () => ({ collusion_pair_count: 9, owner_voted_on_voter_recently: true })) });
+    expect(ring).toBeLessThan(honest * 0.3);  // ~10 vs ~1.2
   });
 });
 

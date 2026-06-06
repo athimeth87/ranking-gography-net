@@ -7,7 +7,7 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isAdminPath = pathname.startsWith('/admin');
   const isAdminLogin = pathname === '/admin/login';
-  const isMePath = pathname.startsWith('/me');
+  const isMePath = pathname === '/me' || pathname.startsWith('/me/');
 
   if (isAdminPath && !isAdminLogin && !user) {
     const url = request.nextUrl.clone();
