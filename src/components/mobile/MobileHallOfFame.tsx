@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { PHOTOS, pulseScore, PHOTOGRAPHERS } from '@/lib/data';
 import { useApp } from '@/providers/AppProvider';
-import { MobileNav, MobileFooter, MobileMarquee, MobileSectionHeader } from './MobileShared';
+import { MobileNav, MobileFooter, MobileMarquee } from './MobileShared';
 import { MasonryTile } from './MobileExplore';
 
 const LB_TABS = [
@@ -106,15 +106,27 @@ export function MobileHallOfFame({
     }}>
       <MobileNav />
 
-      {/* Cover */}
-      <div style={{ position: 'relative', width: '100%', height: 420, overflow: 'hidden', color: '#fff' }}>
-        <img src={coverPhoto.src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0) 30%, rgba(0,0,0,0.55) 75%, rgba(0,0,0,0.78) 100%)' }} />
-        <div style={{ position: 'absolute', left: 16, right: 16, bottom: 24, zIndex: 2 }}>
-          <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', opacity: 0.85, marginBottom: 14 }}>Hall of Fame</div>
-          <div style={{ fontFamily: serif, fontWeight: 700, fontSize: 'clamp(34px, 9vw, 56px)', lineHeight: 1.02, letterSpacing: '-0.02em', maxWidth: '16ch' }}>Season 1 begins.</div>
-          <div style={{ fontSize: 14, lineHeight: 1.5, opacity: 0.82, maxWidth: '32ch', marginTop: 12 }}>
-            Highest pulse wins. Be the first name in the Hall of Fame.
+      {/* Hero — full-bleed editorial */}
+      <div style={{ position: 'relative', width: '100%', height: '86vh', minHeight: 520, maxHeight: 780, overflow: 'hidden', color: '#fff', background: '#000' }}>
+        <img src={coverPhoto.src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', opacity: 0.92 }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 26%, rgba(0,0,0,0.3) 58%, rgba(0,0,0,0.88) 100%)' }} />
+
+        {/* top meta bar */}
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 16, fontFamily: mono, fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase' }}>
+          <span>GOGRAPHY</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span style={{ width: 6, height: 6, borderRadius: '50%', background: '#fff' }} />Live</span>
+        </div>
+
+        {/* title */}
+        <div style={{ position: 'absolute', left: 16, right: 16, bottom: 30, zIndex: 2 }}>
+          <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', opacity: 0.85, marginBottom: 16 }}>Hall of Fame · {liveSeason?.name || 'Season 1'}</div>
+          <div style={{ fontFamily: serif, fontWeight: 700, fontSize: 'clamp(46px, 15vw, 78px)', lineHeight: 0.9, letterSpacing: '-0.03em' }}>Be the first<br /><span style={{ fontStyle: 'italic' }}>legend.</span></div>
+          <div style={{ fontFamily: thai, fontSize: 14, lineHeight: 1.55, opacity: 0.85, maxWidth: '34ch', marginTop: 18 }}>
+            ทุก 4 เดือน ภาพที่มี Pulse สูงสุดในแต่ละหมวดจะได้ขึ้น Hall of Fame ตลอดไป
+          </div>
+          <div style={{ marginTop: 22, display: 'inline-flex', alignItems: 'center', gap: 8, fontFamily: mono, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', opacity: 0.8 }}>
+            Scroll
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M6 13l6 6 6-6" /></svg>
           </div>
         </div>
       </div>
@@ -123,7 +135,7 @@ export function MobileHallOfFame({
       <section style={{ paddingTop: 28 }}>
         {/* hero */}
         <div style={{ padding: '0 16px' }}>
-          <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--fg-soft)' }}>Season Standings</div>
+          <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--fg-soft)' }}>01 — Standings</div>
           <div style={{ fontFamily: serif, fontWeight: 700, fontSize: 'clamp(34px, 10vw, 52px)', lineHeight: 0.98, letterSpacing: '-0.02em', marginTop: 12 }}>{liveSeason?.name || 'This Season'}</div>
 
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 22 }}>
@@ -183,9 +195,9 @@ export function MobileHallOfFame({
         {/* #1 — featured */}
         {lbRows[0] && (
           <Link href={`/photo/${lbRows[0].id}`} style={{ display: 'block', padding: '22px 16px 0', color: 'inherit', textDecoration: 'none' }}>
-            <div style={{ position: 'relative', width: '100%', height: 240, background: 'var(--tile)', overflow: 'hidden', border: '1px solid var(--fg)' }}>
+            <div style={{ position: 'relative', width: '100%', height: 268, background: 'var(--tile)', overflow: 'hidden' }}>
               <img src={lbRows[0].src} alt={lbRows[0].title} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              <div style={{ position: 'absolute', top: 12, left: 12, display: 'inline-flex', alignItems: 'center', gap: 7, background: 'var(--bg)', color: 'var(--fg)', border: '1px solid var(--fg)', padding: '6px 11px' }}>
+              <div style={{ position: 'absolute', top: 12, left: 12, display: 'inline-flex', alignItems: 'center', gap: 7, background: 'var(--bg)', color: 'var(--fg)', padding: '7px 12px' }}>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2 8l4.2 3.4L12 4l5.8 7.4L22 8l-1.7 10.4H3.7L2 8z" /></svg>
                 <span style={{ fontFamily: mono, fontVariantNumeric: 'tabular-nums', fontSize: 16, fontWeight: 700, lineHeight: 1 }}>01</span>
               </div>
@@ -208,9 +220,9 @@ export function MobileHallOfFame({
           <div style={{ padding: '16px 16px 0', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             {[lbRows[1], lbRows[2]].filter(Boolean).map((p) => (
               <Link key={p.id} href={`/photo/${p.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
-                <div style={{ position: 'relative', width: '100%', height: 150, background: 'var(--tile)', overflow: 'hidden', border: '1px solid var(--rule-strong)' }}>
+                <div style={{ position: 'relative', width: '100%', height: 162, background: 'var(--tile)', overflow: 'hidden' }}>
                   <img src={p.src} alt={p.title} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  <div style={{ position: 'absolute', top: 10, left: 10, background: 'var(--bg)', color: 'var(--fg)', border: '1px solid var(--fg)', padding: '3px 8px', fontFamily: mono, fontVariantNumeric: 'tabular-nums', fontSize: 13, fontWeight: 700, lineHeight: 1 }}>{String(p.lbRank).padStart(2, '0')}</div>
+                  <div style={{ position: 'absolute', top: 10, left: 10, background: 'var(--bg)', color: 'var(--fg)', padding: '3px 9px', fontFamily: mono, fontVariantNumeric: 'tabular-nums', fontSize: 13, fontWeight: 700, lineHeight: 1 }}>{String(p.lbRank).padStart(2, '0')}</div>
                 </div>
                 <div style={{ fontSize: 13, fontWeight: 500, marginTop: 8, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.title}</div>
                 <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 6, marginTop: 4 }}>
@@ -262,64 +274,49 @@ export function MobileHallOfFame({
         </div>
       </section>
 
-      {/* Tiers */}
-      <section style={{ padding: '40px 0 0', background: dark ? '#131310' : 'var(--cream)', marginTop: 40 }}>
-        <div style={{ padding: '16px 16px 0' }}>
-          <MobileSectionHeader num="02 / Tiers" title="Traveller cashback" />
-          <p style={{
-            fontFamily: thai,
-            fontSize: 13, lineHeight: 1.55, color: 'var(--fg-soft)',
-            marginTop: 6, maxWidth: '34ch',
-          }}>
-            ผู้เข้าร่วมที่ผ่านการคัดเลือกจะได้รับส่วนแบ่งจากค่าโฆษณาฤดูกาล
+      {/* 02 — The Prize */}
+      <section style={{ background: dark ? '#131310' : 'var(--cream)', marginTop: 48, padding: '44px 0' }}>
+        <div style={{ padding: '0 16px' }}>
+          <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--fg-soft)' }}>02 — The Prize</div>
+          <div style={{ fontFamily: serif, fontWeight: 700, fontSize: 'clamp(42px, 13vw, 62px)', lineHeight: 0.92, letterSpacing: '-0.02em', marginTop: 12 }}>
+            50,000<span style={{ fontFamily: mono, fontWeight: 500, fontSize: '0.4em', letterSpacing: '0.04em', verticalAlign: 'middle', marginLeft: 8 }}>THB</span>
+          </div>
+          <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--fg-soft)', marginTop: 12 }}>Best Photo of Season · per category</div>
+          <p style={{ fontFamily: thai, fontSize: 13, lineHeight: 1.6, color: 'var(--fg-soft)', marginTop: 14, maxWidth: '36ch' }}>
+            ผู้ชนะแต่ละหมวดรับ Voucher 50,000 บาท และที่นั่งใน Hall of Fame ตลอดไป
           </p>
         </div>
-        <div style={{ padding: '12px 16px 32px', display: 'grid', gap: 10 }}>
-          {tiers.map((t, i) => {
-            const isTop = i === 0;
-            return (
-              <div key={t.t} style={{
-                padding: 18,
-                background: isTop ? '#000' : (dark ? '#0a0a0a' : 'var(--bg)'),
-                color: isTop ? '#fff' : (dark ? '#fff' : '#000'),
-                border: isTop ? '1px solid #000' : '1px solid var(--rule-strong)',
-                position: 'relative',
-              }}>
-                <div style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 6,
-                  fontFamily: mono, fontSize: 10,
-                  letterSpacing: '0.14em', textTransform: 'uppercase', color: '#b08e54',
-                }}>
-                  <span style={{ width: 6, height: 6, background: '#b08e54', transform: 'rotate(45deg)' }} />
-                  {t.t}
+
+        {/* Voyageur cashback */}
+        <div style={{ padding: '0 16px', marginTop: 32 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontFamily: mono, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#b08e54' }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="#b08e54" aria-hidden="true"><path d="M2 8l4.2 3.4L12 4l5.8 7.4L22 8l-1.7 10.4H3.7L2 8z" /></svg>
+            Voyageur cashback
+          </div>
+          <p style={{ fontFamily: thai, fontSize: 12, lineHeight: 1.55, color: 'var(--fg-soft)', marginTop: 6, maxWidth: '34ch' }}>
+            ลูกค้าทริป GOGRAPHY ที่ติดอันดับ รับ cashback สำหรับทริปถัดไป
+          </p>
+          <div style={{ marginTop: 18, borderTop: '1px solid var(--rule-strong)' }}>
+            {tiers.map((t) => (
+              <div key={t.t} style={{ display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: 12, padding: '16px 0', borderBottom: '1px solid var(--rule)' }}>
+                <div>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: mono, fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#b08e54' }}>
+                    <span style={{ width: 6, height: 6, background: '#b08e54', transform: 'rotate(45deg)' }} />{t.t}
+                  </div>
+                  <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--fg-soft)', marginTop: 5 }}>{t.l}</div>
                 </div>
-                <div style={{
-                  marginTop: 14, fontFamily: mono,
-                  fontSize: 28, fontWeight: 500, letterSpacing: '-0.01em',
-                }}>{t.p}</div>
-                <div style={{
-                  fontFamily: mono, fontSize: 11,
-                  letterSpacing: '0.12em', textTransform: 'uppercase',
-                  marginTop: 4, opacity: isTop ? 0.6 : 0.55,
-                }}>per season · {t.l}</div>
-                {t.tag && (
-                  <div style={{
-                    position: 'absolute', top: 14, right: 14,
-                    fontFamily: mono, fontSize: 9,
-                    letterSpacing: '0.14em', padding: '3px 6px',
-                    border: '1px solid #b08e54', color: '#b08e54',
-                    textTransform: 'uppercase',
-                  }}>{t.tag}</div>
-                )}
+                <div style={{ fontFamily: mono, fontVariantNumeric: 'tabular-nums', fontSize: 22, fontWeight: 600, lineHeight: 1 }}>{t.p}</div>
               </div>
-            );
-          })}
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* Gallery — masonry */}
-      <section style={{ padding: '56px 16px 0' }}>
-        <MobileSectionHeader num="03 / Gallery" title="This season's frames" />
+      {/* 03 — The Field */}
+      <section style={{ padding: '52px 16px 0' }}>
+        <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--fg-soft)' }}>03 — The Field</div>
+        <div style={{ fontFamily: serif, fontWeight: 700, fontSize: 'clamp(30px, 9vw, 44px)', lineHeight: 1, letterSpacing: '-0.02em', marginTop: 10 }}>This season&apos;s frames</div>
+        <p style={{ fontFamily: thai, fontSize: 13, lineHeight: 1.55, color: 'var(--fg-soft)', marginTop: 8, maxWidth: '34ch' }}>ทุกภาพที่กำลังแข่งในซีซั่นนี้ — เรียงตาม Pulse</p>
       </section>
       <div style={{ padding: '16px 6px 0' }}>
         <div style={{ columnCount: 3, columnGap: 6 }}>
