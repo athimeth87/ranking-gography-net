@@ -44,6 +44,8 @@ export interface Photo extends PhotoSeed {
   impressions?: number;
   peakPulse?: number | null;
   pickType?: 'none' | 'editor' | 'ambassador' | 'both';
+  percentile?: number | null;
+  badge?: string | null;
 }
 
 export interface Photographer {
