@@ -215,14 +215,10 @@ function SearchResults() {
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={p.avatar} alt="" loading="lazy" className="w-full h-full object-cover" />
                         {p.isRankMaster && (
-                          <div style={{
-                            position: 'absolute', top: 8, right: 8,
-                            background: '#c0c0c0', color: '#1a1a1a',
-                            borderRadius: '50%', width: 24, height: 24,
-                            display: 'grid', placeItems: 'center',
-                            boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
-                            zIndex: 2
-                          }} title="Rank Master">
+                          <div
+                            className="absolute top-2 right-2 z-[2] w-6 h-6 rounded-full bg-fg text-bg grid place-items-center shadow-[0_2px_6px_rgba(0,0,0,0.3)]"
+                            title="Rank Master"
+                          >
                             <CrownIcon />
                           </div>
                         )}
@@ -230,7 +226,7 @@ function SearchResults() {
                       <div className="mt-[12px] text-[14px] font-medium flex items-center gap-1.5">
                         <span>{p.name}</span>
                         {p.isRankMaster && (
-                          <span style={{ color: '#c0c0c0' }} title="Rank Master">
+                          <span className="opacity-55" title="Rank Master">
                             <CrownIcon />
                           </span>
                         )}

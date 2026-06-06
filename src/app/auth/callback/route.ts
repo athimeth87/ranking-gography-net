@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { sendWelcomeEmail } from '@/lib/email';
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const origin = request.nextUrl.origin;
   const code = searchParams.get('code');
@@ -53,5 +53,5 @@ export async function GET(request: Request) {
     );
   }
 
-  return NextResponse.redirect(`${request.nextUrl.origin}${next}`);
+  return NextResponse.redirect(`${origin}${next}`);
 }
