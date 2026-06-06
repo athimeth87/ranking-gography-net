@@ -171,7 +171,9 @@ export function computePulsePrecise(i: PulseInputs): number {
 // 500px-style status tier derived from pulse (peak) + curation.
 export type PulseStatus = 'undiscovered' | 'rising' | 'popular' | 'editors_choice';
 
-export const PULSE_STATUS_THRESHOLDS = { RISING: 55, POPULAR: 80 } as const;
+// Tunable. Demo-friendly for the current low-engagement seed data; raise these
+// (e.g. 55 / 80) once real likes + impressions widen the score distribution.
+export const PULSE_STATUS_THRESHOLDS = { RISING: 32, POPULAR: 35 } as const;
 
 export function pulseStatus(pulse: number | null | undefined, pickType: PickType = 'none'): PulseStatus {
   if (pickType !== 'none') return 'editors_choice';

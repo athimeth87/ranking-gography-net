@@ -25,7 +25,7 @@ export async function GET(request: Request) {
 
   const { data: photos, error } = await supabase
     .from('photos')
-    .select('id, likes_count, favorites_count, comments_count, impressions_count, uploaded_at, pick_type, title, category, location, camera, lens, peak_pulse')
+    .select('id, likes_count, favorites_count, comments_count, impressions_count, uploaded_at, pick_type, title, category, location, camera, lens')
     .eq('is_hidden', false)
     .eq('status', 'published');
 
@@ -33,9 +33,10 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  let updated = 0;
-  for (const p of photos ?? []) {
-    const pulse = computePulsePrecise({
+  // Compute every score in-process with the TS engine...
+  const updates = (photos ?? []).map((p) => ({
+    id: p.id,
+    pulse: computePulsePrecise({
       likes_count: p.likes_count || 0,
       favorites_count: p.favorites_count || 0,
       comments_count: p.comments_count || 0,
@@ -45,15 +46,20 @@ export async function GET(request: Request) {
       has_title: !!p.title,
       has_category: !!p.category,
       has_descriptor: !!(p.location || p.camera || p.lens),
-    });
-    const peak = Math.max(Number(p.peak_pulse ?? 0), pulse);
+    }),
+  }));
 
-    const { error: upErr } = await supabase
-      .from('photos')
-      .update({ pulse, peak_pulse: peak })
-      .eq('id', p.id);
-    if (!upErr) updated += 1;
+  // ...then write them back in one set-based UPDATE per chunk (peak handled in SQL).
+  const CHUNK = 1000;
+  let updated = 0;
+  for (let i = 0; i < updates.length; i += CHUNK) {
+    const batch = updates.slice(i, i + CHUNK);
+    const { data: n, error: rpcErr } = await supabase.rpc('apply_photo_pulse', { updates: batch });
+    if (rpcErr) {
+      return NextResponse.json({ error: rpcErr.message, updated }, { status: 500 });
+    }
+    updated += typeof n === 'number' ? n : batch.length;
   }
 
-  return NextResponse.json({ ok: true, scored: photos?.length ?? 0, updated });
+  return NextResponse.json({ ok: true, scored: updates.length, updated });
 }

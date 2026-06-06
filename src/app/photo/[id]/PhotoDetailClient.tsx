@@ -503,6 +503,16 @@ export function PhotoDetailClient({ id }: { id: string }) {
                 </div>
               </div>
 
+              {/* 500px-style stats — mobile only (sidebar shows the desktop one) */}
+              <div className="lg:hidden">
+                <PhotoStatsPanel
+                  likes={photo.likes}
+                  impressions={photo.impressions ?? 0}
+                  highestPulse={photo.peakPulse ?? photo.pulse}
+                  pickType={photo.pickType}
+                />
+              </div>
+
               {/* Comments */}
               <CommentSection photoId={photo.id} />
             </div>
@@ -574,13 +584,15 @@ export function PhotoDetailClient({ id }: { id: string }) {
                 )}
               </div>
 
-              {/* 500px-style stats */}
-              <PhotoStatsPanel
-                likes={photo.likes}
-                impressions={photo.impressions ?? 0}
-                highestPulse={photo.peakPulse ?? photo.pulse}
-                pickType={photo.pickType}
-              />
+              {/* 500px-style stats — desktop sidebar (mobile version is in the main column) */}
+              <div className="hidden lg:block">
+                <PhotoStatsPanel
+                  likes={photo.likes}
+                  impressions={photo.impressions ?? 0}
+                  highestPulse={photo.peakPulse ?? photo.pulse}
+                  pickType={photo.pickType}
+                />
+              </div>
 
               {/* EXIF */}
               <div className="py-7 border-b border-rule">
