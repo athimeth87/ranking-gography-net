@@ -146,7 +146,7 @@ export default function ExploreCategoryPage({
       const supabase = getSupabaseBrowserClient();
       let query = supabase
         .from('photos')
-        .select('id, title, storage_url, category, likes_count, favorites_count, comments_count, uploaded_at, width, height, description, users:users!photos_photographer_id_fkey(username, is_customer)');
+        .select('id, title, storage_url, category, likes_count, favorites_count, comments_count, uploaded_at, width, height, description, users:users!photos_photographer_id_fkey(username, display_name, avatar_url, is_customer)');
 
       if (catKey) {
         query = query.ilike('category', catKey);
@@ -164,6 +164,8 @@ export default function ExploreCategoryPage({
             src: p.storage_url,
             title: p.title,
             by: p.users?.username || 'Unknown',
+            photographerName: p.users?.display_name || p.users?.username || 'Unknown',
+            photographerAvatar: p.users?.avatar_url || '',
             isVoyageur: Boolean(p.users?.is_customer),
             cat: p.category || 'General',
             w: p.width || 4,
