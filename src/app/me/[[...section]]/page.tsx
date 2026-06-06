@@ -132,6 +132,7 @@ export default function Page({ params }: PageProps) {
   const [profile, setProfile] = useState<any>(null);
   const [myPhotos, setMyPhotos] = useState<any[]>([]);
   const [favs, setFavs] = useState<any[]>([]);
+  const [favDates, setFavDates] = useState<string[]>([]);
   const [favIsPublic, setFavIsPublic] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -160,7 +161,7 @@ export default function Page({ params }: PageProps) {
         supabase.from('photos').select('*').eq('photographer_id', authUser.id).order('uploaded_at', { ascending: false }),
         supabase
           .from('favorites')
-          .select(`photo_id, photos (*, users!photographer_id(username))`)
+          .select(`photo_id, favorited_at, photos (*, users!photographer_id(username))`)
           .eq('user_id', authUser.id)
           .order('favorited_at', { ascending: false }),
       ]);
@@ -180,6 +181,7 @@ export default function Page({ params }: PageProps) {
         .filter(Boolean)
         .map((p: any) => mapPhoto(p, p?.users?.username || ''));
       setFavs(favPhotos);
+      setFavDates((favsRes.data || []).map((row: any) => row.favorited_at).filter(Boolean));
       setFavIsPublic(prof?.favorites_visibility === 'public');
 
       setLoading(false);
@@ -369,6 +371,7 @@ export default function Page({ params }: PageProps) {
             profile={profile}
             myPhotos={myPhotos}
             favs={favs}
+            favDates={favDates}
             isVoyageur={isVoyageur}
             favoritesCount={favs.length}
           />
@@ -423,7 +426,7 @@ export default function Page({ params }: PageProps) {
                   onToggleVisibility={handleToggleFavVisibility}
                 />
               )}
-              {section === 'stats' && <MeStats persona={persona} myPhotos={myPhotos} />}
+              {section === 'stats' && <MeStats persona={persona} myPhotos={myPhotos} favDates={favDates} />}
               {section === 'settings' && (
                 <MeSettings persona={persona} isVoyageur={isVoyageur} />
               )}

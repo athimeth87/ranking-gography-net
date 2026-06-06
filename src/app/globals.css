@@ -25,6 +25,11 @@
   --thai: var(--font-noto-thai), var(--font-inter), sans-serif;
   --mono: var(--font-plex-mono), ui-monospace, Menlo, monospace;
   --serif: var(--font-playfair), var(--font-noto-thai), Georgia, serif;
+  --heatmap-0: #ebedf0;
+  --heatmap-1: #9be9a8;
+  --heatmap-2: #40c463;
+  --heatmap-3: #30a14e;
+  --heatmap-4: #216e39;
 }
 
 [data-theme="dark"] {
@@ -38,6 +43,11 @@
   --tile: #131210;
   --bg-nav: rgba(10, 10, 10, 0.92);
   --bg-menu: rgba(0, 0, 0, 0.32);
+  --heatmap-0: #161b22;
+  --heatmap-1: #0e4429;
+  --heatmap-2: #006d32;
+  --heatmap-3: #26a641;
+  --heatmap-4: #39d353;
 }
 
 * { box-sizing: border-box; }

@@ -7,6 +7,7 @@ import { useApp } from '@/providers/AppProvider';
 import { useTranslations } from 'next-intl';
 import { MobileFooter } from './MobileShared';
 import { MeSettings } from '../account/MeSettings';
+import { ActivityHeatmap } from '../account/ActivityHeatmap';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { getPresignedUploadUrl } from '@/app/actions/r2-upload';
 import { convertToWebP } from '@/lib/imageConvert';
@@ -18,6 +19,7 @@ export function MobileMe({
   profile,
   myPhotos = [],
   favs = [],
+  favDates = [],
   isVoyageur = false,
   favoritesCount = 0,
 }: any) {
@@ -134,11 +136,7 @@ export function MobileMe({
   const totalPulse = Math.round(myPhotos.reduce((s: any, p: any) => s + (p.pulse || 0), 0));
   const followers = profile?.followers_count || 0;
   const following = profile?.following_count || 0;
-  const avgPulse = myPhotos.length ? Math.round(totalPulse / myPhotos.length) : 0;
-  const trend = Array.from({ length: 14 }, (_, i) =>
-    Math.max(5, (avgPulse || 30) * (0.6 + i / 30) + Math.sin(i * 0.8) * 8 + Math.cos(i * 0.4) * 4));
-  const trendMax = Math.max(...trend);
-  const trendPts = trend.map((v, i) => `${(i / 13) * 100},${98 - (v / trendMax) * 90}`).join(' ');
+  const topPhotos = [...myPhotos].sort((a: any, b: any) => (b.pulse || 0) - (a.pulse || 0)).slice(0, 6);
 
   return (
     <div className="gpa-mobile" style={{
@@ -442,23 +440,14 @@ export function MobileMe({
             ))}
           </div>
 
-          {/* Pulse trend sparkline */}
+          {/* Voting activity heatmap */}
           <div style={{ marginTop: 28 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 }}>
-              <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--fg-soft)' }}>Pulse trend · 14d</span>
-              <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, letterSpacing: '0.1em', color: 'var(--fg-soft)' }}>Peak {Math.round(trendMax)}</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
+              <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--fg-soft)' }}>{t('voting_activity')}</span>
+              <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, letterSpacing: '0.1em', color: 'var(--fg-soft)' }}>{favDates.length}</span>
             </div>
-            <div className="ios-card" style={{ padding: '18px 16px' }}>
-              <svg viewBox="0 0 100 100" preserveAspectRatio="none" style={{ width: '100%', height: 92, display: 'block', color: dark ? '#fff' : '#000', overflow: 'visible' }}>
-                {[0, 50, 100].map(y => (
-                  <line key={y} x1="0" y1={y} x2="100" y2={y} stroke="currentColor" strokeOpacity={y === 50 ? 0.08 : 0.14} strokeWidth="0.5" vectorEffect="non-scaling-stroke" />
-                ))}
-                <polyline points={trendPts} fill="none" stroke="currentColor" strokeWidth="1.5" vectorEffect="non-scaling-stroke" strokeLinejoin="round" strokeLinecap="round" />
-                <circle cx={(13 / 13) * 100} cy={98 - (trend[13] / trendMax) * 90} r="2.5" fill="currentColor" vectorEffect="non-scaling-stroke" />
-              </svg>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10, fontFamily: "'IBM Plex Mono', monospace", fontSize: 8.5, letterSpacing: '0.1em', color: 'var(--fg-faint)', textTransform: 'uppercase' }}>
-                <span>14d ago</span><span>7d</span><span>today</span>
-              </div>
+            <div className="ios-card" style={{ padding: '18px 14px 14px', color: dark ? '#fff' : '#000' }}>
+              <ActivityHeatmap dates={favDates} />
             </div>
           </div>
 
@@ -466,25 +455,40 @@ export function MobileMe({
             fontFamily: "'IBM Plex Mono', monospace", fontSize: 11,
             letterSpacing: '0.16em', textTransform: 'uppercase',
             color: 'var(--fg-soft)', margin: '32px 0 12px',
-          }}>{t('engagement_breakdown')}</div>
-          <dl style={{ margin: 0, fontFamily: "'IBM Plex Mono', monospace", fontSize: 13 }}>
-            {[
-              [t('photos_posted'), myPhotos.length],
-              [t('total_likes'), totalLikes.toLocaleString()],
-              [t('total_favorites'), totalFav.toLocaleString()],
-              [t('total_pulse'), totalPulse],
-              [t('avg_pulse_photo'), myPhotos.length ? Math.round(totalPulse / myPhotos.length) : 0],
-              [t('rank_master'), myPhotos.filter(p => p.picks?.includes('editor')).length],
-            ].map(([k, v]) => (
-              <div key={k as string} style={{
-                display: 'flex', justifyContent: 'space-between',
-                padding: '12px 0', borderTop: '1px solid var(--rule)',
-              }}>
-                <dt style={{ color: 'var(--fg-soft)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{k}</dt>
-                <dd style={{ margin: 0 }}>{v}</dd>
-              </div>
-            ))}
-          </dl>
+          }}>{t('top_photos')}</div>
+          {topPhotos.length === 0 ? (
+            <p style={{ fontSize: 13, color: 'var(--fg-soft)', margin: 0 }}>—</p>
+          ) : (
+            <div className="ios-card">
+              {topPhotos.map((p: any, i: number, a: any[]) => (
+                <div
+                  key={p.id}
+                  onClick={() => router.push(`/photo/${p.id}`)}
+                  className="ios-press"
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 12,
+                    padding: '12px 14px', cursor: 'pointer',
+                    borderBottom: i < a.length - 1 ? '1px solid var(--rule)' : 0,
+                  }}
+                >
+                  <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 12, color: 'var(--fg-faint)', width: 14, textAlign: 'right', flexShrink: 0 }}>{i + 1}</span>
+                  <div style={{ width: 44, height: 44, borderRadius: 10, overflow: 'hidden', background: 'var(--tile)', flexShrink: 0 }}>
+                    <img src={p.src} alt={p.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 14, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.title}</div>
+                    <div style={{ marginTop: 7, height: 3, borderRadius: 2, overflow: 'hidden', background: dark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)' }}>
+                      <div style={{ height: '100%', width: `${Math.min(100, p.pulse || 0)}%`, background: 'currentColor' }} />
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                    <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 18, fontWeight: 600, lineHeight: 1 }}>{Math.round(p.pulse || 0)}</div>
+                    <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 8, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--fg-soft)', marginTop: 3 }}>{t('pulse')}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
       )}
 
