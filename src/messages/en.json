@@ -71,6 +71,12 @@
     "voyageur_only": "Traveller Only",
     "unknown_camera": "Unknown Camera"
   },
+  "PhotoStats": {
+    "title": "Stats",
+    "likes": "Likes",
+    "impressions": "Impressions",
+    "highest_pulse": "Highest Pulse"
+  },
   "PhotographerCard": {
     "ambassador": "Ambassador",
     "voyageur": "Traveller",

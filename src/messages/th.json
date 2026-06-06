@@ -71,6 +71,12 @@
     "voyageur_only": "เฉพาะลูกค้าทัวร์",
     "unknown_camera": "ไม่ระบุกล้อง"
   },
+  "PhotoStats": {
+    "title": "สถิติ",
+    "likes": "ถูกใจ",
+    "impressions": "การมองเห็น",
+    "highest_pulse": "Pulse สูงสุด"
+  },
   "PhotographerCard": {
     "ambassador": "Ambassador",
     "voyageur": "Traveller",

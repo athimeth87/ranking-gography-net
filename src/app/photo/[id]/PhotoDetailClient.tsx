@@ -16,6 +16,8 @@ import { useFollowState } from '@/hooks/useFollowState';
 import { useFavoriteState } from '@/hooks/useFavoriteState';
 import { usePathname } from 'next/navigation';
 import { computePulse, type PickType } from '@/lib/pulse-engine';
+import { PhotoStatsPanel } from '@/components/photo/PhotoStatsPanel';
+import { usePhotoImpression } from '@/hooks/usePhotoImpression';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { useTranslations } from 'next-intl';
 
@@ -89,6 +91,9 @@ export function PhotoDetailClient({ id }: { id: string }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+
+  // Count one impression per viewer/day for real DB photos.
+  usePhotoImpression(photo?.id ?? null, isDbPhoto);
   const [copied, setCopied] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [reportDone, setReportDone] = useState(false);
@@ -155,6 +160,9 @@ export function PhotoDetailClient({ id }: { id: string }) {
         picks: [],
         date: pData.uploaded_at,
         voyageurOnly: pData.voyageur_only,
+        impressions: pData.impressions_count || 0,
+        peakPulse: pData.peak_pulse != null ? Number(pData.peak_pulse) : null,
+        pickType: (pData.pick_type as PickType) ?? 'none',
         pulse: computePulse({
           likes_count: pData.likes_count || 0,
           favorites_count: pData.favorites_count || 0,
@@ -565,6 +573,14 @@ export function PhotoDetailClient({ id }: { id: string }) {
                   <p className="text-[13px] opacity-55">{t('photographer_not_found')}</p>
                 )}
               </div>
+
+              {/* 500px-style stats */}
+              <PhotoStatsPanel
+                likes={photo.likes}
+                impressions={photo.impressions ?? 0}
+                highestPulse={photo.peakPulse ?? photo.pulse}
+                pickType={photo.pickType}
+              />
 
               {/* EXIF */}
               <div className="py-7 border-b border-rule">
