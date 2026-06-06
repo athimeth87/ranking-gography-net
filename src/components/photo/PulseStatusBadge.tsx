@@ -1,5 +1,5 @@
 import { pulseStatus, type PickType } from '@/lib/pulse-engine';
-import { statusFromBadge, type Badge } from '@/lib/pulse-engine-v2';
+import { statusFromBadge, type Badge } from '@/lib/pulse-engine-v4';
 
 const LABEL: Record<string, string> = {
   rising: 'Rising',

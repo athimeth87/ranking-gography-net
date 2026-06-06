@@ -1,7 +1,7 @@
 'use client';
 import { useTranslations } from 'next-intl';
 import { pulseStatus, type PickType } from '@/lib/pulse-engine';
-import { statusFromBadge, type Badge } from '@/lib/pulse-engine-v2';
+import { statusFromBadge, type Badge } from '@/lib/pulse-engine-v4';
 
 function formatCompact(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, '')}M`;

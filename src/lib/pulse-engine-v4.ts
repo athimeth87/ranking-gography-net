@@ -107,3 +107,11 @@ export function assignBadge(o: { score: number; views: number; active: boolean }
   if (o.score >= 90 && o.views < 200) return 'hidden_gem';
   return null;
 }
+
+export type PulseStatus = Badge | 'editors_choice' | 'undiscovered';
+export type PickType = 'none' | 'editor' | 'ambassador';
+
+export function statusFromBadge(badge: Badge, pickType: PickType = 'none'): PulseStatus {
+  if (pickType !== 'none') return 'editors_choice';
+  return badge ?? 'undiscovered';
+}

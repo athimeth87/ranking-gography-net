@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import type { PickType } from '@/lib/pulse-engine';
-import { rankField } from '@/lib/pulse-engine-v2';
+import { assignScores, assignBadge } from '@/lib/pulse-engine-v4';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -28,7 +27,7 @@ export async function GET(request: Request) {
 
   const { data: photos, error } = await supabase
     .from('photos')
-    .select('id, likes_count, favorites_count, comments_count, impressions_count, uploaded_at, pick_type')
+    .select('id, engagement, impressions_count, uploaded_at')
     .eq('is_hidden', false)
     .eq('status', 'published');
 
@@ -37,37 +36,38 @@ export async function GET(request: Request) {
   }
 
   const now = Date.now();
-  const ranked = rankField(
-    (photos ?? []).map((p) => ({
-      id: p.id as string,
-      likes_count: p.likes_count || 0,
-      favorites_count: p.favorites_count || 0,
-      comments_count: p.comments_count || 0,
-      impressions_count: p.impressions_count || 0,
-      created_at: p.uploaded_at as string,
-      pick_type: (p.pick_type as PickType) ?? 'none',
-    })),
-    now,
-  );
-
-  const updates = ranked.map((r) => ({
-    id: r.id,
-    pulse: r.displayScore,
-    score_v2: Math.round(r.rankingScore * 1e6) / 1e6,
-    percentile: Math.round(r.percentile * 1e4) / 1e4,
-    badge: r.badge ?? '',
+  const activePool = (photos ?? []).map((p) => ({
+    id: p.id as string,
+    engagement: Number(p.engagement || 0),
+    views: Number(p.impressions_count || 0),
+    created_at: p.uploaded_at as string,
   }));
+
+  const ranked = assignScores(activePool);
+
+  const updates = ranked.map((r) => {
+    const hours = (now - new Date(r.item.created_at).getTime()) / 3600000;
+    const active = hours <= 24;
+    const badge = assignBadge({ score: r.score, views: r.item.views, active });
+    return {
+      id: r.item.id,
+      pulse: r.score,
+      score: r.score,
+      percentile: r.percentile,
+      badge: badge ?? '',
+    };
+  });
 
   const CHUNK = 1000;
   let updated = 0;
   for (let i = 0; i < updates.length; i += CHUNK) {
     const batch = updates.slice(i, i + CHUNK);
-    const { data: n, error: rpcErr } = await supabase.rpc('apply_photo_pulse_v2', { updates: batch });
+    const { data: n, error: rpcErr } = await supabase.rpc('apply_photo_pulse_v4', { updates: batch });
     if (rpcErr) {
       return NextResponse.json({ error: rpcErr.message, updated }, { status: 500 });
     }
     updated += typeof n === 'number' ? n : batch.length;
   }
 
-  return NextResponse.json({ ok: true, scored: updates.length, updated, model: 'v2-master' });
+  return NextResponse.json({ ok: true, scored: updates.length, updated, model: 'v4-final' });
 }
