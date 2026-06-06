@@ -9,14 +9,14 @@ export async function GET(request: NextRequest) {
   const next = searchParams.get('next') ?? '/';
 
   if (!code) {
-    return NextResponse.redirect(`${request.nextUrl.origin}/login?error=Authentication%20failed`);
+    return NextResponse.redirect(`${origin}/login?error=Authentication%20failed`);
   }
 
   const supabase = getSupabaseServerClient();
   const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error || !data?.session?.user) {
-    return NextResponse.redirect(`${request.nextUrl.origin}/login?error=Authentication%20failed`);
+    return NextResponse.redirect(`${origin}/login?error=Authentication%20failed`);
   }
 
   const user = data.session.user;
