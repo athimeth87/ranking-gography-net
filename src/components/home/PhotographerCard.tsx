@@ -1,7 +1,7 @@
 'use client';
 import { useRouter } from 'next/navigation';
 import type { Photographer, Photo } from '@/lib/types';
-import { VoyageurMark } from '@/components/icons';
+import { VoyageurMark, CrownIcon } from '@/components/icons';
 import { useTranslations } from 'next-intl';
 import { useFollowState } from '@/hooks/useFollowState';
 
@@ -44,6 +44,12 @@ export function PhotographerCard({
 
         {/* Status badges (top-right) */}
         <div className="absolute top-3 right-3 flex flex-col items-end gap-1.5">
+          {photographer.isRankMaster && (
+            <div className="bg-[#c0c0c0] text-black px-2 py-1 rounded-sm flex items-center gap-1 shadow-md">
+              <CrownIcon />
+              <span className="text-[9px] uppercase tracking-widest font-semibold">Rank Master</span>
+            </div>
+          )}
           {photographer.isAmbassador && (
             <div className="bg-[#b08e54] text-white px-2 py-1 rounded-sm flex items-center gap-1 shadow-md">
               <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor">

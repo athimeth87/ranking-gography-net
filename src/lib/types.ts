@@ -41,6 +41,9 @@ export interface PhotoSeed {
 export interface Photo extends PhotoSeed {
   pulse: number;
   rank: number;
+  impressions?: number;
+  peakPulse?: number | null;
+  pickType?: 'none' | 'editor' | 'ambassador' | 'both';
 }
 
 export interface Photographer {
@@ -55,6 +58,7 @@ export interface Photographer {
   photos: number;
   isAmbassador: boolean;
   isCustomer?: boolean;
+  isRankMaster?: boolean;
   customerTrips?: string[];
   joined: string;
   cameras: string[];

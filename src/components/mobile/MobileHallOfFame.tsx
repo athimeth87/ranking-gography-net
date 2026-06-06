@@ -1,16 +1,9 @@
 // @ts-nocheck
 'use client';
-import { PHOTOS, pulseScore } from '@/lib/data';
+import { PHOTOS, pulseScore, PHOTOGRAPHERS } from '@/lib/data';
 import { useApp } from '@/providers/AppProvider';
-import { MobileNav, MobileFooter, MobileMarquee, MobileSectionHeader, BottomNav } from './MobileShared';
+import { MobileNav, MobileFooter, MobileMarquee, MobileSectionHeader } from './MobileShared';
 import { MasonryTile } from './MobileExplore';
-
-const seasons = [
-  { s: '04', y: '2026', winner: 'Anuwat Phon',       title: 'Mae Hong Son, blue hour', pulse: 1240, seed: 'maehongson-bluehour' },
-  { s: '03', y: '2025', winner: 'Sirintra L.',       title: 'Phang Nga channels',       pulse: 1108, seed: 'phangnga-channels' },
-  { s: '02', y: '2025', winner: 'Nuttachai Kirdsuk', title: 'Doi Inthanon dawn',        pulse: 982,  seed: 'doi-inthanon-dawn-win' },
-  { s: '01', y: '2024', winner: 'Tul Manoonpong',    title: 'Bangkok last light',       pulse: 874,  seed: 'bangkok-last-light' },
-];
 
 const tiers = [
   { t: 'Traveller III', p: '฿15,000', l: '8% cashback', tag: 'top tier' },
@@ -18,11 +11,55 @@ const tiers = [
   { t: 'Traveller I',   p: '฿3,000',  l: '3% cashback', tag: '' },
 ];
 
-export function MobileHallOfFame() {
+export function MobileHallOfFame({
+  realSeasons = [],
+  realAllPhotos = [],
+  realPhotographers = []
+}: {
+  realSeasons?: any[];
+  realAllPhotos?: any[];
+  realPhotographers?: any[];
+}) {
   const { theme } = useApp();
   const dark = theme === 'dark';
-  const coverPhoto = PHOTOS.find(p => p.id === 'p010') || PHOTOS[0];
-  const winnerPhoto = PHOTOS.find(p => p.id === 'p010') || PHOTOS[0];
+
+  const dbWinnersList = [];
+  if (realSeasons && realSeasons.length > 0) {
+    realSeasons.forEach((season) => {
+      if (season.status === 'closed' && season.winners) {
+        const year = season.endDate ? season.endDate.split('-')[0] : '2026';
+        Object.entries(season.winners).forEach(([cat, w]) => {
+          const photo = realAllPhotos.find(p => p.id === w.photoId) || PHOTOS.find(p => p.id === w.photoId);
+          if (photo) {
+            const photographer = realPhotographers.find(p => p.username === photo.by) || PHOTOGRAPHERS.find(p => p.username === photo.by);
+            dbWinnersList.push({
+              s: season.name,
+              y: year,
+              winner: photographer?.name || photo.by,
+              title: photo.title,
+              pulse: photo.pulse || photo.likes || 0,
+              src: photo.src,
+              seed: photo.id,
+              cat: cat === 'BW' ? 'Black & White' : cat
+            });
+          }
+        });
+      }
+    });
+  }
+
+  const fallbackSeasons = [
+    { s: 'Season 01', y: '2026', winner: 'Anuwat Phon',       title: 'Mae Hong Son, blue hour', pulse: 1240, seed: 'maehongson-bluehour', src: PHOTOS.find(p => p.id === 'p010')?.src || '', cat: 'Landscape' },
+    { s: 'Season 03', y: '2025', winner: 'Sirintra L.',       title: 'Phang Nga channels',       pulse: 1108, seed: 'phangnga-channels', src: 'https://picsum.photos/seed/phangnga-channels/400/500', cat: 'Landscape' },
+    { s: 'Season 02', y: '2025', winner: 'Nuttachai Kirdsuk', title: 'Doi Inthanon dawn',        pulse: 982,  seed: 'doi-inthanon-dawn-win', src: 'https://picsum.photos/seed/doi-inthanon-dawn-win/400/500', cat: 'Landscape' },
+    { s: 'Season 01', y: '2024', winner: 'Tul Manoonpong',    title: 'Bangkok last light',       pulse: 874,  seed: 'bangkok-last-light', src: 'https://picsum.photos/seed/bangkok-last-light/400/500', cat: 'Landscape' },
+  ];
+
+  const winnersList = dbWinnersList.length > 0 ? dbWinnersList : fallbackSeasons;
+  const featured = winnersList[0];
+  const archiveWinners = winnersList.slice(1);
+
+  const coverPhoto = realAllPhotos.find(p => p.id === 'p010') || PHOTOS.find(p => p.id === 'p010') || PHOTOS[0];
 
   return (
     <div className="gpa-mobile" style={{
@@ -49,23 +86,23 @@ export function MobileHallOfFame() {
       {/* Featured winner */}
       <section style={{ padding: '40px 16px 0' }}>
         <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, letterSpacing: '0.16em', color: 'var(--fg-soft)' }}>
-          Season 01 · Reigning
+          {featured.s} · {featured.cat} · Reigning
         </div>
         <div style={{ marginTop: 14, aspectRatio: '4 / 5', background: 'var(--tile)', overflow: 'hidden' }}>
-          <img src={winnerPhoto.src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <img src={featured.src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         </div>
         <h2 style={{
           margin: '24px 0 8px',
           fontFamily: "'Playfair Display', serif", fontWeight: 700,
           fontSize: 30, lineHeight: 1.05, letterSpacing: '-0.01em',
-        }}>"Mae Hong Son, <em style={{ fontStyle: 'italic' }}>blue hour</em>"</h2>
+        }}>"{featured.title}"</h2>
         <div style={{
           display: 'inline-flex', alignItems: 'center', gap: 6,
           fontFamily: "'IBM Plex Mono', monospace", fontSize: 10,
           letterSpacing: '0.14em', textTransform: 'uppercase', color: '#b08e54',
         }}>
           <span style={{ width: 6, height: 6, background: '#b08e54', transform: 'rotate(45deg)' }} />
-          Anuwat Phon · Traveller III
+          {featured.winner}
         </div>
         <p style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--fg-soft)', marginTop: 16, maxWidth: '40ch' }}>
           Shot at 5:47am in Pang Mapha district. Three nights of waiting for the fog to break through the valley.
@@ -76,8 +113,8 @@ export function MobileHallOfFame() {
           marginTop: 20, border: '1px solid var(--rule-strong)',
         }}>
           {[
-            ['1,240', 'Pulse'],
-            ['8,420', 'Likes'],
+            [featured.pulse.toLocaleString(), 'Pulse'],
+            [Math.round(featured.pulse * 6.8).toLocaleString(), 'Likes'],
             ['142',   'Hours to peak'],
             ['◆',     'Curator pick'],
           ].map(([n, l], i) => (
@@ -106,21 +143,21 @@ export function MobileHallOfFame() {
       <section style={{ padding: '56px 16px 0' }}>
         <MobileSectionHeader num="01 / Archive" title="Past winners" />
         <div style={{ marginTop: 18 }}>
-          {seasons.slice(1).map((w, i, a) => (
-            <article key={w.s} style={{
+          {archiveWinners.map((w, i, a) => (
+            <article key={i} style={{
               padding: '20px 0',
               borderTop: '1px solid var(--rule)',
               borderBottom: i === a.length - 1 ? '1px solid var(--rule)' : 0,
               display: 'grid', gridTemplateColumns: '92px 1fr', gap: 14,
             }}>
               <div style={{ aspectRatio: '4 / 5', background: 'var(--tile)', overflow: 'hidden' }}>
-                <img src={`https://picsum.photos/seed/${w.seed}/400/500`} alt={w.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
+                <img src={w.src} alt={w.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
               </div>
               <div>
                 <div style={{
                   fontFamily: "'IBM Plex Mono', monospace", fontSize: 10,
                   letterSpacing: '0.16em', color: 'var(--fg-soft)', textTransform: 'uppercase',
-                }}>Season {w.s} · {w.y}</div>
+                }}>{w.s} · {w.y}</div>
                 <h3 style={{
                   margin: '4px 0 6px',
                   fontFamily: "'Playfair Display', serif", fontWeight: 700,
@@ -200,7 +237,7 @@ export function MobileHallOfFame() {
       </section>
       <div style={{ padding: '16px 6px 0' }}>
         <div style={{ columnCount: 3, columnGap: 6 }}>
-          {PHOTOS.slice().sort((a, b) => pulseScore(b) - pulseScore(a)).slice(0, 18).map((p) => (
+          {(realAllPhotos.length > 0 ? realAllPhotos : PHOTOS).slice().sort((a, b) => pulseScore(b) - pulseScore(a)).slice(0, 18).map((p) => (
             <MasonryTile key={p.id} photo={p} />
           ))}
         </div>

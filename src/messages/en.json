@@ -4,7 +4,8 @@
     "hall_of_fame": "Hall of Fame",
     "photographers": "Photographers",
     "for_voyageurs": "For Travellers",
-    "about": "About"
+    "about": "About",
+    "faq": "FAQ"
   },
   "HeroSection": {
     "headline": "Photographs<br />that tell stories",
@@ -71,6 +72,12 @@
     "voyageur_only": "Traveller Only",
     "unknown_camera": "Unknown Camera"
   },
+  "PhotoStats": {
+    "title": "Stats",
+    "likes": "Likes",
+    "impressions": "Impressions",
+    "highest_pulse": "Highest Pulse"
+  },
   "PhotographerCard": {
     "ambassador": "Ambassador",
     "voyageur": "Traveller",
@@ -89,6 +96,7 @@
     "landscape": "Landscape",
     "portrait": "Portrait",
     "bw": "Black & White",
+    "faq": "FAQ",
     "ranking": "Ranking",
     "about": "About",
     "for_voyageurs": "For Travellers",

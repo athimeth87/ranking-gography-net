@@ -4,7 +4,8 @@
     "hall_of_fame": "หอเกียรติยศ",
     "photographers": "ช่างภาพ",
     "for_voyageurs": "สำหรับลูกค้า",
-    "about": "เกี่ยวกับเรา"
+    "about": "เกี่ยวกับเรา",
+    "faq": "FAQ"
   },
   "HeroSection": {
     "headline": "ภาพถ่าย<br />ที่เล่าเรื่องราว",
@@ -71,6 +72,12 @@
     "voyageur_only": "เฉพาะลูกค้าทัวร์",
     "unknown_camera": "ไม่ระบุกล้อง"
   },
+  "PhotoStats": {
+    "title": "สถิติ",
+    "likes": "ถูกใจ",
+    "impressions": "การมองเห็น",
+    "highest_pulse": "Pulse สูงสุด"
+  },
   "PhotographerCard": {
     "ambassador": "Ambassador",
     "voyageur": "Traveller",
@@ -89,6 +96,7 @@
     "landscape": "ภาพทิวทัศน์",
     "portrait": "บุคคล",
     "bw": "ขาวดำ",
+    "faq": "FAQ",
     "ranking": "การจัดอันดับ",
     "about": "เกี่ยวกับเรา",
     "for_voyageurs": "สำหรับลูกค้าทัวร์",

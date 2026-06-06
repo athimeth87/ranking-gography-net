@@ -21,8 +21,7 @@ const CATEGORIES: NavLink[] = [
 ];
 
 const ABOUT: NavLink[] = [
-  { to: '/about-ranking', labelKey: 'ranking' },
-  { to: '/about', labelKey: 'about' },
+  { to: '/faq', labelKey: 'faq' },
   { to: '/for-customers', labelKey: 'for_voyageurs' },
 ];
 

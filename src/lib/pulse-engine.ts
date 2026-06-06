@@ -145,15 +145,42 @@ function decayFactor(hours: number): number {
   return Math.max(d.DECAY_FLOOR, 1.0 - d.LATE_DECAY_RATE * Math.log10(lateDays + 1));
 }
 
+function pulseCombined(i: PulseInputs): number {
+  return (
+    engagementScore(i) + exposureScore(i) + metadataBonus(i) + pickBonus(i)
+  ) * decayFactor(hoursSince(i));
+}
+
 export function computePulse(i: PulseInputs): number {
   try {
-    const combined =
-      (engagementScore(i) + exposureScore(i) + metadataBonus(i) + pickBonus(i)) *
-      decayFactor(hoursSince(i));
-    return clamp(Math.round(combined), PULSE_PARAMS.FLOOR, PULSE_PARAMS.CEILING);
+    return clamp(Math.round(pulseCombined(i)), PULSE_PARAMS.FLOOR, PULSE_PARAMS.CEILING);
   } catch {
     return PULSE_PARAMS.FLOOR;
   }
+}
+
+// One-decimal precision for the 500px-style "99.4" display + DB persistence.
+export function computePulsePrecise(i: PulseInputs): number {
+  try {
+    return clamp(Math.round(pulseCombined(i) * 10) / 10, PULSE_PARAMS.FLOOR, PULSE_PARAMS.CEILING);
+  } catch {
+    return PULSE_PARAMS.FLOOR;
+  }
+}
+
+// 500px-style status tier derived from pulse (peak) + curation.
+export type PulseStatus = 'undiscovered' | 'rising' | 'popular' | 'editors_choice';
+
+// Tunable. Demo-friendly for the current low-engagement seed data; raise these
+// (e.g. 55 / 80) once real likes + impressions widen the score distribution.
+export const PULSE_STATUS_THRESHOLDS = { RISING: 32, POPULAR: 35 } as const;
+
+export function pulseStatus(pulse: number | null | undefined, pickType: PickType = 'none'): PulseStatus {
+  if (pickType !== 'none') return 'editors_choice';
+  const v = typeof pulse === 'number' && Number.isFinite(pulse) ? pulse : PULSE_PARAMS.FLOOR;
+  if (v >= PULSE_STATUS_THRESHOLDS.POPULAR) return 'popular';
+  if (v >= PULSE_STATUS_THRESHOLDS.RISING) return 'rising';
+  return 'undiscovered';
 }
 
 export function pulseFromSeed(seed: Pick<PhotoSeed, 'likes' | 'likes24h' | 'comments' | 'favorites' | 'hours' | 'picks' | 'date'>): number {

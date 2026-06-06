@@ -5,6 +5,7 @@ import type { Photo } from '@/lib/types';
 import { getPhotographer } from '@/lib/data';
 import { PickBadge } from '@/components/icons';
 import { CardLikeButton } from './CardLikeButton';
+import { PulseStatusBadge } from './PulseStatusBadge';
 
 interface PhotoCardProps {
   photo: Photo;
@@ -67,6 +68,7 @@ export function PhotoCard({
               {photo.title}
             </div>
             <div className="pby">{photographer ? photographer.name : photo.by}</div>
+            <PulseStatusBadge pulse={photo.peakPulse ?? photo.pulse} className="mt-[6px]" />
           </div>
         </div>
         <div className="shrink-0 ml-4 text-right">

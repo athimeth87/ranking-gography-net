@@ -8,6 +8,7 @@ import { useApp } from '@/providers/AppProvider';
 import { useLikeState } from '@/hooks/useLikeState';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { MobileNav, MobileFooter, MobileMarquee, MobileSectionHeader, BottomNav } from './MobileShared';
+import { CrownIcon } from '@/components/icons';
 
 // Masonry photo tile with avatar+username overlay (left) and like button (right)
 export function MasonryTile({ photo }: { photo: any }) {
@@ -119,13 +120,106 @@ export function MobileExplore({ initialCategory = 'All', dbPhotos = [] }: { init
   }, [sort, cat, dataSource]);
   const grid = filtered.slice(0, visible);
 
-  const trending = PHOTOGRAPHERS
-    .map(p => ({
-      ...p,
-      pulse: Math.round(PHOTOS.filter(ph => ph.by === p.username).reduce((s, ph) => s + pulseScore(ph), 0)),
-    }))
-    .sort((a, b) => b.pulse - a.pulse)
-    .slice(0, 6);
+  const trending = useMemo(() => {
+    // 1. Group photos by week key (Monday of the week)
+    const getWeekKey = (dateStr: string) => {
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) return 'unknown';
+      const day = date.getDay();
+      const diff = date.getDate() - day + (day === 0 ? -6 : 1); // adjust to Monday
+      const monday = new Date(date.setDate(diff));
+      return monday.toISOString().split('T')[0];
+    };
+
+    const photosByWeek: Record<string, typeof dataSource> = {};
+    dataSource.forEach(p => {
+      if (!p.date) return;
+      const wk = getWeekKey(p.date);
+      if (!photosByWeek[wk]) photosByWeek[wk] = [];
+      photosByWeek[wk].push(p);
+    });
+
+    // 2. Compute rankings per week
+    const weekRankings: Record<string, { username: string, totalScore: number }[]> = {};
+    Object.entries(photosByWeek).forEach(([wk, weekPhotos]) => {
+      const scoresByPhotographer: Record<string, number> = {};
+      weekPhotos.forEach(p => {
+        scoresByPhotographer[p.by] = (scoresByPhotographer[p.by] || 0) + (p.pulse || 0);
+      });
+      const sorted = Object.entries(scoresByPhotographer)
+        .map(([username, totalScore]) => ({ username, totalScore }))
+        .sort((a, b) => b.totalScore - a.totalScore);
+      weekRankings[wk] = sorted;
+    });
+
+    // 3. Find Rank Masters (top 3 for 3 consecutive weeks)
+    const sortedWeeks = Object.keys(photosByWeek).sort();
+    const rankMasterUsernames = new Set<string>();
+    const allUsernames = Array.from(new Set(dataSource.map(p => p.by)));
+
+    if (sortedWeeks.length > 0) {
+      const minDate = new Date(sortedWeeks[0]);
+      const maxDate = new Date(sortedWeeks[sortedWeeks.length - 1]);
+      const allWeeks: string[] = [];
+      let curr = new Date(minDate);
+      while (curr <= maxDate) {
+        allWeeks.push(curr.toISOString().split('T')[0]);
+        curr.setDate(curr.getDate() + 7);
+      }
+
+      allUsernames.forEach(username => {
+        let streak = 0;
+        for (const wk of allWeeks) {
+          const rankings = weekRankings[wk] || [];
+          const rankIndex = rankings.findIndex(r => r.username === username);
+          const rankedTop3 = rankIndex !== -1 && rankIndex < 3;
+          if (rankedTop3) {
+            streak += 1;
+            if (streak >= 3) {
+              rankMasterUsernames.add(username);
+            }
+          } else {
+            streak = 0;
+          }
+        }
+      });
+    }
+
+    // 4. Find Top 10 Trending Photographers for the latest week
+    const latestWeek = sortedWeeks[sortedWeeks.length - 1];
+    const latestRankings = weekRankings[latestWeek] || [];
+    
+    // In case there's no latest week or no rankings, fallback to overall top photographers
+    if (latestRankings.length === 0) {
+      return PHOTOGRAPHERS
+        .map(p => {
+          const matchedPhotos = dataSource.filter(ph => ph.by === p.username);
+          const totalPulse = matchedPhotos.reduce((s, ph) => s + (ph.pulse || 0), 0);
+          return {
+            username: p.username,
+            name: p.name,
+            avatar: p.avatar,
+            pulse: totalPulse,
+            isRankMaster: false
+          };
+        })
+        .sort((a, b) => b.pulse - a.pulse)
+        .slice(0, 10);
+    }
+
+    return latestRankings.slice(0, 10).map(r => {
+      const matchedPhoto = dataSource.find(ph => ph.by === r.username);
+      const staticPhotographer = PHOTOGRAPHERS.find(p => p.username === r.username);
+      
+      return {
+        username: r.username,
+        name: matchedPhoto?.photographerName || staticPhotographer?.name || r.username,
+        avatar: matchedPhoto?.photographerAvatar || staticPhotographer?.avatar || '',
+        pulse: r.totalScore,
+        isRankMaster: rankMasterUsernames.has(r.username)
+      };
+    });
+  }, [dataSource]);
 
   return (
     <div className="gpa-mobile" style={{
@@ -255,13 +349,33 @@ export function MobileExplore({ initialCategory = 'All', dbPhotos = [] }: { init
                     onClick={() => router.push(`/photographer/${p.username}`)}
                     style={{ width: 140, flex: '0 0 140px', cursor: 'pointer' }}
                   >
-                    <div style={{ aspectRatio: '1', background: 'var(--tile)', overflow: 'hidden' }}>
+                    <div style={{ aspectRatio: '1', background: 'var(--tile)', overflow: 'hidden', position: 'relative' }}>
                       {p.avatar && <img src={p.avatar} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />}
+                      {p.isRankMaster && (
+                        <div style={{
+                          position: 'absolute', top: 6, right: 6,
+                          background: '#c0c0c0', color: '#1a1a1a',
+                          borderRadius: '50%', width: 22, height: 22,
+                          display: 'grid', placeItems: 'center',
+                          boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
+                          zIndex: 2
+                        }} title="Rank Master">
+                          <CrownIcon />
+                        </div>
+                      )}
                     </div>
                     <div style={{
                       marginTop: 10, fontSize: 13, fontWeight: 500,
                       overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                    }}>{p.name}</div>
+                      display: 'flex', alignItems: 'center', gap: 4
+                    }}>
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</span>
+                      {p.isRankMaster && (
+                        <span style={{ color: '#c0c0c0', flexShrink: 0 }} title="Rank Master">
+                          <CrownIcon />
+                        </span>
+                      )}
+                    </div>
                     <div style={{
                       fontFamily: "'IBM Plex Mono', monospace", fontSize: 10,
                       letterSpacing: '0.08em', color: 'var(--fg-soft)',
