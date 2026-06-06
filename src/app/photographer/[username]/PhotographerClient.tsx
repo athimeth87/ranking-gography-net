@@ -340,18 +340,19 @@ export function PhotographerClient({ username }: { username: string }) {
         </div>
 
         {/* Avatar + stat row */}
-        <div style={{ padding: '0 16px', display: 'flex', alignItems: 'flex-end', gap: 20, marginTop: -38 }}>
+        <div style={{ padding: '0 16px', display: 'flex', alignItems: 'flex-end', gap: 20 }}>
           <div style={{
             width: 80, height: 80, borderRadius: '50%',
             background: dark ? '#1a1916' : '#e8e4dc',
             border: `3px solid ${dark ? '#0a0a0a' : '#fff'}`,
             overflow: 'hidden', flexShrink: 0, zIndex: 2,
+            marginTop: -42,
           }}>
             {photographer.avatar && (
               <img src={photographer.avatar} alt={photographer.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             )}
           </div>
-          <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', textAlign: 'center', paddingBottom: 6 }}>
+          <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', textAlign: 'center', paddingTop: 12, paddingBottom: 2 }}>
             {([
               [String(myPhotos.length), 'Photos'],
               [follow.followersCount.toLocaleString(), 'Followers'],
