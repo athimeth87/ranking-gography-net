@@ -25,6 +25,11 @@
   --thai: var(--font-noto-thai), var(--font-inter), sans-serif;
   --mono: var(--font-plex-mono), ui-monospace, Menlo, monospace;
   --serif: var(--font-playfair), var(--font-noto-thai), Georgia, serif;
+  --heatmap-0: #ebedf0;
+  --heatmap-1: #9be9a8;
+  --heatmap-2: #40c463;
+  --heatmap-3: #30a14e;
+  --heatmap-4: #216e39;
 }
 
 [data-theme="dark"] {
@@ -38,6 +43,11 @@
   --tile: #131210;
   --bg-nav: rgba(10, 10, 10, 0.92);
   --bg-menu: rgba(0, 0, 0, 0.32);
+  --heatmap-0: #161b22;
+  --heatmap-1: #0e4429;
+  --heatmap-2: #006d32;
+  --heatmap-3: #26a641;
+  --heatmap-4: #39d353;
 }
 
 * { box-sizing: border-box; }
@@ -342,6 +352,20 @@ img { display: block; max-width: 100%; }
   .mobile-h-scroll > * {
     flex-shrink: 0;
     scroll-snap-align: start;
+  }
+
+  /* iOS-style mobile surfaces */
+  .ios-press { -webkit-tap-highlight-color: transparent; transition: transform .16s cubic-bezier(.2,.7,.3,1); }
+  .ios-press:active { transform: scale(.975); }
+  .ios-card {
+    border-radius: 18px;
+    overflow: hidden;
+    background: var(--bg);
+    box-shadow: 0 1px 2px rgba(0,0,0,.05), 0 12px 30px rgba(0,0,0,.07);
+  }
+  [data-theme="dark"] .ios-card {
+    background: #161513;
+    box-shadow: 0 1px 2px rgba(0,0,0,.5), 0 12px 30px rgba(0,0,0,.45);
   }
 
   /* Dark panel section — alternating dark band that works in both themes */

@@ -38,3 +38,5 @@ next-env.d.ts
 # local tooling
 /.claude/
 /.venv/
+/_bmad
+/_bmad-output
