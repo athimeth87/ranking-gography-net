@@ -12,6 +12,8 @@ import { useFollowState } from '@/hooks/useFollowState';
 import { useApp } from '@/providers/AppProvider';
 import { computePulse, type PickType } from '@/lib/pulse-engine';
 
+import { computeRankMasters } from '@/lib/ranking-system';
+
 // ===== Photographer public profile — /photographer/[username] =====
 
 function mapPublicPhoto(p: any, username: string) {
@@ -100,6 +102,11 @@ export function PhotographerClient({ username }: { username: string }) {
 
       if (!userData) { setIsLoading(false); return; }
 
+      // Fetch all photos to compute Rank Masters dynamically
+      const { data: allPhotosData } = await supabase.from('photos').select('*');
+      const rankMasters = computeRankMasters(allPhotosData || []);
+      const isUserRankMaster = rankMasters.has(userData.username);
+
       setPhotographer({
         id: userData.id,
         username: userData.username,
@@ -110,6 +117,7 @@ export function PhotographerClient({ username }: { username: string }) {
         cover: userData.cover_url || 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=2938&auto=format&fit=crop',
         isCustomer: userData.is_customer,
         isAmbassador: userData.is_ambassador,
+        isRankMaster: isUserRankMaster,
         followers: userData.followers_count ?? 0,
         following: userData.following_count ?? 0,
         joined: new Date(userData.created_at || Date.now()).getFullYear().toString(),
@@ -314,6 +322,16 @@ export function PhotographerClient({ username }: { username: string }) {
             <img src={photographer.cover} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
           )}
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.45) 100%)' }} />
+          {photographer.isRankMaster && (
+            <div style={{
+              position: 'absolute', left: 14, top: 12, zIndex: 2,
+              display: 'inline-flex', alignItems: 'center', gap: 5,
+              background: '#c0c0c0', color: '#1a1a1a',
+              padding: '3px 8px',
+              fontFamily: "'IBM Plex Mono', monospace", fontSize: 9,
+              letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600,
+            }}>Rank Master</div>
+          )}
           {photographer.isAmbassador && (
             <div style={{
               position: 'absolute', right: 14, top: 12, zIndex: 2,
@@ -575,6 +593,11 @@ export function PhotographerClient({ username }: { username: string }) {
           <div className="wrap">
             <div className="flex flex-wrap justify-between items-center gap-3 mb-6 md:mb-[48px]">
               <div className="flex items-center gap-[10px]">
+                {photographer.isRankMaster && (
+                  <span className="inline-flex items-center gap-[6px] px-[11px] py-[5px] bg-[#c0c0c0] text-black text-[10.5px] tracking-[.16em] uppercase font-medium">
+                    <CrownIcon /> Rank Master
+                  </span>
+                )}
                 {photographer.isAmbassador && (
                   <span className="inline-flex items-center gap-[6px] px-[11px] py-[5px] bg-[#b08e54] text-white text-[10.5px] tracking-[.16em] uppercase font-medium">
                     <CrownIcon /> Ambassador

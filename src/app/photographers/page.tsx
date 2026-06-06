@@ -8,6 +8,8 @@ import { PhotographerCard } from '@/components/home/PhotographerCard';
 import { Footer } from '@/components/layout/Footer';
 import { PageCover } from '@/components/layout/PageCover';
 
+import { computeRankMasters } from '@/lib/ranking-system';
+
 // ===== Photographers directory — /photographers =====
 // All photographers index — public directory of every photographer on the platform
 
@@ -41,6 +43,8 @@ export default function PhotographersPage() {
       const { data: followsData } = await supabase.from('follows').select('*');
       const follows = followsData || [];
 
+      const rankMasters = computeRankMasters(photosData || []);
+
       const mappedPhotographers: Photographer[] = users.map(u => ({
         username: u.username || u.display_name || u.id,
         name: u.display_name || u.username || 'User',
@@ -52,6 +56,7 @@ export default function PhotographersPage() {
         photos: (photosData || []).filter(p => p.photographer_id === u.id).length,
         isAmbassador: u.is_ambassador || false,
         isCustomer: u.is_customer || false,
+        isRankMaster: rankMasters.has(u.username || u.display_name || u.id),
         customerTrips: [],
         joined: u.created_at || '',
         cameras: []

@@ -55,6 +55,7 @@ export interface Photographer {
   photos: number;
   isAmbassador: boolean;
   isCustomer?: boolean;
+  isRankMaster?: boolean;
   customerTrips?: string[];
   joined: string;
   cameras: string[];
