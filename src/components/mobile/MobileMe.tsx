@@ -11,6 +11,7 @@ import { ActivityHeatmap } from '../account/ActivityHeatmap';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { getPresignedUploadUrl } from '@/app/actions/r2-upload';
 import { convertToWebP } from '@/lib/imageConvert';
+import { getCashbackPercentage } from '@/lib/ranking-system';
 
 type SectionKey = 'dashboard' | 'photos' | 'favorites' | 'stats' | 'settings';
 
@@ -264,13 +265,23 @@ export function MobileMe({
                 borderRadius: 18, boxShadow: '0 10px 28px rgba(176,142,84,0.16)',
               }}>
                 <div style={{ position: 'absolute', top: 0, left: 0, width: 4, height: '100%', background: '#b08e54' }} />
-                <div style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 7,
-                  fontFamily: "'IBM Plex Mono', monospace", fontSize: 10,
-                  letterSpacing: '0.16em', textTransform: 'uppercase', color: '#b08e54',
-                }}>
-                  <span style={{ width: 6, height: 6, background: '#b08e54', transform: 'rotate(45deg)' }} />
-                  {t('voyageurs_awards')}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: 16, marginBottom: 16, borderBottom: '1px solid rgba(176,142,84,0.2)' }}>
+                  <div style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 7,
+                    fontFamily: "'IBM Plex Mono', monospace", fontSize: 10,
+                    letterSpacing: '0.16em', textTransform: 'uppercase', color: '#b08e54',
+                  }}>
+                    <span style={{ width: 6, height: 6, background: '#b08e54', transform: 'rotate(45deg)' }} />
+                    {t('voyageurs_awards')}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                    <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 26, fontWeight: 500, letterSpacing: '-0.025em', color: '#b08e54', lineHeight: 1 }}>
+                      {getCashbackPercentage(voyageurRank)}%
+                    </span>
+                    <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, opacity: 0.55, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+                      {t('cashback')}
+                    </span>
+                  </div>
                 </div>
                 <div style={{
                   marginTop: 12, fontFamily: "'Inter', sans-serif", fontWeight: 300,
