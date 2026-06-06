@@ -22,6 +22,9 @@ export function MobileMe({
   favDates = [],
   isVoyageur = false,
   favoritesCount = 0,
+  daysLeft = null,
+  voyageurRank = null,
+  topCategory = null,
 }: any) {
   const router = useRouter();
   const { theme, authUser, signOut } = useApp();
@@ -269,11 +272,16 @@ export function MobileMe({
                 <div style={{
                   marginTop: 12, fontFamily: "'Inter', sans-serif", fontWeight: 300,
                   fontSize: 22, letterSpacing: '-0.02em', lineHeight: 1.25,
-                }}>คุณอยู่อันดับ <strong style={{ fontWeight: 600 }}>#7</strong> ในหมวด Landscape</div>
+                }}>
+                  {voyageurRank != null
+                    ? <>คุณอยู่อันดับ <strong style={{ fontWeight: 600 }}>#{voyageurRank}</strong> ในหมวด {topCategory ?? 'Landscape'}</>
+                    : <>ส่งรูปเพื่อเริ่มต้นในหมวด {topCategory ?? 'Landscape'}</>
+                  }
+                </div>
                 <p style={{
                   fontFamily: "'Noto Sans Thai', sans-serif",
                   fontSize: 13, color: 'var(--fg-soft)', lineHeight: 1.6, marginTop: 8,
-                }}>เหลือเวลา 42 วัน</p>
+                }}>{daysLeft != null ? `เหลือเวลา ${daysLeft} วัน` : 'กำลังโหลด…'}</p>
               </div>
             </section>
           )}

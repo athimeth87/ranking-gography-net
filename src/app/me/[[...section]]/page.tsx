@@ -13,7 +13,16 @@ import { MeSettings } from '@/components/account/MeSettings';
 import { MobileMe } from '@/components/mobile/MobileMe';
 import { useTranslations } from 'next-intl';
 import type { Photographer } from '@/lib/types';
+import { getSeasons } from '@/lib/data';
 import { computePulse, type PickType } from '@/lib/pulse-engine';
+
+function daysUntil(dateStr: string): number {
+  const end = new Date(dateStr);
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  end.setHours(0, 0, 0, 0);
+  return Math.max(0, Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+}
 
 interface PageProps {
   params: { section?: string[] };
@@ -135,6 +144,11 @@ export default function Page({ params }: PageProps) {
   const [favDates, setFavDates] = useState<string[]>([]);
   const [favIsPublic, setFavIsPublic] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [voyageurRank, setVoyageurRank] = useState<number | null>(null);
+  const [topCategory, setTopCategory] = useState<string | null>(null);
+
+  const liveSeason = getSeasons().find(s => s.status === 'live');
+  const daysLeft = liveSeason?.endDate ? daysUntil(liveSeason.endDate) : null;
 
   const fetchPhotos = async (profileUsername: string) => {
     if (!authUser?.id) return;
@@ -175,6 +189,40 @@ export default function Page({ params }: PageProps) {
 
       const username = prof?.username || '';
       setMyPhotos((photosRes.data || []).map((p: any) => mapPhoto(p, username, authUser?.email)));
+
+      // Compute Voyageur rank from real photo data
+      if (prof?.is_customer) {
+        const userPhotos = photosRes.data || [];
+        if (userPhotos.length > 0) {
+          const catCounts: Record<string, number> = {};
+          const catBestLikes: Record<string, number> = {};
+          for (const p of userPhotos) {
+            const cat = p.category as string;
+            if (!cat) continue;
+            catCounts[cat] = (catCounts[cat] || 0) + 1;
+            catBestLikes[cat] = Math.max(catBestLikes[cat] || 0, p.likes_count || 0);
+          }
+          const topCat = Object.entries(catCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
+          if (topCat) {
+            setTopCategory(topCat);
+            const bestLikes = catBestLikes[topCat] || 0;
+            const { data: vUsers } = await supabase
+              .from('users').select('id').eq('is_customer', true).neq('id', authUser.id);
+            const vIds = (vUsers || []).map((u: any) => u.id as string);
+            if (vIds.length > 0) {
+              const { count } = await supabase
+                .from('photos')
+                .select('id', { count: 'exact', head: true })
+                .eq('category', topCat)
+                .gt('likes_count', bestLikes)
+                .in('photographer_id', vIds);
+              setVoyageurRank((count ?? 0) + 1);
+            } else {
+              setVoyageurRank(1);
+            }
+          }
+        }
+      }
 
       const favPhotos = (favsRes.data || [])
         .map((row: any) => row.photos)
@@ -374,6 +422,9 @@ export default function Page({ params }: PageProps) {
             favDates={favDates}
             isVoyageur={isVoyageur}
             favoritesCount={favs.length}
+            daysLeft={daysLeft}
+            voyageurRank={voyageurRank}
+            topCategory={topCategory}
           />
         )}
       </div>
@@ -408,6 +459,9 @@ export default function Page({ params }: PageProps) {
                   myPhotos={myPhotos}
                   followers={profile.followers_count ?? 0}
                   following={profile.following_count ?? 0}
+                  daysLeft={daysLeft}
+                  voyageurRank={voyageurRank}
+                  topCategory={topCategory}
                 />
               )}
               {section === 'photos' && (

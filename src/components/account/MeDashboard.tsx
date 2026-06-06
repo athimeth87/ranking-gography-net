@@ -21,9 +21,12 @@ interface MeDashboardProps {
   myPhotos: Photo[];
   followers: number;
   following: number;
+  daysLeft?: number | null;
+  voyageurRank?: number | null;
+  topCategory?: string | null;
 }
 
-export function MeDashboard({ persona, isVoyageur, isPhotographer, myPhotos, followers, following }: MeDashboardProps) {
+export function MeDashboard({ persona, isVoyageur, isPhotographer, myPhotos, followers, following, daysLeft, voyageurRank, topCategory }: MeDashboardProps) {
   const router = useRouter();
   const t = useTranslations('MePage');
   const { notifications } = useNotifications();
@@ -67,10 +70,13 @@ export function MeDashboard({ persona, isVoyageur, isPhotographer, myPhotos, fol
             </div>
           </div>
           <h3 className="th text-[20px] md:text-[22px] font-normal tracking-[-0.01em] m-0 leading-[1.35]">
-            คุณอยู่อันดับ <strong className="font-semibold">#7</strong> ในหมวด Landscape
+            {voyageurRank != null
+              ? <>คุณอยู่อันดับ <strong className="font-semibold">#{voyageurRank}</strong> ในหมวด {topCategory ?? 'Landscape'}</>
+              : <>ส่งรูปเพื่อเริ่มต้นในหมวด {topCategory ?? 'Landscape'}</>
+            }
           </h3>
           <p className="th mt-3 text-[13px] text-fg-soft leading-[1.7] max-w-[480px]">
-            เหลือเวลา 42 วัน ก่อนปิดประกวด
+            {daysLeft != null ? `เหลือเวลา ${daysLeft} วัน ก่อนปิดประกวด` : 'กำลังโหลด…'}
           </p>
           <button
             onClick={() => router.push('/for-customers')}

@@ -72,6 +72,7 @@ export interface Season {
   name: string;
   range: string;
   status: SeasonStatus;
+  endDate?: string; // ISO date: last day of the season
   winners: Record<Category, SeasonWinner> | null;
 }
 
