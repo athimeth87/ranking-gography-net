@@ -7,9 +7,10 @@ import { Footer } from '@/components/layout/Footer';
 import { LiveLeaderboard, type LeaderboardEntry } from './LiveLeaderboard';
 
 const TIERS = [
-  { t: 'Traveller III', amt: '฿15,000', l: '8% cashback' },
-  { t: 'Traveller II', amt: '฿8,000', l: '5% cashback' },
-  { t: 'Traveller I', amt: '฿3,000', l: '3% cashback' },
+  { t: 'Rank 1', amt: 'Voucher 50K', l: '15% cashback' },
+  { t: 'Rank 2–5', amt: 'Cashback', l: '10% cashback' },
+  { t: 'Rank 6–10', amt: 'Cashback', l: '5% cashback' },
+  { t: 'Rank 11–50', amt: 'Cashback', l: '3% cashback' },
 ];
 
 function Crown({ className }: { className?: string }) {
