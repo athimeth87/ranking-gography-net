@@ -460,6 +460,7 @@ export default function Page({ params }: PageProps) {
                   myPhotos={myPhotos}
                   followers={profile.followers_count ?? 0}
                   following={profile.following_count ?? 0}
+                  userId={profile.id}
                   daysLeft={daysLeft}
                   voyageurRank={voyageurRank}
                   topCategory={topCategory}

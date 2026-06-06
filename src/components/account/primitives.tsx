@@ -8,15 +8,25 @@ interface DashStatProps {
   n: string | number;
   l: string;
   border?: boolean;
+  onClick?: () => void;
 }
 
-export function DashStat({ n, l, border = false }: DashStatProps) {
-  return (
-    <div className={`p-6${border ? ' border-l border-rule' : ''}`}>
+export function DashStat({ n, l, border = false, onClick }: DashStatProps) {
+  const cls = `p-6 text-left${border ? ' border-l border-rule' : ''}`;
+  const body = (
+    <>
       <div className="text-[32px] font-medium tracking-[-0.02em] leading-none mono">{n}</div>
       <div className="caps opacity-55 mt-2">{l}</div>
-    </div>
+    </>
   );
+  if (onClick) {
+    return (
+      <button onClick={onClick} className={`${cls} block w-full bg-transparent cursor-pointer hover:opacity-65 transition-opacity`}>
+        {body}
+      </button>
+    );
+  }
+  return <div className={cls}>{body}</div>;
 }
 
 // ---------------------------------------------------------------------------
