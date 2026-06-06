@@ -126,19 +126,62 @@ else                       → Undiscovered (ไม่โชว์ badge)
 
 ---
 
-## 6. Open items / TODO
+## 6. ⚠️ Known issue — Floor effect ที่ปลายล่าง (สำคัญต่อ ranking)
+
+**อาการ:** รูปที่ 1 like กับ 4 likes โชว์ Highest Pulse = **19.0 เท่ากัน**
+
+**สาเหตุ:** engine clamp ขั้นต่ำที่ `FLOOR = 19` (ตั้งใจ — ไม่ให้มีคะแนนต่ำน่าเกลียด) → รูปที่คะแนนดิบ < 19 ถูกดันขึ้น 19 หมด ประกอบกับ:
+- **impressions = 0** (Phase 1 ยังไม่ deploy) → `exposureScore = 0` → คะแนนยิ่งต่ำติดพื้น
+- engagement เป็น `log10` → ค่าต่ำถูกบีบใกล้กัน
+
+**ตัวเลขจริง (impressions=0, ไม่มี fav/comment, รูปสด):**
+
+| likes | คะแนนดิบ | หลัง floor (ที่โชว์) |
+|---|---|---|
+| 1 | ~7.5 | **19.0** |
+| 4 (metadata ครบ) | ~22 | 22 |
+| 4 (metadata ไม่ครบ) | ~17.5 | **19.0** |
+| 10 | ~26–31 | 26–31 |
+| 50 | ~43–48 | 43–48 |
+
+> รูปในรีพอร์ตได้ 19 เพราะ **impressions=0 + metadata ไม่ครบ** (ไม่มี camera/lens/location) → 4 likes = ~17.5 < floor
+
+**ผลกระทบ:** รูป engagement ต่ำ **กระจุกที่ 19 หมด → จัดอันดับปลายล่างไม่ได้** (เสมอกัน เรียงไม่ออก) และ "Highest Pulse" หน้าตาเหมือนกัน
+
+### ✅ ทางแก้ที่แนะนำ (ทาง A) — แยก "ค่าโชว์" ออกจาก "ค่าจัดอันดับ"
+- **โชว์**: ใช้ค่าติด floor 19 เหมือนเดิม (พรีเมียม)
+- **จัดอันดับ**: ใช้ค่าดิบ **ไม่ติด floor** + tiebreak
+
+ทำจริง:
+1. เพิ่มฟังก์ชัน engine แบบไม่ติด floor (เช่น `computePulseRaw()` — เหมือน `computePulsePrecise` แต่ไม่ clamp ขั้นต่ำ)
+2. เพิ่มคอลัมน์ `photos.pulse_raw numeric` — cron เขียนทั้ง `pulse` (floor, โชว์) และ `pulse_raw` (rank)
+3. ranking/leaderboard ใช้ `ORDER BY pulse_raw DESC, likes_count DESC, uploaded_at DESC`
+
+### ทางเลือกอื่น
+| ทาง | ทำอะไร |
+|---|---|
+| B | เปิด impressions tracking (Phase 1) → exposure ทำงาน คะแนนกระจายเอง |
+| C | ลด `FLOOR` (เช่น 5) — ค่าจริงโชว์ แต่เสีย "ขั้นต่ำสวย" |
+| D | บังคับ metadata (camera/lens/location) ตอนอัปโหลด → เพิ่มความต่าง + คุณภาพข้อมูล |
+
+> แนะนำ **A + B + D** ร่วมกัน: A แก้ ranking ทันที, B ทำให้คะแนนกระจายตามจริง, D ยกคุณภาพ input
+
+---
+
+## 7. Open items / TODO
 
 - [ ] **Apply migration 0014 + 0015** (ดู §4.1)
 - [ ] **ตั้ง env** `SUPABASE_SERVICE_ROLE_KEY` + `CRON_SECRET` ใน Vercel (§4.2)
 - [ ] **Retune status thresholds** หรือเปลี่ยนเป็น percentile (§5)
-- [ ] เลิกใช้ velocity formula ใน `0003`, ให้ ranking อ่านจาก `photos.pulse` (§4.4)
+- [ ] **Floor effect** — ทำ "ทาง A" (เพิ่ม `pulse_raw` ไม่ติด floor สำหรับ ranking + tiebreak) (§6)
+- [ ] เลิกใช้ velocity formula ใน `0003`, ให้ ranking อ่านจาก `photos.pulse` / `pulse_raw` (§4.4)
 - [ ] (option) status badge ใน **mobile masonry tile** (`MobileExplore` / `MobileHome` feed) — ตอนนี้ใส่แค่ `PhotoCard` (desktop grid)
 - [ ] **Pre-existing type errors** ใน `src/app/auth/callback/route.ts` (`nextUrl` does not exist on `Request`) — ติดมาก่อนหน้า ไม่เกี่ยวงานนี้ แต่ทำ `next build` fail ได้ ควรแก้ (ใช้ `NextRequest` แทน `Request`)
 - [ ] **Voyageur → Traveller leftovers**: ยังมีคำตัวพิมพ์ใหญ่ `VOYAGEUR` ตกค้าง (`messages` `exclusive`, `SideMenu.voyageurs`, explore subtitle/aria-label) — ดู branch `feat/rename-traveller`
 
 ---
 
-## 7. สถานะ branch (รอบงานนี้ทั้งหมด)
+## 8. สถานะ branch (รอบงานนี้ทั้งหมด)
 
 | Branch | เนื้อหา | สถานะ |
 |---|---|---|
@@ -151,7 +194,7 @@ else                       → Undiscovered (ไม่โชว์ badge)
 
 ---
 
-## 8. อ้างอิง
+## 9. อ้างอิง
 
 - Spec อัลกอริทึม: `docs/specs/pulse-algorithm.md`
 - Engine: `src/lib/pulse-engine.ts` (พารามิเตอร์ทั้งหมดอยู่ใน `PULSE_PARAMS`)
