@@ -31,7 +31,7 @@ const SORT_OPTIONS: { v: SortKey; l: string; short: string }[] = [
 
 const TABS = [
   { id: null, label: 'All', gold: false },
-  { id: 'voyageurs', label: 'Voyageurs', gold: true },
+  { id: 'voyageurs', label: 'Travellers', gold: true },
   { id: 'landscape', label: 'Landscape', gold: false },
   { id: 'portrait', label: 'Portrait', gold: false },
   { id: 'bw', label: 'Black & White', gold: false },
@@ -179,7 +179,10 @@ export default function ExploreCategoryPage({
             hours: 1,
             picks: [],
             date: p.uploaded_at,
-            pulse: likes + favorites * 2,
+            pulse: p.pulse || (likes + favorites * 2),
+            peakPulse: p.peak_pulse,
+            pickType: p.pick_type || 'none',
+            voyageurOnly: p.voyageur_only,
             rank: 0,
           };
         });
@@ -212,12 +215,12 @@ export default function ExploreCategoryPage({
     fetchPhotos();
   }, [sort, timeRange, showPicksOnly, catKey, isVoyageurFilter]);
 
-  const headingLabel = isVoyageurFilter ? 'Voyageurs' : catKey === 'BW' ? 'Black & White' : catKey;
+  const headingLabel = isVoyageurFilter ? 'Travellers' : catKey === 'BW' ? 'Black & White' : catKey;
 
   const coverPhotoId = isVoyageurFilter ? 'p007' : catKey === 'Landscape' ? 'p010' : catKey === 'Portrait' ? 'p004' : 'p002';
-  const coverTitle = isVoyageurFilter ? 'Voyageurs' : catKey === 'BW' ? 'Black & White' : catKey;
+  const coverTitle = isVoyageurFilter ? 'Travellers' : catKey === 'BW' ? 'Black & White' : catKey;
   const coverSubtitle = isVoyageurFilter
-    ? 'ภาพถ่ายจากลูกค้าทัวร์ (Voyageurs) ของเรา — เรียงตามอันดับ ภาพล่าสุด หรือยอดโหวต'
+    ? 'ภาพถ่ายจากลูกค้าทัวร์ (Travellers) ของเรา — เรียงตามอันดับ ภาพล่าสุด หรือยอดโหวต'
     : `เลือกชมหมวด ${catKey === 'BW' ? 'Black & White' : catKey} — เรียงตามอันดับ ภาพล่าสุด หรือยอดโหวต`;
 
   // Map category to MobileExplore's CAT type
@@ -272,7 +275,7 @@ export default function ExploreCategoryPage({
                     key="voyageurs"
                     onClick={() => router.push('/explore/voyageurs')}
                     className="group flex items-center self-center cursor-pointer"
-                    aria-label="Voyageurs"
+                    aria-label="Travellers"
                   >
                     <span className={`inline-flex items-center gap-1.5 bg-gold text-black px-3 py-[6px] text-[11px] tracking-[.16em] uppercase font-semibold transition-[filter,box-shadow] duration-150 group-hover:brightness-[1.06] ${
                       active ? 'ring-1 ring-fg ring-offset-2 ring-offset-[var(--bg)]' : ''

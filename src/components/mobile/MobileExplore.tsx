@@ -9,6 +9,7 @@ import { useLikeState } from '@/hooks/useLikeState';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { MobileNav, MobileFooter, MobileMarquee, MobileSectionHeader, BottomNav } from './MobileShared';
 import { CrownIcon } from '@/components/icons';
+import { PulseStatusBadge } from '@/components/photo/PulseStatusBadge';
 
 // Masonry photo tile with avatar+username overlay (left) and like button (right)
 export function MasonryTile({ photo }: { photo: any }) {
@@ -46,6 +47,26 @@ export function MasonryTile({ photo }: { photo: any }) {
           style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
           loading="lazy"
         />
+      </div>
+      {/* Badges — absolute top-left */}
+      <div style={{
+        position: 'absolute', top: 8, left: 8,
+        display: 'flex', flexDirection: 'column', gap: 6, zIndex: 10,
+        alignItems: 'flex-start'
+      }}>
+        {photo.voyageurOnly && (
+          <div style={{
+            background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)',
+            color: '#b08e54', border: '1px solid rgba(176,142,84,0.3)',
+            fontSize: 8, letterSpacing: '0.12em', fontWeight: 600,
+            textTransform: 'uppercase', padding: '3px 6px', borderRadius: 2,
+            display: 'flex', alignItems: 'center', gap: 4,
+          }}>
+            <span>👑</span>
+            <span>Traveller Only</span>
+          </div>
+        )}
+        <PulseStatusBadge pulse={photo.peakPulse ?? photo.pulse} pickType={photo.pickType || 'none'} />
       </div>
       {/* Bottom gradient for legibility */}
       <div style={{

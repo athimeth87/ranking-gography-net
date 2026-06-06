@@ -45,7 +45,7 @@
     "description": "ลูกค้าที่เคยเดินทางกับ GOGRAPHY จะได้รับสถานะ <strong>Traveller</strong> — มีสิทธิ์ส่งภาพในหมวดหมู่พิเศษสำหรับลูกค้าเท่านั้น ทุกฤดูกาลผู้ชนะจะได้รับ Voucher มูลค่า 50,000 บาท และ Top 10 จะได้รับ Cashback สำหรับทริปถัดไป",
     "reward1_sub": "ต่อหมวด",
     "program_name": "The Travellers Programme",
-    "exclusive": "สิทธิพิเศษ · เฉพาะ VOYAGEUR",
+    "exclusive": "สิทธิพิเศษ · เฉพาะ TRAVELLER",
     "badge_sub": "PUBLIC BADGE · ตลอดชีพ",
     "how_to_join": "วิธีเข้าร่วม Travellers",
     "past_winners": "ผู้ชนะที่ผ่านมา",
@@ -63,7 +63,7 @@
     "landscape": "ภาพทิวทัศน์",
     "portrait": "บุคคล",
     "bw": "ขาวดำ",
-    "voyageurs": "ลูกค้าทัวร์",
+    "voyageurs": "Travellers",
     "open_full": "เปิดหน้าหมวดหมู่เต็มรูปแบบ"
   },
   "PhotoCard": {
@@ -109,7 +109,7 @@
     "discover": "ค้นพบ",
     "categories": "หมวดหมู่",
     "explore": "ภาพทั้งหมด",
-    "voyageurs": "Voyageurs",
+    "voyageurs": "Travellers",
     "theme": "ธีม",
     "light": "สว่าง",
     "dark": "มืด",

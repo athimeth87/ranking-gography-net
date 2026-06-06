@@ -29,7 +29,7 @@ const SORT_OPTIONS: { v: SortKey; l: string; short: string }[] = [
 
 const TABS = [
   { id: null, label: 'All', gold: false },
-  { id: 'voyageurs', label: 'Voyageurs', gold: true },
+  { id: 'voyageurs', label: 'Travellers', gold: true },
   { id: 'landscape', label: 'Landscape', gold: false },
   { id: 'portrait', label: 'Portrait', gold: false },
   { id: 'bw', label: 'Black & White', gold: false },
