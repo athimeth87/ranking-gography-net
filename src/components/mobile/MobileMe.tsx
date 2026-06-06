@@ -52,7 +52,10 @@ export function MobileMe({
   };
 
   const handleShare = async () => {
-    const url = typeof location !== 'undefined' ? location.href : '';
+    const username = profile?.username;
+    const url = username
+      ? `${typeof location !== 'undefined' ? location.origin : ''}\/photographer\/${username}`
+      : (typeof location !== 'undefined' ? location.href : '');
     try {
       if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText && url) {
         await navigator.clipboard.writeText(url);
