@@ -200,3 +200,59 @@ else                       → Undiscovered (ไม่โชว์ badge)
 - Engine: `src/lib/pulse-engine.ts` (พารามิเตอร์ทั้งหมดอยู่ใน `PULSE_PARAMS`)
 - สูตร engine (ย่อ): `pulse = clamp((engagement_log + exposure + metadata + pick) × decay, 19, 100)`
 - DB schema: `supabase/migrations/0001_init_schema.sql` (photos, votes), `0003` (views — กำลังจะ retire)
+
+---
+
+## Appendix A — Pulse Scoring v2: Ecosystem-relative model (ข้อเสนอ, ยังไม่ build)
+
+> เป็น **direction ที่ควรล็อกก่อนสร้างต่อ** — แก้ข้อจำกัดเชิงโครงสร้างของ v1 (absolute) ที่เจอจาก §6
+
+### ปัญหาของ v1 (absolute scoring)
+คะแนนเป็นเป้าตายตัว (≈10,000 likes ถึงได้ 100) **ไม่สนขนาดแพลตฟอร์ม** → ผลที่ตามมา:
+- เว็บคนน้อย → โหวตไม่ถึง → ทุกรูปกระจุก 19–40 (ไม่มีใคร "ชนะ" แบบน่าภูมิใจ)
+- เว็บคนเยอะ → ป้าย Popular เฟ้อ (threshold ตายตัว)
+- รูป viral → ตันที่ 100 แยกที่ 1 ไม่ออก
+
+### หลักการ v2
+วัด **"เก่งแค่ไหนเทียบกับสนามตอนนี้"** ไม่ใช่ "ได้กี่ไลก์" → คะแนน/อันดับ **สัมพัทธ์กับ ecosystem ณ ขณะนั้น**
+
+### ตัวแปร ecosystem (ทุกตัวเชื่อมกัน)
+| ตัวแปร | บทบาทในคะแนน |
+|---|---|
+| การกดไลก์ (votes) | สัญญาณหลัก (ตัวตั้ง) |
+| คนดู (views/impressions) | ตัวหาร → ใช้ *อัตรา* ไลก์/วิว ไม่ใช่ยอดดิบ |
+| จำนวนคนลงรูป (supply) | ขนาด "สนามแข่ง" → ใช้ทำ percentile |
+| active users (demand) | liquidity → ใช้ทำ confidence + normalize ต่อช่วงเวลา |
+
+### โมเดล 3 ชั้น
+1. **Raw** — likes, favorites, comments, views ต่อรูป
+2. **Normalize เทียบ field ปัจจุบัน** — เทียบกับค่าเฉลี่ยของรูปในช่วงเดียวกัน → ปรับตามขนาดเว็บอัตโนมัติ
+3. **Confidence (Bayesian)** — รูป vote น้อย ดึงเข้าหาค่ากลางจนกว่าจะมีข้อมูลพอ (กันฟลุ๊ค 1 ไลก์/1 วิว)
+
+### สูตรแนวคิด
+```
+field_mean = ค่าเฉลี่ย engagement ของรูปในช่วงเดียวกัน (season หรือ rolling 7d)
+relative   = engagement_photo / field_mean              # ทำได้กี่เท่าของค่ากลาง
+adjusted   = bayesian_shrink(relative, n_votes, prior)  # vote น้อย → ดึงเข้าหา 1.0
+rank       = percentile(adjusted) ของทั้ง field + tiebreak(likes → uploaded_at)
+status     = ตาม percentile (top 5% = Popular, top 20% = Rising)
+display    = map(percentile) → 19–100  (เว็บเล็กผู้นำก็โชว์สูง ดู "มีชีวิต")
+```
+
+### 3 สถานการณ์ (absolute vs v2)
+| สถานการณ์ | v1 absolute | v2 ecosystem-relative |
+|---|---|---|
+| เว็บเพิ่งเปิด (ดีสุด 8 ไลก์) | ทุกคน 19–24 | ผู้นำสนามโชว์ ~90 เว็บดูคึก |
+| เว็บโต 120 รูป | Popular 43 รูป (เฟ้อ) | top 5% = 6 รูป ไม่เฟ้อ |
+| รูป viral ตัน | 2 รูป = 100 แยกไม่ออก | tiebreak → #1 ชัด |
+| รูปใหม่ฟลุ๊ค 2 ไลก์/2 วิว | อาจพุ่ง | Bayesian กดไว้จนพิสูจน์ |
+
+### Decision points (ต้องเลือกก่อน build)
+- [ ] normalize window: ต่อ **season (4 เดือน)** หรือ **rolling 7 วัน**?
+- [ ] confidence: prior กี่โหวต/วิว ถึงเชื่อเต็ม (เช่น Bayesian C≈20)
+- [ ] display: โชว์ percentile-mapped (เว็บเล็กดูคึก) หรือ raw engagement?
+- [ ] status cutoffs: top % เท่าไหร่ = Popular / Rising
+
+### สถานะ
+**PROPOSAL — ยังไม่ build** · ของที่ build แล้ว (branch `feat/pulse-stats-500px`) ยังเป็น v1 absolute + floor
+แนะนำทำ v2 ก่อนเปิดให้คนใช้จริงจำนวนมาก (เพราะ absolute พังตอน scale ตาม §6 + 3 สถานการณ์)
