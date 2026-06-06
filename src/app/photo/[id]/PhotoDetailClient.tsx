@@ -163,6 +163,8 @@ export function PhotoDetailClient({ id }: { id: string }) {
         impressions: pData.impressions_count || 0,
         peakPulse: pData.peak_pulse != null ? Number(pData.peak_pulse) : null,
         pickType: (pData.pick_type as PickType) ?? 'none',
+        percentile: pData.percentile != null ? Number(pData.percentile) : null,
+        badge: (pData.badge as string) ?? null,
         pulse: computePulse({
           likes_count: pData.likes_count || 0,
           favorites_count: pData.favorites_count || 0,
@@ -510,6 +512,7 @@ export function PhotoDetailClient({ id }: { id: string }) {
                   impressions={photo.impressions ?? 0}
                   highestPulse={photo.peakPulse ?? photo.pulse}
                   pickType={photo.pickType}
+                  badge={photo.badge}
                 />
               </div>
 
@@ -591,6 +594,7 @@ export function PhotoDetailClient({ id }: { id: string }) {
                   impressions={photo.impressions ?? 0}
                   highestPulse={photo.peakPulse ?? photo.pulse}
                   pickType={photo.pickType}
+                  badge={photo.badge}
                 />
               </div>
 

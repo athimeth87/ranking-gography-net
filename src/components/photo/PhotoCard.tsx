@@ -68,7 +68,7 @@ export function PhotoCard({
               {photo.title}
             </div>
             <div className="pby">{photographer ? photographer.name : photo.by}</div>
-            <PulseStatusBadge pulse={photo.peakPulse ?? photo.pulse} className="mt-[6px]" />
+            <PulseStatusBadge pulse={photo.peakPulse ?? photo.pulse} badge={photo.badge} className="mt-[6px]" />
           </div>
         </div>
         <div className="shrink-0 ml-4 text-right">

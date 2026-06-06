@@ -1,6 +1,7 @@
 'use client';
 import { useTranslations } from 'next-intl';
-import { pulseStatus, type PulseStatus, type PickType } from '@/lib/pulse-engine';
+import { pulseStatus, type PickType } from '@/lib/pulse-engine';
+import { statusFromBadge, type Badge } from '@/lib/pulse-engine-v2';
 
 function formatCompact(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, '')}M`;
@@ -8,10 +9,13 @@ function formatCompact(n: number): string {
   return `${n}`;
 }
 
-const STATUS_LABEL: Record<PulseStatus, string> = {
+const STATUS_LABEL: Record<string, string> = {
   undiscovered: 'Undiscovered',
   rising: 'Rising',
+  trending: 'Trending',
+  hidden_gem: 'Hidden Gem',
   popular: 'Popular',
+  top_field: 'Top of the Field',
   editors_choice: "Editors' Choice",
 };
 
@@ -52,11 +56,14 @@ interface PhotoStatsPanelProps {
   impressions: number;
   highestPulse: number;
   pickType?: PickType;
+  badge?: string | null;
 }
 
-export function PhotoStatsPanel({ likes, impressions, highestPulse, pickType = 'none' }: PhotoStatsPanelProps) {
+export function PhotoStatsPanel({ likes, impressions, highestPulse, pickType = 'none', badge }: PhotoStatsPanelProps) {
   const t = useTranslations('PhotoStats');
-  const status = pulseStatus(highestPulse, pickType);
+  const status: string = badge !== undefined
+    ? statusFromBadge((badge ?? null) as Badge, pickType)
+    : pulseStatus(highestPulse, pickType);
 
   return (
     <div className="py-7 border-b border-rule">
