@@ -145,6 +145,7 @@ export function GlobalUploadModal() {
     setUploadModalOpen(false);
     setDraft({ title: '', cat: 'Landscape', caption: '', voyageurOnly: false, file: null, previewUrl: '', camera: '', lens: '' });
     toast.success('อัปโหลดสำเร็จแล้ว!', { description: 'รูปภาพของคุณถูกส่งเข้าสู่ระบบแล้ว' });
+    checkUploadLimit();
     
     // Refresh page data if we are on a page that needs it
     if (pathname.includes('/me') || pathname === '/') {
@@ -152,7 +153,8 @@ export function GlobalUploadModal() {
     }
   };
 
-  const limitReached = false; // unlimited uploads
+  // Enforce 2 per day limit for non-photographers and non-voyageurs
+  const limitReached = !(isPhotographer || isVoyageur) && uploadedTodayCount >= 2;
 
   // Don't render for guests if they shouldn't see it, but we handle it via Auth wrapper normally.
   
@@ -242,18 +244,16 @@ export function GlobalUploadModal() {
                 </div>
               </div>
 
-              {isVoyageur && (
-                <div className="flex items-center justify-between border border-white/10 rounded-lg p-3 bg-white/5">
-                  <div>
-                    <div className="th text-[12px] font-medium text-white">Traveller Only</div>
-                    <div className="th text-[10px] text-white/50 mt-0.5">ภาพนี้จะเห็นได้เฉพาะสมาชิก Traveller ด้วยกันเท่านั้น</div>
-                  </div>
-                  <Switch
-                    checked={draft.voyageurOnly}
-                    onCheckedChange={(checked) => setDraft(d => ({ ...d, voyageurOnly: checked }))}
-                  />
+              <div className="flex items-center justify-between border border-white/10 rounded-lg p-3 bg-white/5">
+                <div>
+                  <div className="th text-[12px] font-medium text-white">Traveller Only</div>
+                  <div className="th text-[10px] text-white/50 mt-0.5">ภาพนี้จะเห็นได้เฉพาะสมาชิก Traveller ด้วยกันเท่านั้น</div>
                 </div>
-              )}
+                <Switch
+                  checked={draft.voyageurOnly}
+                  onCheckedChange={(checked) => setDraft(d => ({ ...d, voyageurOnly: checked }))}
+                />
+              </div>
 
               <div>
                 <div className="caps text-white/50 mb-1.5 text-[10px]">คำบรรยายภาพ</div>
