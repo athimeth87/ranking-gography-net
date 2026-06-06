@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { PhotoGrid } from '@/components/photo/PhotoGrid';
 import { VoyageurMark } from '@/components/icons';
 import { DashStat, ActionCard } from './primitives';
+import { FollowListModal, type FollowTab } from './FollowListModal';
 import { useNotifications } from '@/hooks/useNotifications';
 import { formatNotificationBody } from '@/lib/data/notifications';
 import { useTranslations } from 'next-intl';
@@ -22,15 +23,17 @@ interface MeDashboardProps {
   myPhotos: Photo[];
   followers: number;
   following: number;
+  userId?: string;
   daysLeft?: number | null;
   voyageurRank?: number | null;
   topCategory?: string | null;
 }
 
-export function MeDashboard({ persona, isVoyageur, isPhotographer, myPhotos, followers, following, daysLeft, voyageurRank, topCategory }: MeDashboardProps) {
+export function MeDashboard({ persona, isVoyageur, isPhotographer, myPhotos, followers, following, userId, daysLeft, voyageurRank, topCategory }: MeDashboardProps) {
   const router = useRouter();
   const t = useTranslations('MePage');
   const { notifications } = useNotifications();
+  const [followModalTab, setFollowModalTab] = useState<FollowTab | null>(null);
 
   const totalLikes = myPhotos.reduce((s, p) => s + p.likes, 0);
   const totalFav = myPhotos.reduce((s, p) => s + p.favorites, 0);
@@ -47,12 +50,22 @@ export function MeDashboard({ persona, isVoyageur, isPhotographer, myPhotos, fol
       {/* Stat row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-0 border border-rule">
         <DashStat n={myPhotos.length} l={t('photos')} />
-        <DashStat n={followers.toLocaleString()} l={t('followers')} border />
+        <DashStat n={followers.toLocaleString()} l={t('followers')} border onClick={userId ? () => setFollowModalTab('followers') : undefined} />
         <DashStat n={totalLikes.toLocaleString()} l={t('likes_received')} border />
         <DashStat n={totalPulse.toFixed(0)} l={t('pulse')} border />
       </div>
       <div className="mt-3 mono text-[11px] opacity-55 tracking-[.08em] uppercase">
-        {t('following')} {following.toLocaleString()} · {t('favorites')} {totalFav.toLocaleString()}
+        {userId ? (
+          <button
+            onClick={() => setFollowModalTab('following')}
+            className="bg-transparent border-0 p-0 cursor-pointer uppercase tracking-[.08em] hover:opacity-100 transition-opacity"
+          >
+            {t('following')} {following.toLocaleString()}
+          </button>
+        ) : (
+          <>{t('following')} {following.toLocaleString()}</>
+        )}
+        {' · '}{t('favorites')} {totalFav.toLocaleString()}
       </div>
 
       {/* Traveller eligibility card */}
@@ -166,6 +179,18 @@ export function MeDashboard({ persona, isVoyageur, isPhotographer, myPhotos, fol
           </>
         )}
       </div>
+
+      {userId && (
+        <FollowListModal
+          open={followModalTab !== null}
+          onOpenChange={(o) => { if (!o) setFollowModalTab(null); }}
+          userId={userId}
+          username={persona.username}
+          initialTab={followModalTab ?? 'followers'}
+          followersCount={followers}
+          followingCount={following}
+        />
+      )}
     </div>
   );
 }

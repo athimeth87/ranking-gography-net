@@ -8,6 +8,7 @@ import { useTranslations } from 'next-intl';
 import { MobileFooter } from './MobileShared';
 import { MeSettings } from '../account/MeSettings';
 import { ActivityHeatmap } from '../account/ActivityHeatmap';
+import { FollowListModal, type FollowTab } from '../account/FollowListModal';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { getPresignedUploadUrl } from '@/app/actions/r2-upload';
 import { convertToWebP } from '@/lib/imageConvert';
@@ -46,6 +47,7 @@ export function MobileMe({
   const [localAvatar, setLocalAvatar] = useState<string | null>(null);
   const [localCover, setLocalCover] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [followModalTab, setFollowModalTab] = useState<FollowTab | null>(null);
 
   const goTab = (id: SectionKey) => {
     setActiveTab(id);
@@ -219,8 +221,8 @@ export function MobileMe({
             <div style={{ marginTop: 18, display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'center', columnGap: 18, rowGap: 9 }}>
               {[
                 [compact(myPhotos.length), t('photos'), () => goTab('photos')],
-                [compact(followers), t('followers'), null],
-                [compact(following), t('following_label'), null],
+                [compact(followers), t('followers'), () => setFollowModalTab('followers')],
+                [compact(following), t('following_label'), () => setFollowModalTab('following')],
                 [compact(totalPulse), t('pulse'), () => goTab('stats')],
               ].map(([n, l, onClick]) => (
                 <button key={l} onClick={onClick || undefined} style={{ display: 'inline-flex', alignItems: 'baseline', gap: 5, padding: 0, cursor: onClick ? 'pointer' : 'default', background: 'transparent', border: 0, color: '#fff' }}>
@@ -560,6 +562,18 @@ export function MobileMe({
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
           {t('link_copied')}
         </div>
+      )}
+
+      {profile?.id && (
+        <FollowListModal
+          open={followModalTab !== null}
+          onOpenChange={(o) => { if (!o) setFollowModalTab(null); }}
+          userId={profile.id}
+          username={profile.username}
+          initialTab={followModalTab ?? 'followers'}
+          followersCount={followers}
+          followingCount={following}
+        />
       )}
     </div>
   );

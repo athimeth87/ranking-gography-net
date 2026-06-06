@@ -9,6 +9,7 @@ import { VoyageurMark, CrownIcon } from '@/components/icons';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { PageCover } from '@/components/layout/PageCover';
 import { useFollowState } from '@/hooks/useFollowState';
+import { FollowListModal, type FollowTab } from '@/components/account/FollowListModal';
 import { computePulse, type PickType } from '@/lib/pulse-engine';
 
 import { computeRankMasters, getCashbackPercentage } from '@/lib/ranking-system';
@@ -53,14 +54,22 @@ function mapPublicPhoto(p: any, username: string) {
   };
 }
 
-interface ProfileStatProps { label: string; val: string | number; }
-function ProfileStat({ label, val }: ProfileStatProps) {
-  return (
-    <div>
+interface ProfileStatProps { label: string; val: string | number; onClick?: () => void; }
+function ProfileStat({ label, val, onClick }: ProfileStatProps) {
+  const inner = (
+    <>
       <div className="text-[28px] font-medium tracking-[-0.015em]">{val}</div>
       <div className="text-[10px] tracking-[.16em] uppercase opacity-55 mt-1">{label}</div>
-    </div>
+    </>
   );
+  if (onClick) {
+    return (
+      <button onClick={onClick} className="text-left bg-transparent border-0 p-0 cursor-pointer hover:opacity-65 transition-opacity">
+        {inner}
+      </button>
+    );
+  }
+  return <div>{inner}</div>;
 }
 
 function ProfileEmpty({ msg }: { msg: string }) {
@@ -88,6 +97,7 @@ export function PhotographerClient({ username }: { username: string }) {
   const [copied, setCopied] = useState(false);
   const [voyageurRank, setVoyageurRank] = useState<number | null>(null);
   const [topCategory, setTopCategory] = useState<string | null>(null);
+  const [followModalTab, setFollowModalTab] = useState<FollowTab | null>(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -340,15 +350,24 @@ export function PhotographerClient({ username }: { username: string }) {
           </div>
           <div className="flex-1 grid grid-cols-3 text-center pt-3 pb-[2px]">
             {([
-              [String(myPhotos.length), 'Photos'],
-              [follow.followersCount.toLocaleString(), 'Followers'],
-              [(photographer.following ?? 0).toLocaleString(), 'Following'],
-            ] as const).map(([n, l]) => (
-              <div key={l}>
-                <div className="mono text-[18px] font-semibold tracking-[-0.01em]">{n}</div>
-                <div className="mono text-[10px] text-fg-soft tracking-[.1em] uppercase mt-[2px]">{l}</div>
-              </div>
-            ))}
+              [String(myPhotos.length), 'Photos', null],
+              [follow.followersCount.toLocaleString(), 'Followers', 'followers'],
+              [(photographer.following ?? 0).toLocaleString(), 'Following', 'following'],
+            ] as const).map(([n, l, tab]) => {
+              const body = (
+                <>
+                  <div className="mono text-[18px] font-semibold tracking-[-0.01em]">{n}</div>
+                  <div className="mono text-[10px] text-fg-soft tracking-[.1em] uppercase mt-[2px]">{l}</div>
+                </>
+              );
+              return tab ? (
+                <button key={l} onClick={() => setFollowModalTab(tab)} className="bg-transparent border-0 p-0 cursor-pointer active:opacity-60 transition-opacity">
+                  {body}
+                </button>
+              ) : (
+                <div key={l}>{body}</div>
+              );
+            })}
           </div>
         </div>
 
@@ -610,8 +629,8 @@ export function PhotographerClient({ username }: { username: string }) {
           <div className="wrap">
             <div className="grid grid-cols-3 md:grid-cols-5 gap-6 md:gap-8 py-6 md:py-8 border-b border-rule mono">
               <ProfileStat label="Photos" val={myPhotos.length} />
-              <ProfileStat label="Followers" val={follow.followersCount.toLocaleString()} />
-              <ProfileStat label="Following" val={(photographer.following ?? 0).toLocaleString()} />
+              <ProfileStat label="Followers" val={follow.followersCount.toLocaleString()} onClick={() => setFollowModalTab('followers')} />
+              <ProfileStat label="Following" val={(photographer.following ?? 0).toLocaleString()} onClick={() => setFollowModalTab('following')} />
               <ProfileStat label="Pulse avg" val={avgPulse} />
               <ProfileStat label="Rank Master" val={editorPickCount} />
             </div>
@@ -719,6 +738,18 @@ export function PhotographerClient({ username }: { username: string }) {
 
         <Footer />
       </div>
+
+      {photographer.id && (
+        <FollowListModal
+          open={followModalTab !== null}
+          onOpenChange={(o) => { if (!o) setFollowModalTab(null); }}
+          userId={photographer.id}
+          username={photographer.username}
+          initialTab={followModalTab ?? 'followers'}
+          followersCount={follow.followersCount}
+          followingCount={photographer.following ?? 0}
+        />
+      )}
     </div>
   );
 }
