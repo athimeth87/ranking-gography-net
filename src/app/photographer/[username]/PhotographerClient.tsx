@@ -11,7 +11,7 @@ import { PageCover } from '@/components/layout/PageCover';
 import { useFollowState } from '@/hooks/useFollowState';
 import { computePulse, type PickType } from '@/lib/pulse-engine';
 
-import { computeRankMasters } from '@/lib/ranking-system';
+import { computeRankMasters, getCashbackPercentage } from '@/lib/ranking-system';
 
 // ===== Photographer public profile — /photographer/[username] =====
 
@@ -488,10 +488,12 @@ export function PhotographerClient({ username }: { username: string }) {
                       <span className="font-semibold">#{voyageurRank}</span>
                     </div>
                   )}
-                  <div className="flex justify-between">
-                    <span className="text-fg-soft">Cashback tier</span>
-                    <span className="font-semibold text-gold">5% ✓</span>
-                  </div>
+                   <div className="flex justify-between">
+                     <span className="text-fg-soft">Cashback tier</span>
+                     <span className="font-semibold text-gold">
+                       {getCashbackPercentage(voyageurRank)}% {getCashbackPercentage(voyageurRank) > 0 ? '✓' : ''}
+                     </span>
+                   </div>
                 </div>
               </div>
             )}
@@ -677,9 +679,11 @@ export function PhotographerClient({ username }: { username: string }) {
                             </div>
                           )}
                           <div className="flex justify-between py-2">
-                            <span>Cashback tier</span>
-                            <span className="mono font-medium">5% ✓</span>
-                          </div>
+                             <span>Cashback tier</span>
+                             <span className="mono font-medium">
+                               {getCashbackPercentage(voyageurRank)}% {getCashbackPercentage(voyageurRank) > 0 ? '✓' : ''}
+                             </span>
+                           </div>
                         </div>
                       </div>
                     </div>

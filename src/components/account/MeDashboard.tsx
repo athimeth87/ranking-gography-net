@@ -9,6 +9,7 @@ import { formatNotificationBody } from '@/lib/data/notifications';
 import { useTranslations } from 'next-intl';
 import { TranslatedNotificationBody, TranslatedTimeAgo } from '@/components/layout/NotificationsBell';
 import type { Photographer, Photo } from '@/lib/types';
+import { getCashbackPercentage } from '@/lib/ranking-system';
 
 const ACTIVITY_PAGE = 5;
 
@@ -64,7 +65,7 @@ export function MeDashboard({ persona, isVoyageur, isPhotographer, myPhotos, fol
             </div>
             <div className="flex items-baseline gap-2 shrink-0">
               <span className="text-[28px] md:text-[32px] font-medium tracking-[-0.025em] text-gold leading-none">
-                5%
+                {getCashbackPercentage(voyageurRank ?? null)}%
               </span>
               <span className="mono text-[10px] opacity-55 tracking-[.12em]">{t('cashback')}</span>
             </div>

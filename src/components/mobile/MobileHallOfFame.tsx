@@ -6,9 +6,10 @@ import { MobileNav, MobileFooter, MobileMarquee, MobileSectionHeader } from './M
 import { MasonryTile } from './MobileExplore';
 
 const tiers = [
-  { t: 'Traveller III', p: '฿15,000', l: '8% cashback', tag: 'top tier' },
-  { t: 'Traveller II',  p: '฿8,000',  l: '5% cashback', tag: '' },
-  { t: 'Traveller I',   p: '฿3,000',  l: '3% cashback', tag: '' },
+  { t: 'Rank #1', p: 'Voucher 50K + 15%', l: 'รางวัลชนะเลิศประจำหมวด', tag: 'champion' },
+  { t: 'Rank #2–5', p: 'Cashback 10%', l: 'ส่วนลดทริปครั้งถัดไป', tag: 'elite' },
+  { t: 'Rank #6–10', p: 'Cashback 5%', l: 'ส่วนลดทริปครั้งถัดไป', tag: '' },
+  { t: 'Rank #11–50', p: 'Cashback 3%', l: 'ส่วนลดทริปครั้งถัดไป', tag: '' },
 ];
 
 export function MobileHallOfFame({

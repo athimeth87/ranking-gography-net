@@ -72,3 +72,14 @@ export function computeRankMasters(photos: any[]): Set<string> {
 
   return rankMasterUsernames;
 }
+
+// Helper to calculate the cashback percentage based on voyageur rank
+export function getCashbackPercentage(rank: number | null): number {
+  if (rank === null || rank <= 0) return 0;
+  if (rank === 1) return 15;
+  if (rank >= 2 && rank <= 5) return 10;
+  if (rank >= 6 && rank <= 10) return 5;
+  if (rank >= 11 && rank <= 50) return 3;
+  return 0;
+}
+

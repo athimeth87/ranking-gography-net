@@ -203,10 +203,11 @@ export function HallOfFameClient() {
         {/* Reward tiers */}
         <section className="py-8 md:py-[48px] bg-[var(--cream)] rule-top rule-bot">
           <div className="wrap">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-12 lg:gap-[48px]">
-              <CashbackTier rank="1"   label="Best Photo"      detail="Voucher 50,000 THB ต่อหมวด" />
-              <CashbackTier rank="2–3" label="Cashback 15%"    detail="ส่วนลดทริปครั้งถัดไป" />
-              <CashbackTier rank="4–10" label="Cashback 3–10%" detail="ส่วนลดทริปครั้งถัดไป" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 lg:gap-[32px]">
+              <CashbackTier rank="1"    label="Voucher 50K + 15%" detail="รางวัลชนะเลิศประจำหมวด" />
+              <CashbackTier rank="2–5"  label="Cashback 10%"      detail="อันดับ 2 ถึง 5 ของหมวด" />
+              <CashbackTier rank="6–10" label="Cashback 5%"       detail="อันดับ 6 ถึง 10 ของหมวด" />
+              <CashbackTier rank="11–50" label="Cashback 3%"      detail="อันดับ 11 ถึง 50 ของหมวด" />
             </div>
             <p className="th mt-[32px] text-[12px] text-[var(--fg-soft)] max-w-[720px] leading-[1.7]">
               รางวัลเฉพาะลูกค้าทริป GOGRAPHY ที่ได้รับการรับรองโดย Editorial team —
