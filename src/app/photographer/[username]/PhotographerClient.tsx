@@ -9,7 +9,6 @@ import { VoyageurMark, CrownIcon } from '@/components/icons';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { PageCover } from '@/components/layout/PageCover';
 import { useFollowState } from '@/hooks/useFollowState';
-import { useApp } from '@/providers/AppProvider';
 import { computePulse, type PickType } from '@/lib/pulse-engine';
 
 import { computeRankMasters } from '@/lib/ranking-system';
@@ -74,12 +73,12 @@ const MOBILE_TABS = [
   { id: 'about' as const,     label: 'About' },
 ];
 
+const MOBILE_BTN_SOLID = 'flex-1 inline-flex items-center justify-center min-h-[44px] px-4 text-[13px] font-semibold tracking-[.03em] uppercase border border-fg bg-fg text-bg cursor-pointer';
+const MOBILE_BTN_GHOST = 'flex-1 inline-flex items-center justify-center min-h-[44px] px-4 text-[13px] font-semibold tracking-[.03em] uppercase border border-black/15 dark:border-white/25 bg-transparent text-fg cursor-pointer';
+
 export function PhotographerClient({ username }: { username: string }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { theme } = useApp();
-  const dark = theme === 'dark';
-  const c = dark ? '#fff' : '#000';
 
   const [photographer, setPhotographer] = useState<any>(null);
   const [myPhotos, setMyPhotos] = useState<any[]>([]);
@@ -244,7 +243,7 @@ export function PhotographerClient({ username }: { username: string }) {
   };
 
   if (isLoading) return (
-    <div className="page-fade py-32 text-center text-neutral-500 font-mono text-xs uppercase tracking-widest">
+    <div className="page-fade py-32 text-center text-fg-soft font-mono text-xs uppercase tracking-widest">
       Loading Profile...
     </div>
   );
@@ -265,43 +264,32 @@ export function PhotographerClient({ username }: { username: string }) {
     <div className="page-fade">
 
       {/* ===================== MOBILE LAYOUT ===================== */}
-      <div className="md:hidden" style={{
-        minHeight: '100vh',
-        background: dark ? '#0a0a0a' : '#fff',
-        color: c,
-        fontFamily: "'Inter', system-ui, sans-serif",
-      }}>
+      <div className="md:hidden min-h-screen bg-white dark:bg-[#0a0a0a] text-fg">
+
         {/* Sticky top bar */}
-        <header style={{
-          position: 'sticky', top: 0, zIndex: 30,
-          background: dark ? 'rgba(10,10,10,0.96)' : 'rgba(255,255,255,0.96)',
-          backdropFilter: 'blur(8px)',
-          borderBottom: `1px solid ${dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          height: 52, padding: '0 14px',
-        }}>
-          <button onClick={() => router.back()} aria-label="Back" style={{
-            width: 36, height: 36, background: 'transparent', border: 0,
-            cursor: 'pointer', color: c, padding: 0,
-            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-          }}>
+        <header className="sticky top-0 z-30 flex items-center justify-between h-[52px] px-[14px] backdrop-blur-[8px] bg-white/[0.96] dark:bg-[#0a0a0a]/[0.96] border-b border-black/[0.08] dark:border-white/[0.08]">
+          <button
+            onClick={() => router.back()}
+            aria-label="Back"
+            className="w-9 h-9 bg-transparent border-0 cursor-pointer p-0 inline-flex items-center justify-center text-fg"
+          >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
               <path d="M15 18l-6-6 6-6" />
             </svg>
           </button>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: c }}>
-            <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, fontWeight: 600, letterSpacing: '-0.01em' }}>
-              @{photographer.username}
-            </span>
+
+          <div className="flex items-center gap-[6px] text-fg">
+            <span className="text-[15px] font-semibold tracking-[-0.01em]">@{photographer.username}</span>
             {photographer.isCustomer && (
-              <span style={{ width: 5, height: 5, background: '#b08e54', transform: 'rotate(45deg)', display: 'inline-block' }} />
+              <span className="w-[5px] h-[5px] bg-gold rotate-45 inline-block" />
             )}
           </div>
-          <button onClick={handleShare} aria-label="Share" style={{
-            width: 36, height: 36, background: 'transparent', border: 0,
-            cursor: 'pointer', color: c, padding: 0,
-            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-          }}>
+
+          <button
+            onClick={handleShare}
+            aria-label="Share"
+            className="w-9 h-9 bg-transparent border-0 cursor-pointer p-0 inline-flex items-center justify-center text-fg"
+          >
             {copied ? (
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="20 6 9 17 4 12" />
@@ -317,253 +305,215 @@ export function PhotographerClient({ username }: { username: string }) {
         </header>
 
         {/* Cover image */}
-        <div style={{ position: 'relative', width: '100%', height: 160, overflow: 'hidden', background: dark ? '#1a1916' : '#f0ede7' }}>
+        <div className="relative w-full h-[160px] overflow-hidden bg-[#f0ede7] dark:bg-[#1a1916]">
           {photographer.cover && (
-            <img src={photographer.cover} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={photographer.cover} alt="" className="w-full h-full object-cover block" />
           )}
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.45) 100%)' }} />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent from-[40%] to-black/45" />
+
           {photographer.isRankMaster && (
-            <div style={{
-              position: 'absolute', left: 14, top: 12, zIndex: 2,
-              display: 'inline-flex', alignItems: 'center', gap: 5,
-              background: '#c0c0c0', color: '#1a1a1a',
-              padding: '3px 8px',
-              fontFamily: "'IBM Plex Mono', monospace", fontSize: 9,
-              letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600,
-            }}>Rank Master</div>
+            <div className="absolute left-[14px] top-3 z-[2] inline-flex items-center gap-[5px] bg-fg text-bg px-2 py-[3px] mono text-[9px] tracking-[.14em] uppercase font-semibold">
+              Rank Master
+            </div>
           )}
           {photographer.isAmbassador && (
-            <div style={{
-              position: 'absolute', right: 14, top: 12, zIndex: 2,
-              display: 'inline-flex', alignItems: 'center', gap: 5,
-              background: '#b08e54', color: '#fff',
-              padding: '3px 8px',
-              fontFamily: "'IBM Plex Mono', monospace", fontSize: 9,
-              letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600,
-            }}>Ambassador</div>
+            <div className="absolute right-[14px] top-3 z-[2] inline-flex items-center gap-[5px] bg-gold text-white px-2 py-[3px] mono text-[9px] tracking-[.14em] uppercase font-semibold">
+              Ambassador
+            </div>
           )}
           {photographer.isCustomer && !photographer.isAmbassador && (
-            <div style={{
-              position: 'absolute', right: 14, top: 12, zIndex: 2,
-              display: 'inline-flex', alignItems: 'center', gap: 5,
-              color: '#b08e54', background: 'rgba(0,0,0,0.5)',
-              padding: '3px 8px', backdropFilter: 'blur(4px)',
-              fontFamily: "'IBM Plex Mono', monospace", fontSize: 9,
-              letterSpacing: '0.14em', textTransform: 'uppercase',
-            }}>
-              <span style={{ width: 5, height: 5, background: '#b08e54', transform: 'rotate(45deg)' }} />
+            <div className="absolute right-[14px] top-3 z-[2] inline-flex items-center gap-[5px] text-gold bg-black/50 backdrop-blur-[4px] px-2 py-[3px] mono text-[9px] tracking-[.14em] uppercase">
+              <span className="w-[5px] h-[5px] bg-gold rotate-45" />
               Voyageur
             </div>
           )}
         </div>
 
         {/* Avatar + stat row */}
-        <div style={{ padding: '0 16px', display: 'flex', alignItems: 'flex-end', gap: 20 }}>
-          <div style={{
-            width: 80, height: 80, borderRadius: '50%',
-            background: dark ? '#1a1916' : '#e8e4dc',
-            border: `3px solid ${dark ? '#0a0a0a' : '#fff'}`,
-            overflow: 'hidden', flexShrink: 0, zIndex: 2,
-            marginTop: -42,
-          }}>
+        <div className="px-4 flex items-end gap-5">
+          <div className="w-20 h-20 rounded-full bg-[#e8e4dc] dark:bg-[#1a1916] border-[3px] border-white dark:border-[#0a0a0a] overflow-hidden shrink-0 z-[2] -mt-[42px]">
             {photographer.avatar && (
-              <img src={photographer.avatar} alt={photographer.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={photographer.avatar} alt={photographer.name} className="w-full h-full object-cover" />
             )}
           </div>
-          <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', textAlign: 'center', paddingTop: 12, paddingBottom: 2 }}>
+          <div className="flex-1 grid grid-cols-3 text-center pt-3 pb-[2px]">
             {([
               [String(myPhotos.length), 'Photos'],
               [follow.followersCount.toLocaleString(), 'Followers'],
               [(photographer.following ?? 0).toLocaleString(), 'Following'],
             ] as const).map(([n, l]) => (
               <div key={l}>
-                <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 18, fontWeight: 600, letterSpacing: '-0.01em' }}>{n}</div>
-                <div style={{
-                  fontFamily: "'IBM Plex Mono', monospace", fontSize: 10,
-                  color: 'var(--fg-soft)', letterSpacing: '0.1em',
-                  textTransform: 'uppercase', marginTop: 2,
-                }}>{l}</div>
+                <div className="mono text-[18px] font-semibold tracking-[-0.01em]">{n}</div>
+                <div className="mono text-[10px] text-fg-soft tracking-[.1em] uppercase mt-[2px]">{l}</div>
               </div>
             ))}
           </div>
         </div>
 
         {/* Name + bio + location */}
-        <div style={{ padding: '14px 16px 0' }}>
-          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, fontWeight: 700, letterSpacing: '-0.01em', lineHeight: 1.3 }}>
+        <div className="px-4 pt-[14px]">
+          <div className="text-[15px] font-bold tracking-[-0.01em] leading-[1.3]">
             {photographer.name}
           </div>
           {photographer.bio && (
-            <p style={{
-              fontFamily: "'Noto Sans Thai', sans-serif",
-              fontSize: 13, lineHeight: 1.6, margin: '5px 0 6px',
-              color: 'var(--fg-soft)', maxWidth: '38ch',
-            }}>{photographer.bio}</p>
+            <p className="font-thai text-[13px] leading-[1.6] mt-[5px] mb-[6px] text-fg-soft max-w-[38ch]">
+              {photographer.bio}
+            </p>
           )}
-          <div style={{
-            fontFamily: "'IBM Plex Mono', monospace", fontSize: 11,
-            letterSpacing: '0.06em', color: 'var(--fg-soft)', textTransform: 'uppercase',
-          }}>
+          <div className="mono text-[11px] tracking-[.06em] text-fg-soft uppercase">
             {photographer.loc} · Joined {photographer.joined}
           </div>
         </div>
 
         {/* Action buttons */}
-        <div style={{ padding: '12px 16px 0', display: 'flex', gap: 8 }}>
+        <div className="px-4 pt-3 flex gap-2">
           {follow.isSelf ? (
-            <button onClick={() => router.push('/me')} style={mobileBtnSolid(dark)}>Edit Profile</button>
+            <button onClick={() => router.push('/me')} className={MOBILE_BTN_SOLID}>Edit Profile</button>
           ) : (
             <button
               onClick={onFollowClick}
               disabled={follow.loading}
-              style={mobileBtnSolid(dark)}
+              className={MOBILE_BTN_SOLID}
             >
               {follow.following ? 'Following' : 'Follow'}
             </button>
           )}
-          <button onClick={handleShare} style={mobileBtnGhost(dark)}>
+          <button onClick={handleShare} className={MOBILE_BTN_GHOST}>
             {copied ? 'Copied!' : 'Share'}
           </button>
         </div>
 
-        {/* Pulse strip — signature metric, real data */}
+        {/* Pulse strip */}
         {myPhotos.length > 0 && (
-          <div style={{
-            margin: '14px 16px 0',
-            padding: '11px 14px',
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
-            background: dark ? '#1a1916' : '#f9f7f4',
-            border: `1px solid ${dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)'}`,
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+          <div className="mx-4 mt-[14px] px-[14px] py-[11px] flex items-center justify-between gap-3 bg-[#f9f7f4] dark:bg-[#1a1916] border border-black/[0.07] dark:border-white/[0.08]">
+            <div className="flex items-center gap-[9px]">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M7 17l4-8 3 6 3-3" />
               </svg>
-              <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 13, fontWeight: 600 }}>
+              <span className="mono text-[13px] font-semibold">
                 Pulse {Math.round(myPhotos.reduce((s: number, p: Photo) => s + p.pulse, 0)).toLocaleString()}
               </span>
             </div>
-            <span style={{
-              fontFamily: "'IBM Plex Mono', monospace", fontSize: 10,
-              letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--fg-soft)',
-            }}>
+            <span className="mono text-[10px] tracking-[.1em] uppercase text-fg-soft">
               Avg {avgPulse}
             </span>
           </div>
         )}
 
         {/* Mobile tab bar */}
-        <div style={{ marginTop: 16, borderTop: `1px solid ${dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'}` }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)' }}>
+        <div className="mt-4 border-t border-black/[0.08] dark:border-white/[0.1]">
+          <div className="grid grid-cols-3">
             {MOBILE_TABS.map(({ id, label }) => {
               const active = mobileTab === id;
               return (
-                <button key={id} onClick={() => setMobileTab(id)} style={{
-                  padding: '13px 0', background: 'transparent', cursor: 'pointer', border: 0,
-                  borderBottom: `2px solid ${active ? c : 'transparent'}`,
-                  color: active ? c : 'var(--fg-soft)',
-                  fontFamily: "'IBM Plex Mono', monospace", fontSize: 11,
-                  letterSpacing: '0.1em', textTransform: 'uppercase',
-                }}>{label}</button>
+                <button
+                  key={id}
+                  onClick={() => setMobileTab(id)}
+                  className={`py-[13px] px-0 bg-transparent cursor-pointer border-x-0 border-t-0 border-b-2 mono text-[11px] tracking-[.1em] uppercase ${
+                    active ? 'border-fg text-fg' : 'border-transparent text-fg-soft'
+                  }`}
+                >
+                  {label}
+                </button>
               );
             })}
           </div>
         </div>
 
-        {/* Tab content */}
+        {/* Tab content — Photos */}
         {mobileTab === 'photos' && (
           myPhotos.length > 0 ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2 }}>
+            <div className="grid grid-cols-3 gap-[2px]">
               {myPhotos.map(p => (
-                <div key={p.id} onClick={() => router.push(`/photo/${p.id}`)} style={{
-                  aspectRatio: '1 / 1', background: dark ? '#1a1916' : '#f0ede7',
-                  cursor: 'pointer', overflow: 'hidden',
-                }}>
-                  <img src={p.src} alt={p.title || ''} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} loading="lazy" />
+                <div
+                  key={p.id}
+                  onClick={() => router.push(`/photo/${p.id}`)}
+                  className="aspect-square bg-[#f0ede7] dark:bg-[#1a1916] cursor-pointer overflow-hidden"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={p.src} alt={p.title || ''} className="w-full h-full object-cover block" loading="lazy" />
                 </div>
               ))}
             </div>
           ) : (
-            <div style={{ padding: '80px 16px', textAlign: 'center', fontFamily: "'Noto Sans Thai', sans-serif", color: 'var(--fg-soft)' }}>
+            <div className="px-4 py-[80px] text-center font-thai text-fg-soft">
               ยังไม่มีภาพในโปรไฟล์นี้
             </div>
           )
         )}
 
+        {/* Tab content — Favorites */}
         {mobileTab === 'favorites' && (
           myFavorites.length > 0 ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2 }}>
+            <div className="grid grid-cols-3 gap-[2px]">
               {myFavorites.map(p => (
-                <div key={(p as any).id} onClick={() => router.push(`/photo/${(p as any).id}`)} style={{
-                  aspectRatio: '1 / 1', background: dark ? '#1a1916' : '#f0ede7',
-                  cursor: 'pointer', overflow: 'hidden',
-                }}>
-                  <img src={(p as any).src} alt={(p as any).title || ''} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} loading="lazy" />
+                <div
+                  key={(p as any).id}
+                  onClick={() => router.push(`/photo/${(p as any).id}`)}
+                  className="aspect-square bg-[#f0ede7] dark:bg-[#1a1916] cursor-pointer overflow-hidden"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={(p as any).src} alt={(p as any).title || ''} className="w-full h-full object-cover block" loading="lazy" />
                 </div>
               ))}
             </div>
           ) : (
-            <div style={{ padding: '80px 16px', textAlign: 'center', fontFamily: "'Noto Sans Thai', sans-serif", color: 'var(--fg-soft)' }}>
+            <div className="px-4 py-[80px] text-center font-thai text-fg-soft">
               ยังไม่มีภาพที่บันทึกไว้
             </div>
           )
         )}
 
+        {/* Tab content — About */}
         {mobileTab === 'about' && (
-          <div style={{ padding: '20px 16px 40px' }}>
+          <div className="px-4 pt-5 pb-[40px]">
+
             {/* Voyageur card */}
             {photographer.isCustomer && (
-              <div style={{
-                marginBottom: 24,
-                background: dark ? '#1a1916' : '#f9f7f4',
-                border: `1px solid ${dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
-                padding: 16,
-              }}>
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12,
-                  fontFamily: "'IBM Plex Mono', monospace", fontSize: 10,
-                  letterSpacing: '0.14em', textTransform: 'uppercase', color: '#b08e54',
-                }}>
-                  <span style={{ width: 6, height: 6, background: '#b08e54', transform: 'rotate(45deg)' }} />
+              <div className="mb-6 bg-[#f9f7f4] dark:bg-[#1a1916] border border-black/[0.08] dark:border-white/[0.08] p-4">
+                <div className="flex items-center gap-[6px] mb-3 mono text-[10px] tracking-[.14em] uppercase text-gold">
+                  <span className="w-[6px] h-[6px] bg-gold rotate-45" />
                   Voyageur · Spring 2026
                 </div>
-                <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 12, lineHeight: 2.2 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: `1px solid ${dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`, paddingBottom: 6, marginBottom: 6 }}>
-                    <span style={{ color: 'var(--fg-soft)' }}>Photos submitted</span>
-                    <span style={{ fontWeight: 600 }}>{myPhotos.length}</span>
+                <div className="mono text-[12px] leading-[2.2]">
+                  <div className="flex justify-between border-b border-black/[0.06] dark:border-white/[0.06] pb-[6px] mb-[6px]">
+                    <span className="text-fg-soft">Photos submitted</span>
+                    <span className="font-semibold">{myPhotos.length}</span>
                   </div>
                   {voyageurRank != null && topCategory && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: `1px solid ${dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`, paddingBottom: 6, marginBottom: 6 }}>
-                      <span style={{ color: 'var(--fg-soft)' }}>Rank ({topCategory})</span>
-                      <span style={{ fontWeight: 600 }}>#{voyageurRank}</span>
+                    <div className="flex justify-between border-b border-black/[0.06] dark:border-white/[0.06] pb-[6px] mb-[6px]">
+                      <span className="text-fg-soft">Rank ({topCategory})</span>
+                      <span className="font-semibold">#{voyageurRank}</span>
                     </div>
                   )}
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ color: 'var(--fg-soft)' }}>Cashback tier</span>
-                    <span style={{ fontWeight: 600, color: '#b08e54' }}>5% ✓</span>
+                  <div className="flex justify-between">
+                    <span className="text-fg-soft">Cashback tier</span>
+                    <span className="font-semibold text-gold">5% ✓</span>
                   </div>
                 </div>
               </div>
             )}
 
             {/* Bio */}
-            <div style={{ marginBottom: 20 }}>
-              <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--fg-soft)', marginBottom: 8 }}>About</div>
-              <p style={{ fontFamily: "'Noto Sans Thai', sans-serif", fontSize: 14, lineHeight: 1.7, margin: 0, color: 'var(--fg-soft)' }}>{photographer.bio}</p>
+            <div className="mb-5">
+              <div className="mono text-[10px] tracking-[.16em] uppercase text-fg-soft mb-2">About</div>
+              <p className="font-thai text-[14px] leading-[1.7] m-0 text-fg-soft">{photographer.bio}</p>
             </div>
 
             {/* Categories */}
             {myCategories.length > 0 && (
               <div>
-                <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--fg-soft)', marginBottom: 10 }}>Categories</div>
-                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                <div className="mono text-[10px] tracking-[.16em] uppercase text-fg-soft mb-[10px]">Categories</div>
+                <div className="flex gap-[6px] flex-wrap">
                   {myCategories.map((cat: string) => (
-                    <span key={cat} style={{
-                      padding: '4px 10px',
-                      border: `1px solid ${dark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)'}`,
-                      fontFamily: "'IBM Plex Mono', monospace", fontSize: 10,
-                      letterSpacing: '0.12em', textTransform: 'uppercase',
-                    }}>{cat}</span>
+                    <span
+                      key={cat}
+                      className="px-[10px] py-1 border border-black/[0.12] dark:border-white/[0.15] mono text-[10px] tracking-[.12em] uppercase"
+                    >
+                      {cat}
+                    </span>
                   ))}
                 </div>
               </div>
@@ -571,7 +521,7 @@ export function PhotographerClient({ username }: { username: string }) {
           </div>
         )}
 
-        <div style={{ height: 40 }} />
+        <div className="h-[40px]" />
         <Footer />
       </div>
 
@@ -594,12 +544,12 @@ export function PhotographerClient({ username }: { username: string }) {
             <div className="flex flex-wrap justify-between items-center gap-3 mb-6 md:mb-[48px]">
               <div className="flex items-center gap-[10px]">
                 {photographer.isRankMaster && (
-                  <span className="inline-flex items-center gap-[6px] px-[11px] py-[5px] bg-[#c0c0c0] text-black text-[10.5px] tracking-[.16em] uppercase font-medium">
+                  <span className="inline-flex items-center gap-[6px] px-[11px] py-[5px] bg-fg text-bg text-[10.5px] tracking-[.16em] uppercase font-medium">
                     <CrownIcon /> Rank Master
                   </span>
                 )}
                 {photographer.isAmbassador && (
-                  <span className="inline-flex items-center gap-[6px] px-[11px] py-[5px] bg-[#b08e54] text-white text-[10.5px] tracking-[.16em] uppercase font-medium">
+                  <span className="inline-flex items-center gap-[6px] px-[11px] py-[5px] bg-gold text-white text-[10.5px] tracking-[.16em] uppercase font-medium">
                     <CrownIcon /> Ambassador
                   </span>
                 )}
@@ -767,34 +717,4 @@ export function PhotographerClient({ username }: { username: string }) {
       </div>
     </div>
   );
-}
-
-function mobileBtnSolid(dark: boolean) {
-  return {
-    flex: 1,
-    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-    minHeight: 44, padding: '0 16px',
-    fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600,
-    letterSpacing: '0.03em', textTransform: 'uppercase' as const,
-    border: `1px solid ${dark ? '#fff' : '#000'}`,
-    background: dark ? '#fff' : '#000',
-    color: dark ? '#000' : '#fff',
-    cursor: 'pointer',
-    borderRadius: 8,
-  };
-}
-
-function mobileBtnGhost(dark: boolean) {
-  return {
-    flex: 1,
-    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-    minHeight: 44, padding: '0 16px',
-    fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600,
-    letterSpacing: '0.03em', textTransform: 'uppercase' as const,
-    border: `1px solid ${dark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.15)'}`,
-    background: 'transparent',
-    color: dark ? '#fff' : '#000',
-    cursor: 'pointer',
-    borderRadius: 8,
-  };
 }
