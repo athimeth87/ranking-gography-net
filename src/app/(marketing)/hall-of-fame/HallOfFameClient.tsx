@@ -7,13 +7,12 @@ import type { Category, Photo, Photographer, Season, SeasonWinner } from '@/lib/
 import { PageCover } from '@/components/layout/PageCover';
 import { Footer } from '@/components/layout/Footer';
 import { MobileHallOfFame } from '@/components/mobile/MobileHallOfFame';
+import { LiveLeaderboard, type LeaderboardEntry } from './LiveLeaderboard';
 
 // ===== Season definitions — no DB table needed =====
 // Each season is a date range. Winners are computed from actual photo likes within that range.
-const SEASON_DEFS = [
-  { id: 'spring-2026', name: 'Spring 2026', startDate: '2026-01-01', endDate: '2026-04-30', status: 'live'   as const },
-  { id: 'winter-2025', name: 'Winter 2025', startDate: '2025-09-01', endDate: '2025-12-31', status: 'closed' as const },
-  { id: 'autumn-2025', name: 'Autumn 2025', startDate: '2025-05-01', endDate: '2025-08-31', status: 'closed' as const },
+const SEASON_DEFS: { id: string; name: string; startDate: string; endDate: string; status: 'live' | 'closed' }[] = [
+  { id: 'season-1', name: 'Season 1', startDate: '2026-06-01', endDate: '2026-09-30', status: 'live' },
 ];
 
 const CAT_MAP: Record<string, Category> = {
@@ -182,6 +181,28 @@ export function HallOfFameClient() {
     fetchData();
   }, []);
 
+  // ── Live leaderboard data (gamification) ──────────────────────────────────
+  const liveSeason = seasons.find((s) => s.status === 'live');
+  const leaderboardEntries: LeaderboardEntry[] = allPhotos
+    .slice()
+    .sort((a, b) => (b.pulse ?? 0) - (a.pulse ?? 0))
+    .map((p) => {
+      const owner = photographers.find((ph) => ph.username === p.by);
+      return {
+        id: p.id,
+        title: p.title,
+        name: owner?.name ?? p.by,
+        loc: owner?.loc ?? '',
+        cat: p.cat,
+        pulse: p.pulse ?? 0,
+        src: p.src,
+        voyageur: Boolean(owner?.isCustomer || p.voyageurOnly),
+      };
+    });
+  const rarityCount = seasons
+    .filter((s) => s.status === 'closed' && s.winners)
+    .reduce((n, s) => n + Object.keys(s.winners!).length, 0);
+
   return (
     <>
       <div className="md:hidden">
@@ -199,6 +220,16 @@ export function HallOfFameClient() {
           title="Hall of Fame"
           subtitle="ทุก 4 เดือน GOGRAPHY คัดเลือกภาพแห่งฤดูกาลในแต่ละหมวด — ผู้ชนะรับ Voucher 50,000 THB และที่ใน Hall of Fame ตลอดไป"
         />
+
+        {/* Live leaderboard — current season race */}
+        {!loading && liveSeason && leaderboardEntries.length > 0 && (
+          <LiveLeaderboard
+            seasonName={liveSeason.name}
+            endDate={liveSeason.endDate ?? '2026-07-18'}
+            entries={leaderboardEntries}
+            rarityCount={rarityCount}
+          />
+        )}
 
         {/* Reward tiers */}
         <section className="py-8 md:py-[48px] bg-[var(--cream)] rule-top rule-bot">
@@ -221,7 +252,7 @@ export function HallOfFameClient() {
             {loading ? (
               <div className="py-[64px] text-center opacity-50 mono text-[13px]">Loading Hall of Fame...</div>
             ) : (
-              seasons.map((season, idx) => {
+              seasons.map((season) => {
                 // Lookup helpers — check real photos first, fall back to mock accessor
                 const resolvePhoto = (photoId: string) =>
                   allPhotos.find(p => p.id === photoId) ?? getPhoto(photoId);
@@ -233,9 +264,6 @@ export function HallOfFameClient() {
                     {/* Season header */}
                     <div className="flex flex-wrap justify-between items-baseline gap-3 pb-4 md:pb-6 mb-6 md:mb-8 border-b border-[var(--fg)]">
                       <div className="flex items-baseline gap-3 md:gap-[24px] flex-wrap">
-                        <span className="mono text-[11px] tracking-[.16em] uppercase opacity-55">
-                          {String(idx + 1).padStart(2, '0')}
-                        </span>
                         <h2 className="text-[clamp(28px,6.5vw,56px)] font-normal tracking-[-0.025em] m-0 leading-[1]">
                           {season.name}
                         </h2>
