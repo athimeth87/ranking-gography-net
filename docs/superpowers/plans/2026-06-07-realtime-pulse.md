@@ -490,7 +490,9 @@ git commit -m "feat: add live pulse merge helper and useRealtimePulse hook"
 **Files:**
 - Create: `src/components/photo/RealtimePhotoGrid.tsx`
 - Modify: `src/app/explore/page.tsx` (swap `PhotoGrid` → `RealtimePhotoGrid` for the main ranked grid)
-- Modify: `src/app/(marketing)/hall-of-fame/DesktopHallOfFame.tsx` (swap leaderboard grid)
+- Modify: `src/app/(marketing)/hall-of-fame/HallOfFameClient.tsx` (merge live pulse into `allPhotos` so both the desktop `LiveLeaderboard` and `MobileHallOfFame` update + re-rank live)
+
+**Note:** Hall of Fame does NOT use `PhotoGrid` for its standings — `DesktopHallOfFame` derives `leaderboardEntries` from `allPhotos` sorted by `pulse` and feeds `LiveLeaderboard`; `MobileHallOfFame` gets the same `allPhotos`. So the realtime fix goes at the data owner (`HallOfFameClient`), not at a grid. Because `DesktopHallOfFame` already sorts by `pulse`, the leaderboard re-orders automatically when live values change.
 
 - [ ] **Step 1: Write the wrapper**
 
@@ -521,9 +523,36 @@ In `src/app/explore/page.tsx`: add `import { RealtimePhotoGrid } from '@/compone
 
 (If `explore/page.tsx` is a Server Component and cannot import a client grid directly into a server tree with the existing props, confirm the surrounding section is already a client component or move just that grid into the existing client child. Read the file first; do not convert the whole page to client.)
 
-- [ ] **Step 3: Wire Hall of Fame leaderboard**
+- [ ] **Step 3: Wire Hall of Fame at the data owner (`HallOfFameClient`)**
 
-In `src/app/(marketing)/hall-of-fame/DesktopHallOfFame.tsx` (already a client component): import `RealtimePhotoGrid` and replace the live-season leaderboard `<PhotoGrid ... />` with `<RealtimePhotoGrid ... liveSort />`, keeping props.
+`HallOfFameClient` (`'use client'`) owns `allPhotos` state and passes it to both
+`DesktopHallOfFame` (→ `LiveLeaderboard`, sorted by `pulse`) and `MobileHallOfFame`.
+Merge live pulse into that array so both surfaces update and the leaderboard
+re-ranks automatically.
+
+In `src/app/(marketing)/hall-of-fame/HallOfFameClient.tsx`:
+
+Add imports:
+```tsx
+import { useMemo } from 'react';
+import { useRealtimePulse } from '@/hooks/useRealtimePulse';
+import { mergeLivePulse } from '@/lib/realtime-pulse';
+```
+(merge `useMemo` into the existing `react` import if one already exists.)
+
+After the `allPhotos` state is declared, derive a live-merged copy:
+```tsx
+const liveIds = useMemo(() => allPhotos.map((p) => p.id), [allPhotos]);
+const live = useRealtimePulse(liveIds);
+const livePhotos = useMemo(() => mergeLivePulse(allPhotos, live), [allPhotos, live]);
+```
+
+Then pass `livePhotos` instead of `allPhotos` in BOTH renders:
+- `<MobileHallOfFame ... realAllPhotos={livePhotos} ... />`
+- `<DesktopHallOfFame ... allPhotos={livePhotos} ... />`
+
+(`DesktopHallOfFame` already sorts `leaderboardEntries` by `pulse`, so no
+`liveSort` is needed here — re-ordering happens in the consumer.)
 
 - [ ] **Step 4: Verify**
 
@@ -536,8 +565,8 @@ Expected: clean (pre-existing warnings only).
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/components/photo/RealtimePhotoGrid.tsx src/app/explore/page.tsx "src/app/(marketing)/hall-of-fame/DesktopHallOfFame.tsx"
-git commit -m "feat: live-updating photo grids on explore and hall of fame"
+git add src/components/photo/RealtimePhotoGrid.tsx src/app/explore/page.tsx "src/app/(marketing)/hall-of-fame/HallOfFameClient.tsx"
+git commit -m "feat: live-updating explore grid and hall of fame leaderboard"
 ```
 
 ---
