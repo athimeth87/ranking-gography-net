@@ -27,9 +27,10 @@ interface MeDashboardProps {
   daysLeft?: number | null;
   voyageurRank?: number | null;
   topCategory?: string | null;
+  onPhotoDeleted?: (id: string) => void;
 }
 
-export function MeDashboard({ persona, isVoyageur, isPhotographer, myPhotos, followers, following, userId, daysLeft, voyageurRank, topCategory }: MeDashboardProps) {
+export function MeDashboard({ persona, isVoyageur, isPhotographer, myPhotos, followers, following, userId, daysLeft, voyageurRank, topCategory, onPhotoDeleted }: MeDashboardProps) {
   const router = useRouter();
   const t = useTranslations('MePage');
   const { notifications } = useNotifications();
@@ -142,7 +143,7 @@ export function MeDashboard({ persona, isVoyageur, isPhotographer, myPhotos, fol
               {t('see_all')} →
             </button>
           </div>
-          <PhotoGrid photos={myPhotos.slice(0, 4)} cols={4} uniform />
+          <PhotoGrid photos={myPhotos.slice(0, 4)} cols={4} uniform deletable onDeleted={onPhotoDeleted} />
         </div>
       )}
 

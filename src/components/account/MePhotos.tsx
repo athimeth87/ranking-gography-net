@@ -19,9 +19,10 @@ interface MePhotosProps {
   isPhotographer: boolean;
   isVoyageur: boolean;
   onPhotoUploaded?: () => void;
+  onPhotoDeleted?: (id: string) => void;
 }
 
-export function MePhotos({ myPhotos, isPhotographer, isVoyageur, onPhotoUploaded }: MePhotosProps) {
+export function MePhotos({ myPhotos, isPhotographer, isVoyageur, onPhotoUploaded, onPhotoDeleted }: MePhotosProps) {
   const router = useRouter();
   const { authUser, userState } = useApp();
   const [tab, setTab] = useState<'all' | 'public' | 'hidden'>('all');
@@ -198,7 +199,7 @@ export function MePhotos({ myPhotos, isPhotographer, isVoyageur, onPhotoUploaded
         <TabsContent value="all">
           <div className="py-8">
             {display.length > 0 ? (
-              <PhotoGrid photos={display} cols={3} uniform />
+              <PhotoGrid photos={display} cols={3} uniform deletable onDeleted={onPhotoDeleted} />
             ) : (
               <div className="py-20 text-center text-fg-soft th">ไม่มีภาพในแท็บนี้</div>
             )}
@@ -207,7 +208,7 @@ export function MePhotos({ myPhotos, isPhotographer, isVoyageur, onPhotoUploaded
         <TabsContent value="public">
           <div className="py-8">
             {visible.length > 0 ? (
-              <PhotoGrid photos={visible} cols={3} uniform />
+              <PhotoGrid photos={visible} cols={3} uniform deletable onDeleted={onPhotoDeleted} />
             ) : (
               <div className="py-20 text-center text-fg-soft th">ไม่มีภาพในแท็บนี้</div>
             )}
@@ -216,7 +217,7 @@ export function MePhotos({ myPhotos, isPhotographer, isVoyageur, onPhotoUploaded
         <TabsContent value="hidden">
           <div className="py-8">
             {hidden.length > 0 ? (
-              <PhotoGrid photos={hidden} cols={3} uniform />
+              <PhotoGrid photos={hidden} cols={3} uniform deletable onDeleted={onPhotoDeleted} />
             ) : (
               <div className="py-20 text-center text-fg-soft th">ไม่มีภาพในแท็บนี้</div>
             )}
