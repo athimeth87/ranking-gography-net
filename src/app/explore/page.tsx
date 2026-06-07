@@ -170,7 +170,7 @@ export default function ExplorePage() {
             hours: 1,
             picks: [],
             date: p.uploaded_at,
-            pulse: likes + favorites * 2,
+            pulse: p.pulse != null ? Number(p.pulse) : 0,
             rank: 0,
           };
         });

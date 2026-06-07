@@ -165,17 +165,7 @@ export function PhotoDetailClient({ id }: { id: string }) {
         pickType: (pData.pick_type as PickType) ?? 'none',
         percentile: pData.percentile != null ? Number(pData.percentile) : null,
         badge: (pData.badge as string) ?? null,
-        pulse: computePulse({
-          likes_count: pData.likes_count || 0,
-          favorites_count: pData.favorites_count || 0,
-          comments_count: pData.comments_count || 0,
-          impressions_count: pData.impressions_count || 0,
-          uploaded_at: pData.uploaded_at,
-          pick_type: (pData.pick_type as PickType) ?? 'none',
-          has_title: !!pData.title,
-          has_category: !!pData.category,
-          has_descriptor: !!(pData.location || pData.camera || pData.lens),
-        }),
+        pulse: pData.pulse != null ? Number(pData.pulse) : 0,
         rank: 0
       };
 
@@ -222,17 +212,7 @@ export function PhotoDetailClient({ id }: { id: string }) {
           picks: [],
           date: md.uploaded_at,
           voyageurOnly: md.voyageur_only,
-          pulse: computePulse({
-            likes_count: md.likes_count || 0,
-            favorites_count: md.favorites_count || 0,
-            comments_count: md.comments_count || 0,
-            impressions_count: md.impressions_count || 0,
-            uploaded_at: md.uploaded_at,
-            pick_type: (md.pick_type as PickType) ?? 'none',
-            has_title: !!md.title,
-            has_category: !!md.category,
-            has_descriptor: !!(md.location || md.camera || md.lens),
-          }),
+          pulse: md.pulse != null ? Number(md.pulse) : 0,
           rank: 0
         }));
         setMore(mappedMore);

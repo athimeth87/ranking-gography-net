@@ -75,7 +75,11 @@ export default function LandingPage() {
           picks: [],
           date: p.uploaded_at,
           voyageurOnly: p.voyageur_only,
-          pulse: p.likes_count || 0,
+          pulse: p.pulse != null ? Number(p.pulse) : 0,
+          peakPulse: p.peak_pulse != null ? Number(p.peak_pulse) : null,
+          pickType: p.pick_type ?? 'none',
+          percentile: p.percentile != null ? Number(p.percentile) : null,
+          badge: p.badge || null,
           rank: 0
         };
       });
@@ -129,7 +133,7 @@ export default function LandingPage() {
               const likes = typeof next.likes_count === 'number' ? next.likes_count : p.likes;
               const favorites = typeof next.favorites_count === 'number' ? next.favorites_count : p.favorites;
               const comments = typeof next.comments_count === 'number' ? next.comments_count : p.comments;
-              return { ...p, likes, favorites, comments, pulse: likes };
+              return { ...p, likes, favorites, comments };
             }),
           );
         },

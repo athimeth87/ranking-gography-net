@@ -38,7 +38,7 @@ function computeWinners(
     const pool = inWindow.filter(p => p.category === rawCat);
     if (pool.length === 0) continue;
     const top = pool.reduce((best, p) =>
-      (p.likes_count || 0) > (best.likes_count || 0) ? p : best,
+      (p.pulse || 0) > (best.pulse || 0) ? p : best,
     );
     result[mappedCat] = { photoId: top.id, voucher: '50,000 THB' };
   }
@@ -127,7 +127,12 @@ export function HallOfFameClient() {
             comments: p.comments_count || 0, favorites: p.favorites_count || 0,
             hours: 24, picks: [], date: p.uploaded_at,
             voyageurOnly: p.voyageur_only,
-            pulse: p.likes_count || 0, rank: 0,
+            pulse: p.pulse != null ? Number(p.pulse) : 0, 
+            peakPulse: p.peak_pulse != null ? Number(p.peak_pulse) : null,
+            pickType: p.pick_type || 'none',
+            percentile: p.percentile != null ? Number(p.percentile) : null,
+            badge: p.badge || null,
+            rank: 0,
           };
         });
 
