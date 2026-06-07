@@ -535,6 +535,9 @@ export function MobileMe({
               loc: profile?.location || 'Not set',
               bio: profile?.bio || '',
               website: profile?.portfolio_url || '',
+              socialTwitter: profile?.social_twitter || '',
+              socialInstagram: profile?.social_instagram || '',
+              socialFacebook: profile?.social_facebook || '',
               isCustomer: profile?.is_customer
             } as any}
             isVoyageur={isVoyageur}

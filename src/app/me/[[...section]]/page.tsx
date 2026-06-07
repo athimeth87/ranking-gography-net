@@ -362,6 +362,9 @@ export default function Page({ params }: PageProps) {
     photos: myPhotos.length,
     isAmbassador: profile?.is_ambassador || false,
     joined: profile?.created_at || '',
+    socialTwitter: profile?.social_twitter || '',
+    socialInstagram: profile?.social_instagram || '',
+    socialFacebook: profile?.social_facebook || '',
     cameras: [],
   } as Photographer;
 
