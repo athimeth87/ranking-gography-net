@@ -50,7 +50,7 @@ function useCountdown(endIso: string) {
   };
 }
 
-type Tab = 'all' | 'classic' | 'traveller';
+type Tab = 'classic' | 'traveller';
 
 export function LiveLeaderboard({
   seasonName,
@@ -63,14 +63,12 @@ export function LiveLeaderboard({
   entries: PhotographerRanking[];
   rarityCount: number;
 }) {
-  const [tab, setTab] = useState<Tab>('all');
+  const [tab, setTab] = useState<Tab>('classic');
   const countdown = useCountdown(endDate);
 
   const filtered = tab === 'classic'
     ? entries.filter(e => !e.is_customer)
-    : tab === 'traveller'
-      ? entries.filter(e => e.is_customer)
-      : entries;
+    : entries.filter(e => e.is_customer);
 
   const rows = filtered.slice(0, 10);
   const leader = rows[0];
@@ -102,7 +100,6 @@ export function LiveLeaderboard({
         {/* ── tabs ── */}
         <div className="flex gap-2 mt-10 pt-7 border-t border-rule">
           {([
-            { id: 'all', label: 'All' },
             { id: 'classic', label: 'Classic' },
             { id: 'traveller', label: 'Traveller', gold: true },
           ] as { id: Tab; label: string; gold?: boolean }[]).map(t => (

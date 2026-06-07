@@ -8,7 +8,6 @@ import { MobileNav, MobileFooter, MobileMarquee } from './MobileShared';
 import { MasonryTile } from './MobileExplore';
 
 const LB_TABS = [
-  { id: 'all', label: 'All' },
   { id: 'voyageurs', label: 'Voy', voyageur: true },
   { id: 'Landscape', label: 'Land' },
   { id: 'Portrait', label: 'Port' },
@@ -65,7 +64,7 @@ export function MobileHallOfFame({
   const coverPhoto = realAllPhotos.find(p => p.id === 'p010') || PHOTOS.find(p => p.id === 'p010') || PHOTOS[0];
 
   // ── Live leaderboard (gamification) ──────────────────────────────────────
-  const [lbTab, setLbTab] = useState('all');
+  const [lbTab, setLbTab] = useState('voyageurs');
   const liveSeason = (realSeasons || []).find(s => s.status === 'live');
   const lbEndDate = liveSeason?.endDate || '2026-09-30';
   const countdown = useMobileCountdown(lbEndDate);
@@ -78,8 +77,7 @@ export function MobileHallOfFame({
 
   const lbSource = (realAllPhotos && realAllPhotos.length > 0 ? realAllPhotos : PHOTOS).slice();
   const lbRanked = lbSource.sort((a, b) => (b.pulse ?? pulseScore(b)) - (a.pulse ?? pulseScore(a)));
-  const lbFiltered = lbTab === 'all' ? lbRanked
-    : lbTab === 'voyageurs' ? lbRanked.filter(isVoyageurPhoto)
+  const lbFiltered = lbTab === 'voyageurs' ? lbRanked.filter(isVoyageurPhoto)
     : lbRanked.filter(p => p.cat === lbTab);
   const lbRows = lbFiltered
     .slice(0, 10)
