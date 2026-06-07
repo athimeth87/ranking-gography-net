@@ -175,7 +175,8 @@ export function MobileExplore({ initialCategory = 'All', dbPhotos = [] }: { init
     Object.entries(photosByWeek).forEach(([wk, weekPhotos]) => {
       const scoresByPhotographer: Record<string, number> = {};
       weekPhotos.forEach(p => {
-        scoresByPhotographer[p.by] = (scoresByPhotographer[p.by] || 0) + (p.pulse || 0);
+        const score = p.pulse && p.pulse > 0 ? p.pulse : pulseScore(p);
+        scoresByPhotographer[p.by] = (scoresByPhotographer[p.by] || 0) + score;
       });
       const sorted = Object.entries(scoresByPhotographer)
         .map(([username, totalScore]) => ({ username, totalScore }))
@@ -225,7 +226,7 @@ export function MobileExplore({ initialCategory = 'All', dbPhotos = [] }: { init
       return PHOTOGRAPHERS
         .map(p => {
           const matchedPhotos = dataSource.filter(ph => ph.by === p.username);
-          const totalPulse = matchedPhotos.reduce((s, ph) => s + (ph.pulse || 0), 0);
+          const totalPulse = matchedPhotos.reduce((s, ph) => s + (ph.pulse && ph.pulse > 0 ? ph.pulse : pulseScore(ph)), 0);
           return {
             username: p.username,
             name: p.name,
@@ -416,7 +417,7 @@ export function MobileExplore({ initialCategory = 'All', dbPhotos = [] }: { init
                       fontFamily: "'IBM Plex Mono', monospace", fontSize: 10,
                       letterSpacing: '0.08em', color: 'var(--fg-soft)',
                       marginTop: 2, textTransform: 'uppercase',
-                    }}>Pulse {p.pulse}</div>
+                    }}>Pulse {typeof p.pulse === 'number' ? p.pulse.toFixed(1) : p.pulse}</div>
                   </div>
                 ))}
               </div>
