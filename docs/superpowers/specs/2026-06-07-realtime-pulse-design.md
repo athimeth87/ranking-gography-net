@@ -1,8 +1,20 @@
 # Realtime Pulse — Design Spec
 
 **Date:** 2026-06-07
-**Status:** Approved for planning
+**Status:** Implemented
 **Author:** Claude (with parin.tnk)
+
+> **Update 2026-06-08 — Pulse model changed.** During testing the percentile
+> ranking proved counter-intuitive in small pools (a 0-like photo still showed
+> ~50, and un-liking didn't move the number). Per the owner's decision, the live
+> Pulse is now an **absolute function of the photo's own engagement**:
+> `pulse = round(99.99 * (1 - exp(-0.03 * engagement)), 1)` (0 engagement → 0;
+> monotonic, so leaderboards still sort correctly). Engagement is also now
+> **reversible** — recomputed from the actual votes/favorites/comments on every
+> insert/delete (migration 0022), so un-liking lowers the score. The
+> engagement-curve recompute lives in migration 0023. The percentile/compression
+> details below describe the original v4 model and are superseded for the live
+> `pulse` value (percentile is still stored for reference).
 
 ## Goal
 
