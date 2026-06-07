@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import type { LivePulse } from '@/lib/realtime-pulse';
 
@@ -7,6 +7,7 @@ import type { LivePulse } from '@/lib/realtime-pulse';
 // Supabase Realtime delivers UPDATEs on the photos table.
 export function useRealtimePulse(photoIds: string[]): Record<string, LivePulse> {
   const [live, setLive] = useState<Record<string, LivePulse>>({});
+  const instanceId = useId();
   const key = photoIds.join(',');
 
   useEffect(() => {
@@ -14,7 +15,7 @@ export function useRealtimePulse(photoIds: string[]): Record<string, LivePulse> 
     const supabase = getSupabaseBrowserClient();
     const ids = new Set(photoIds);
     const channel = supabase
-      .channel(`pulse-live-${key.slice(0, 40)}`)
+      .channel(`pulse-live-${instanceId}`)
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'photos' },
@@ -41,7 +42,7 @@ export function useRealtimePulse(photoIds: string[]): Record<string, LivePulse> 
       supabase.removeChannel(channel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key]);
+  }, [key, instanceId]);
 
   return live;
 }

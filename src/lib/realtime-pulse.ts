@@ -4,7 +4,7 @@ export interface LivePulse {
   pulse: number;
   peakPulse: number | null;
   percentile: number | null;
-  badge: string | null;
+  badge: Photo['badge'];
   likes: number;
   favorites: number;
   comments: number;
@@ -25,7 +25,7 @@ export function mergeLivePulse(
       pulse: l.pulse,
       peakPulse: l.peakPulse,
       percentile: l.percentile,
-      badge: l.badge as Photo['badge'],
+      badge: l.badge,
       likes: l.likes,
       favorites: l.favorites,
       comments: l.comments,

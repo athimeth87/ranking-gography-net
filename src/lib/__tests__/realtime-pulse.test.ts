@@ -35,4 +35,15 @@ describe('mergeLivePulse', () => {
     expect(out[0]!.rank).toBe(1);
     expect(out[1]!.rank).toBe(2);
   });
+
+  it('returns [] for empty input', () => {
+    expect(mergeLivePulse([], { x: { pulse: 1, peakPulse: 1, percentile: 0, badge: null, likes: 0, favorites: 0, comments: 0 } })).toEqual([]);
+  });
+
+  it('ignores live entries with no matching photo (no phantom rows)', () => {
+    const out = mergeLivePulse([base({ id: 'p1' })], { ghost: { pulse: 99, peakPulse: 99, percentile: 1, badge: null, likes: 9, favorites: 9, comments: 9 } });
+    expect(out).toHaveLength(1);
+    expect(out[0]!.id).toBe('p1');
+    expect(out[0]!.likes).toBe(1);
+  });
 });
