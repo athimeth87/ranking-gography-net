@@ -41,12 +41,13 @@ export function DesktopHallOfFame({
   const resolvePhotographer = (username: string) => photographers.find((p) => p.username === username);
   const coverSrc = getPhoto('p010').src;
 
-  // Enhance ranking with cover_url from our pre-fetched photographers data
+  // Enhance ranking with cover_url and is_customer from our pre-fetched photographers data
   const rankingEntries = (photographersRanking || []).map(r => {
     const owner = resolvePhotographer(r.username);
     return {
       ...r,
-      cover_url: r.cover_url || owner?.cover || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop'
+      cover_url: r.cover_url || owner?.cover || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop',
+      is_customer: owner?.isCustomer ?? false,
     };
   });
 

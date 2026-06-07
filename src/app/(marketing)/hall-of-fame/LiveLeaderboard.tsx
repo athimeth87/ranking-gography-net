@@ -13,7 +13,44 @@ export interface PhotographerRanking {
   photo_count: number;
   hof_score: number;
   cover_url?: string; // added from frontend join
+  is_customer?: boolean; // Traveller flag
 }
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+function formatClose(iso: string): string {
+  const [y, m, d] = iso.split('-').map(Number);
+  if (!y || !m || !d) return iso;
+  return `${d} ${MONTHS[m - 1]} ${y}`;
+}
+
+function CrownMark({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
+      <path d="M2 8l4.2 3.4L12 4l5.8 7.4L22 8l-1.7 10.4H3.7L2 8z" />
+    </svg>
+  );
+}
+
+function useCountdown(endIso: string) {
+  const [now, setNow] = useState<number | null>(null);
+  useEffect(() => {
+    setNow(Date.now());
+    const t = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(t);
+  }, []);
+  if (now === null) return null;
+  const end = new Date(`${endIso}T23:59:59`).getTime();
+  const diff = Math.max(0, end - now);
+  return {
+    over: diff <= 0,
+    days: Math.floor(diff / 86_400_000),
+    hours: Math.floor((diff % 86_400_000) / 3_600_000),
+    minutes: Math.floor((diff % 3_600_000) / 60_000),
+  };
+}
+
+type Tab = 'all' | 'classic' | 'traveller';
 
 export function LiveLeaderboard({
   seasonName,
@@ -26,9 +63,16 @@ export function LiveLeaderboard({
   entries: PhotographerRanking[];
   rarityCount: number;
 }) {
+  const [tab, setTab] = useState<Tab>('all');
   const countdown = useCountdown(endDate);
 
-  const rows = entries.slice(0, 10);
+  const filtered = tab === 'classic'
+    ? entries.filter(e => !e.is_customer)
+    : tab === 'traveller'
+      ? entries.filter(e => e.is_customer)
+      : entries;
+
+  const rows = filtered.slice(0, 10);
   const leader = rows[0];
   const runners = rows.slice(1, 3);
   const pack = rows.slice(3);
@@ -55,8 +99,32 @@ export function LiveLeaderboard({
           </div>
         </div>
 
+        {/* ── tabs ── */}
+        <div className="flex gap-2 mt-10 pt-7 border-t border-rule">
+          {([
+            { id: 'all', label: 'All' },
+            { id: 'classic', label: 'Classic' },
+            { id: 'traveller', label: 'Traveller', gold: true },
+          ] as { id: Tab; label: string; gold?: boolean }[]).map(t => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={`caps inline-flex items-center min-h-[44px] px-5 border transition-colors ${
+                tab === t.id
+                  ? 'bg-fg text-bg border-fg'
+                  : t.gold
+                    ? 'border-rule text-gold hover:border-gold'
+                    : 'border-rule text-fg-soft hover:border-fg hover:text-fg'
+              }`}
+            >
+              {t.gold && <CrownMark className="w-3.5 h-3.5 mr-2 text-gold" />}
+              {t.label}
+            </button>
+          ))}
+        </div>
+
         {rows.length === 0 ? (
-          <p className="th text-center text-fg-soft py-24">ยังไม่มีช่างภาพที่ผ่านเกณฑ์ (ต้องมี 22 ภาพขึ้นไป)</p>
+          <p className="th text-center text-fg-soft py-24">ยังไม่มีช่างภาพที่ผ่านเกณฑ์ในหมวดนี้</p>
         ) : (
           <>
             {/* ── #1 feature spread ── */}
