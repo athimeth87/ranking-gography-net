@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   SCORE_MATRIX, voteAgeWeight, voteValue, photoStatus,
   compressionScore, assignScores, assignBadge,
+  rankPhotographers, photographerBadge,
   type Role, type VoteType,
 } from '@/lib/pulse-engine-v4';
 
@@ -102,5 +103,43 @@ describe('v4 §5/§7 — status + badges', () => {
     // popular needs views≥100 → with only 50 views it falls through to trending
     expect(assignBadge({ score: 98, views: 50, active: true })).toBe('trending');
     expect(assignBadge({ score: 80, views: 300, active: true })).toBeNull(); // below every tier
+  });
+});
+
+describe('v5 §10 — photographer Hall of Fame (seasonal)', () => {
+  // 50 qualified photographers (avg = i) + 2 unqualified (< 22 photos)
+  const photographers = [
+    ...Array.from({ length: 50 }, (_, i) => ({ id: `ph${i}`, photoScores: Array(22).fill(i + 1) })),
+    { id: 'newbie', photoScores: Array(10).fill(90) },
+  ];
+  const hof = rankPhotographers(photographers);
+  const get = (id: string) => hof.find((h) => h.item.id === id)!;
+
+  it('< 22 in-window photos → not qualified, no HoF score', () => {
+    const n = get('newbie');
+    expect(n.qualified).toBe(false);
+    expect(n.hofScore).toBeNull();
+    expect(n.isTop10).toBe(false);
+  });
+
+  it('avg score = mean of ALL in-window photos (consistency, not top shots)', () => {
+    expect(get('ph29').avgScore).toBe(30); // 22 photos all = 30
+  });
+
+  it('ranked by avg: top photographer is Top-10 with a tail score; mid ≈ percentile×100', () => {
+    const top = get('ph49');     // highest avg → rank 50/50, pct 1.0
+    expect(top.isTop10).toBe(true);
+    expect(top.hofScore!).toBeGreaterThanOrEqual(97.8);
+    const mid = get('ph24');     // rank 25/50 → pct 0.5
+    expect(mid.hofScore!).toBeCloseTo(50, 0);
+    expect(mid.isTop10).toBe(false);
+  });
+
+  it('photographer badges by HoF score + account age', () => {
+    expect(photographerBadge({ hofScore: 99.6 })).toBe('season_legend');
+    expect(photographerBadge({ hofScore: 98.0 })).toBe('season_top');
+    expect(photographerBadge({ hofScore: 96, accountAgeDays: 60 })).toBe('rising_talent');
+    expect(photographerBadge({ hofScore: 96, accountAgeDays: 200 })).toBeNull(); // too old to be "rising"
+    expect(photographerBadge({ hofScore: null })).toBeNull();
   });
 });

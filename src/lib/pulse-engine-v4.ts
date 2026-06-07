@@ -115,3 +115,69 @@ export function statusFromBadge(badge: Badge, pickType: PickType = 'none'): Puls
   if (pickType !== 'none') return 'editors_choice';
   return badge ?? 'undiscovered';
 }
+
+// ── §10 (v5) — Photographer Hall of Fame (seasonal aggregate) ────────────────
+// Same percentile + compression as photos, but ranked on the AVERAGE score of
+// ALL a photographer's in-window photos — rewards consistency, not lucky shots.
+
+export const PULSE_V5_HOF = {
+  WINDOW_DAYS: 120,     // 4 months = 1 season
+  MIN_PHOTOS: 22,       // must have ≥ 22 in-window photos to qualify
+  PUBLIC_TOP: 10,       // only the top 10 are shown publicly
+  RISING_MAX_DAYS: 90,  // Rising Talent eligibility
+} as const;
+
+export type PhotographerBadge = 'season_legend' | 'season_top' | 'rising_talent' | 'hall_of_fame' | null;
+
+export interface PhotographerInput {
+  id: string;
+  photoScores: number[];   // v4 scores of ALL photos uploaded within the window
+  accountAgeDays?: number; // for Rising Talent
+}
+
+export interface HofResult<T> {
+  item: T;
+  qualified: boolean;
+  photoCount: number;
+  avgScore: number;        // all_avg (0 if none)
+  rank: number | null;     // 1-based ascending among QUALIFIED (rank M = best)
+  percentile: number | null;
+  hofScore: number | null; // 0..99.99
+  isTop10: boolean;        // public Hall of Fame slot
+}
+
+const mean = (xs: number[]) => (xs.length ? xs.reduce((s, x) => s + x, 0) / xs.length : 0);
+
+export function rankPhotographers<T extends PhotographerInput>(photographers: T[]): HofResult<T>[] {
+  const qualified = photographers.filter((p) => p.photoScores.length >= PULSE_V5_HOF.MIN_PHOTOS);
+  const M = qualified.length;
+  const avgById = new Map<string, number>();
+  qualified.forEach((p) => avgById.set(p.id, mean(p.photoScores)));
+
+  const sortedAvg = qualified.map((p) => avgById.get(p.id) ?? 0).sort((a, b) => a - b);
+  const ref = percentileValue(sortedAvg, PULSE_V4.REF_PERCENTILE);
+  const ordered = [...qualified].sort((a, b) => (avgById.get(a.id) ?? 0) - (avgById.get(b.id) ?? 0));
+  const rankById = new Map<string, number>();
+  ordered.forEach((p, i) => rankById.set(p.id, i + 1));
+
+  return photographers.map((item) => {
+    const photoCount = item.photoScores.length;
+    if (photoCount < PULSE_V5_HOF.MIN_PHOTOS) {
+      return { item, qualified: false, photoCount, avgScore: mean(item.photoScores), rank: null, percentile: null, hofScore: null, isTop10: false };
+    }
+    const avgScore = avgById.get(item.id) ?? 0;
+    const rank = rankById.get(item.id) ?? 1;
+    const pct = rank / M;
+    const hof = pct <= PULSE_V4.REF_PERCENTILE ? pct * 100 : compressionScore(avgScore, ref);
+    return { item, qualified: true, photoCount, avgScore, rank, percentile: pct, hofScore: round1(hof), isTop10: rank > M - PULSE_V5_HOF.PUBLIC_TOP };
+  });
+}
+
+// Score-tier badge. The Hall-of-Fame (top-10) badge is the `isTop10` flag above.
+export function photographerBadge(o: { hofScore: number | null; accountAgeDays?: number }): PhotographerBadge {
+  if (o.hofScore == null) return null;
+  if (o.hofScore >= 99.5) return 'season_legend';
+  if (o.hofScore >= PULSE_V4.LINEAR_CAP) return 'season_top';
+  if (o.hofScore >= 95 && (o.accountAgeDays ?? Infinity) <= PULSE_V5_HOF.RISING_MAX_DAYS) return 'rising_talent';
+  return null;
+}
