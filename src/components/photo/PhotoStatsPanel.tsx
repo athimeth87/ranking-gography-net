@@ -54,17 +54,17 @@ function FlameIcon() {
 interface PhotoStatsPanelProps {
   likes: number;
   impressions: number;
-  highestPulse: number;
+  pulse: number;
   pickType?: PickType;
   badge?: string | null;
 }
 
-export function PhotoStatsPanel({ likes, impressions, highestPulse, pickType = 'none', badge }: PhotoStatsPanelProps) {
+export function PhotoStatsPanel({ likes, impressions, pulse, pickType = 'none', badge }: PhotoStatsPanelProps) {
   const t = useTranslations('PhotoStats');
   const v4PickType = (pickType === 'both' ? 'editor' : pickType) as 'none' | 'editor' | 'ambassador';
   const status = badge !== undefined
     ? statusFromBadge((badge ?? null) as Badge, v4PickType)
-    : pulseStatus(highestPulse, pickType);
+    : pulseStatus(pulse, pickType);
 
   return (
     <div className="py-7 border-b border-rule">
@@ -82,8 +82,8 @@ export function PhotoStatsPanel({ likes, impressions, highestPulse, pickType = '
         </li>
         <li className="flex items-center gap-3">
           <PulseIcon />
-          <span className="mono text-[15px] font-medium tracking-[-.01em]">{highestPulse.toFixed(1)}</span>
-          <span className="caps opacity-55 text-[10px]">{t('highest_pulse')}</span>
+          <span className="mono text-[15px] font-medium tracking-[-.01em]">{pulse.toFixed(1)}</span>
+          <span className="caps opacity-55 text-[10px]">{t('pulse')}</span>
         </li>
         <li className="flex items-center gap-3">
           <FlameIcon />

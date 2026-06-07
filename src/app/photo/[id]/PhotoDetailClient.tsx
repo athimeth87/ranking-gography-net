@@ -311,7 +311,6 @@ export function PhotoDetailClient({ id }: { id: string }) {
 
   // Prefer realtime values when present, falling back to the loaded photo row.
   const livePulse     = l?.pulse      ?? photo.pulse;
-  const livePeak      = l?.peakPulse  ?? photo.peakPulse;
   const liveBadge     = (l?.badge as typeof photo.badge) ?? photo.badge;
   const liveLikes     = l?.likes      ?? photo.likes;
   const liveFavorites = l?.favorites  ?? photo.favorites;
@@ -496,7 +495,7 @@ export function PhotoDetailClient({ id }: { id: string }) {
                 <PhotoStatsPanel
                   likes={liveLikes}
                   impressions={photo.impressions ?? 0}
-                  highestPulse={livePeak ?? livePulse}
+                  pulse={livePulse}
                   pickType={photo.pickType}
                   badge={liveBadge}
                 />
@@ -578,7 +577,7 @@ export function PhotoDetailClient({ id }: { id: string }) {
                 <PhotoStatsPanel
                   likes={liveLikes}
                   impressions={photo.impressions ?? 0}
-                  highestPulse={livePeak ?? livePulse}
+                  pulse={livePulse}
                   pickType={photo.pickType}
                   badge={liveBadge}
                 />
