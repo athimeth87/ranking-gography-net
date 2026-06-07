@@ -149,19 +149,19 @@ export default function PhotographersPage() {
         title="All Photographers"
         subtitle="ค้นพบช่างภาพและนักเดินทางที่ร่วมส่งภาพบนเวที GOGRAPHY Ranking"
       >
-        <div className="flex gap-8 mt-2">
+        <div className="flex flex-wrap gap-6 md:gap-8 mt-6">
           {[
             { n: allPhotographers.length, label: 'Total Photographers' },
             { n: allPhotographers.filter(p => p.isCustomer).length, label: 'Travellers' },
             { n: allPhotographers.filter(p => p.isAmbassador).length, label: 'Ambassadors' },
           ].map(({ n, label }) => (
             <div key={label} className="flex flex-col">
-              <span className="mono text-[22px] font-semibold text-white leading-none">{n}</span>
-              <span className="mono text-[10px] tracking-[.18em] uppercase text-white/55 mt-1">{label}</span>
+              <span className="mono text-[22px] md:text-[28px] font-semibold text-white leading-none">{n}</span>
+              <span className="mono text-[10px] tracking-[.18em] uppercase text-white/55 mt-2">{label}</span>
             </div>
           ))}
         </div>
-        <div className="relative w-full max-w-[420px] mt-4">
+        <div className="relative w-full max-w-[420px] mt-8">
           <input
             type="text"
             value={search}
@@ -199,12 +199,12 @@ export default function PhotographersPage() {
             </div>
 
             {/* Sort */}
-            <div className="flex items-center gap-3 shrink-0">
-              <span className="caps opacity-55">Sort</span>
+            <div className="flex items-center justify-between lg:justify-start gap-3 w-full lg:w-auto shrink-0 pt-2 border-t border-white/5 lg:border-t-0 lg:pt-0">
+              <span className="caps opacity-55">Sort By</span>
               <select
                 value={sort}
                 onChange={(e) => setSort(e.target.value as SortValue)}
-                className="px-3 py-2 border border-rule bg-transparent text-fg text-[12px] tracking-[.12em] uppercase cursor-pointer"
+                className="px-4 py-2 border border-rule bg-[#111] text-fg text-[12px] tracking-[.12em] uppercase cursor-pointer outline-none focus:border-white/40"
               >
                 <option value="pulse">Pulse Rank</option>
                 <option value="followers">Most followers</option>
