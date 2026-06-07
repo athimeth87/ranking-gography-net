@@ -143,7 +143,20 @@ export default function PhotographersPage() {
         eyebrow="Directory"
         title="All Photographers"
         subtitle="ค้นพบช่างภาพและนักเดินทางที่ร่วมส่งภาพบนเวที GOGRAPHY Ranking"
-      />
+      >
+        <div className="flex gap-8 mt-2">
+          {[
+            { n: allPhotographers.length, label: 'Total Photographers' },
+            { n: allPhotographers.filter(p => p.isCustomer).length, label: 'Travellers' },
+            { n: allPhotographers.filter(p => p.isAmbassador).length, label: 'Ambassadors' },
+          ].map(({ n, label }) => (
+            <div key={label} className="flex flex-col">
+              <span className="mono text-[22px] font-semibold text-white leading-none">{n}</span>
+              <span className="mono text-[10px] tracking-[.18em] uppercase text-white/55 mt-1">{label}</span>
+            </div>
+          ))}
+        </div>
+      </PageCover>
 
       {/* Filter / Sort bar */}
       <section className="py-[32px] border-t border-rule border-b border-rule sticky top-[60px] z-40 bg-bg/95 backdrop-blur-sm">
