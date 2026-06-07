@@ -1,17 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
+import { useRealtimePulse } from '@/hooks/useRealtimePulse';
+import { mergeLivePulse } from '@/lib/realtime-pulse';
 import { getSeasons, getPhotos, getPhotographers } from '@/lib/data';
 import type { Category, Photo, Photographer, Season, SeasonWinner } from '@/lib/types';
 import { MobileHallOfFame } from '@/components/mobile/MobileHallOfFame';
 import { DesktopHallOfFame } from './DesktopHallOfFame';
-
-// ===== Season definitions — no DB table needed =====
-// Each season is a date range. Winners are computed from actual photo likes within that range.
-const SEASON_DEFS: { id: string; name: string; startDate: string; endDate: string; status: 'live' | 'closed' }[] = [
-  { id: 'season-1', name: 'Season 1', startDate: '2026-06-01', endDate: '2026-09-30', status: 'live' },
-];
 
 const CAT_MAP: Record<string, Category> = {
   landscape: 'Landscape',
@@ -19,23 +15,19 @@ const CAT_MAP: Record<string, Category> = {
   bw: 'BW',
 };
 
-// Pick the top photo (by likes) per category from photos uploaded within the season window.
+// A season is "closed" (winners shown) once awarded/archived; otherwise it's live.
+const CLOSED_DB_STATUSES = new Set(['awarded', 'archived']);
+
+// Pick the top photo (by pulse) per category among photos linked to this season.
 function computeWinners(
   photos: any[],
-  startDate: string,
-  endDate: string,
+  seasonId: string,
 ): Record<Category, SeasonWinner> | null {
-  const start = new Date(startDate);
-  const end = new Date(endDate + 'T23:59:59Z');
-
-  const inWindow = photos.filter(p => {
-    const d = new Date(p.uploaded_at);
-    return d >= start && d <= end;
-  });
+  const inSeason = photos.filter(p => p.season_id === seasonId);
 
   const result: Partial<Record<Category, SeasonWinner>> = {};
   for (const [rawCat, mappedCat] of Object.entries(CAT_MAP)) {
-    const pool = inWindow.filter(p => p.category === rawCat);
+    const pool = inSeason.filter(p => p.category === rawCat);
     if (pool.length === 0) continue;
     const top = pool.reduce((best, p) =>
       (p.pulse || 0) > (best.pulse || 0) ? p : best,
@@ -61,6 +53,10 @@ export function HallOfFameClient() {
   const [photographers, setPhotographers] = useState<Photographer[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const liveIds = useMemo(() => allPhotos.map((p) => p.id), [allPhotos]);
+  const live = useRealtimePulse(liveIds);
+  const livePhotos = useMemo(() => mergeLivePulse(allPhotos, live), [allPhotos, live]);
+
   useEffect(() => {
     const fetchData = async () => {
       const supabase = getSupabaseBrowserClient();
@@ -75,13 +71,15 @@ export function HallOfFameClient() {
       }
 
       try {
-        const [{ data: dbPhotos }, { data: dbUsers }] = await Promise.all([
+        const [{ data: dbPhotos }, { data: dbUsers }, { data: dbSeasons }] = await Promise.all([
           supabase.from('photos').select('*'),
           supabase.from('users').select('*'),
+          supabase.from('seasons').select('*').order('start_date', { ascending: true }),
         ]);
 
         const photos  = dbPhotos  || [];
         const users   = dbUsers   || [];
+        const seasonRows = dbSeasons || [];
 
         // No real photos yet → fall back to full mock so the page looks right
         if (photos.length === 0) {
@@ -136,17 +134,20 @@ export function HallOfFameClient() {
           };
         });
 
-        // Build seasons from static config + computed winners
-        const computedSeasons: Season[] = SEASON_DEFS.map(def => ({
-          id: def.id,
-          name: def.name,
-          range: formatThaiRange(def.startDate, def.endDate),
-          status: def.status,
-          endDate: def.endDate,
-          winners: def.status === 'closed'
-            ? computeWinners(photos, def.startDate, def.endDate)
-            : null,
-        }));
+        // Build seasons from the DB; fall back to mock config if the table is empty
+        const computedSeasons: Season[] = seasonRows.length > 0
+          ? seasonRows.map(s => {
+              const closed = CLOSED_DB_STATUSES.has(s.status);
+              return {
+                id: s.id,
+                name: s.name,
+                range: formatThaiRange(s.start_date, s.end_date),
+                status: closed ? 'closed' : 'live',
+                endDate: s.end_date,
+                winners: closed ? computeWinners(photos, s.id) : null,
+              };
+            })
+          : getSeasons();
 
         setAllPhotos(mappedPhotos);
         setPhotographers(mappedPhotographers);
@@ -169,7 +170,7 @@ export function HallOfFameClient() {
       <div className="md:hidden">
         <MobileHallOfFame
           realSeasons={seasons}
-          realAllPhotos={allPhotos}
+          realAllPhotos={livePhotos}
           realPhotographers={photographers}
         />
       </div>
@@ -177,7 +178,7 @@ export function HallOfFameClient() {
       <div className="hidden md:block">
         <DesktopHallOfFame
           seasons={seasons}
-          allPhotos={allPhotos}
+          allPhotos={livePhotos}
           photographers={photographers}
           loading={loading}
         />

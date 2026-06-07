@@ -5,6 +5,7 @@ import type { Photo, Photographer } from '@/lib/types';
 import { ViewfinderFrame } from '@/components/photo/ViewfinderFrame';
 import { PulseCountUp } from '@/components/editorial/PulseCountUp';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
+import { useRealtimePulse } from '@/hooks/useRealtimePulse';
 
 import { useTranslations } from 'next-intl';
 
@@ -18,6 +19,8 @@ interface HeroSectionProps {
 export function HeroSection({ banner, top, bannerPhotographer, topPhotographer }: HeroSectionProps) {
   const router = useRouter();
   const t = useTranslations('HeroSection');
+  const live = useRealtimePulse([top?.id, banner?.id].filter(Boolean) as string[]);
+  const topLikes = (top && live[top.id]?.likes) ?? top?.likes;
   const [content, setContent] = useState({
     headline: t('headline'),
     description: t('description')
@@ -97,7 +100,7 @@ export function HeroSection({ banner, top, bannerPhotographer, topPhotographer }
         <div className="wrap flex justify-between items-baseline pb-6 text-white/65">
           <div className="caps opacity-85">{t('cover_of_week')}</div>
           <div className="mono text-[11px] tracking-[.18em] uppercase">
-            ★ #1 · <PulseCountUp value={top.likes} decimals={0} suffix=" LIKES" />
+            ★ #1 · <PulseCountUp value={topLikes} decimals={0} suffix=" LIKES" />
           </div>
         </div>
 

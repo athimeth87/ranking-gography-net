@@ -76,7 +76,7 @@
     "title": "สถิติ",
     "likes": "ถูกใจ",
     "impressions": "การมองเห็น",
-    "highest_pulse": "Pulse สูงสุด"
+    "pulse": "Pulse"
   },
   "PhotographerCard": {
     "ambassador": "Ambassador",

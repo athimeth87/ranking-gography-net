@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import type { Photo } from '@/lib/types';
 import type { SortKey } from '@/lib/data';
-import { PhotoGrid } from '@/components/photo/PhotoGrid';
+import { RealtimePhotoGrid } from '@/components/photo/RealtimePhotoGrid';
 import { Footer } from '@/components/layout/Footer';
 import { MobileExplore } from '@/components/mobile/MobileExplore';
 
@@ -372,7 +372,7 @@ export default function ExplorePage() {
           ) : photos.length === 0 ? (
             <EmptyState />
           ) : (
-            <PhotoGrid photos={photos} cols={3} showRank={sort === 'pulse'} showLike />
+            <RealtimePhotoGrid photos={photos} cols={3} showRank={sort === 'pulse'} showLike liveSort={sort === 'pulse'} />
           )}
         </div>
       </section>

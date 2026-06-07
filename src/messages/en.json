@@ -76,7 +76,7 @@
     "title": "Stats",
     "likes": "Likes",
     "impressions": "Impressions",
-    "highest_pulse": "Highest Pulse"
+    "pulse": "Pulse"
   },
   "PhotographerCard": {
     "ambassador": "Ambassador",
