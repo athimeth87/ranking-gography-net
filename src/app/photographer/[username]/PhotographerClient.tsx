@@ -62,6 +62,34 @@ function ProfileStat({ label, val, onClick }: ProfileStatProps) {
   return <div>{inner}</div>;
 }
 
+function SocialIconRow({ p }: { p: any }) {
+  if (!p.socialTwitter && !p.socialInstagram && !p.socialFacebook && !p.website) return null;
+  return (
+    <div className="flex items-center gap-3 mt-4">
+      {p.socialTwitter && (
+        <a href={p.socialTwitter} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-8 h-8 rounded-full border border-black dark:border-white hover:opacity-70 transition-opacity text-black dark:text-white">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4l11.733 16h4.267l-11.733 -16z"></path><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"></path></svg>
+        </a>
+      )}
+      {p.socialInstagram && (
+        <a href={p.socialInstagram} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-8 h-8 rounded-full border border-black dark:border-white hover:opacity-70 transition-opacity text-black dark:text-white">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+        </a>
+      )}
+      {p.socialFacebook && (
+        <a href={p.socialFacebook} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-8 h-8 rounded-full border border-black dark:border-white hover:opacity-70 transition-opacity text-black dark:text-white">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+        </a>
+      )}
+      {p.website && (
+        <a href={p.website} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center w-8 h-8 rounded-full border border-black dark:border-white hover:opacity-70 transition-opacity text-black dark:text-white">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+        </a>
+      )}
+    </div>
+  );
+}
+
 function ProfileEmpty({ msg }: { msg: string }) {
   return <div className="py-[120px] text-center text-fg-soft th">{msg}</div>;
 }
@@ -114,6 +142,10 @@ export function PhotographerClient({ username }: { username: string }) {
         loc: userData.location || 'EARTH',
         avatar: userData.avatar_url,
         cover: userData.cover_url || 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=2938&auto=format&fit=crop',
+        socialTwitter: userData.social_twitter || '',
+        socialInstagram: userData.social_instagram || '',
+        socialFacebook: userData.social_facebook || '',
+        website: userData.portfolio_url || '',
         isCustomer: userData.is_customer,
         isAmbassador: userData.is_ambassador,
         isRankMaster: isUserRankMaster,
@@ -366,11 +398,14 @@ export function PhotographerClient({ username }: { username: string }) {
             {photographer.name}
           </div>
           {photographer.bio && (
-            <p className="font-thai text-[13px] leading-[1.6] mt-[5px] mb-[6px] text-fg-soft max-w-[38ch]">
+            <p className="font-thai text-[15px] leading-[1.65] text-fg-soft max-w-[50ch] mb-4">
               {photographer.bio}
             </p>
           )}
-          <div className="mono text-[11px] tracking-[.06em] text-fg-soft uppercase">
+          <div className="mb-6">
+            <SocialIconRow p={photographer} />
+          </div>
+          <div className="mono text-[11px] tracking-[.06em] text-fg-soft uppercase mt-1">
             {photographer.loc} · Joined {photographer.joined}
           </div>
         </div>
@@ -610,6 +645,9 @@ export function PhotographerClient({ username }: { username: string }) {
             <p className="th mt-7 text-[17px] leading-[1.55] max-w-[720px] text-fg-soft mb-0">
               {photographer.bio}
             </p>
+            <div className="mt-6">
+              <SocialIconRow p={photographer} />
+            </div>
           </div>
         </section>
 

@@ -62,6 +62,10 @@ export interface Photographer {
   totalViews?: number;
   totalSaves?: number;
   categories?: string[];
+  socialTwitter?: string;
+  socialInstagram?: string;
+  socialFacebook?: string;
+  website?: string;
   hofScore?: number | null;
   avgPulse?: number;
   isAmbassador: boolean;
