@@ -111,7 +111,7 @@ export function HeroSection({ banner, top, bannerPhotographer, topPhotographer }
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/cover-of-the-week.jpg"
+              src={top.src}
               alt={top.title}
               loading="lazy"
               className="w-full max-h-[80vh] object-cover"
