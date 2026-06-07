@@ -20,17 +20,7 @@ function mapPublicPhoto(p: any, username: string) {
   const likes = p.likes_count || 0;
   const favorites = p.favorites_count || 0;
   const comments = p.comments_count || 0;
-  const pulse = computePulse({
-    likes_count: likes,
-    favorites_count: favorites,
-    comments_count: comments,
-    impressions_count: p.impressions_count || 0,
-    uploaded_at: p.uploaded_at,
-    pick_type: (p.pick_type as PickType) ?? 'none',
-    has_title: !!p.title,
-    has_category: !!p.category,
-    has_descriptor: !!(p.location || p.camera || p.lens),
-  });
+  const pulse = p.pulse != null ? Number(p.pulse) : 0;
   return {
     id: p.id,
     slug: p.id,
@@ -210,8 +200,7 @@ export function PhotographerClient({ username }: { username: string }) {
               const likes = typeof next.likes_count === 'number' ? next.likes_count : p.likes;
               const favorites = typeof next.favorites_count === 'number' ? next.favorites_count : p.favorites;
               const comments = typeof next.comments_count === 'number' ? next.comments_count : p.comments;
-              const pulse = computePulse({ likes_count: likes, favorites_count: favorites, comments_count: comments, impressions_count: 0, uploaded_at: p.date });
-              return { ...p, likes, favorites, comments, pulse };
+              return { ...p, likes, favorites, comments };
             }),
           );
         },

@@ -51,17 +51,7 @@ function mapPhoto(p: any, username: string, fallbackEmail?: string) {
     hours: 1,
     picks: [],
     date: p.uploaded_at,
-    pulse: computePulse({
-      likes_count: likes,
-      favorites_count: favorites,
-      comments_count: comments,
-      impressions_count: p.impressions_count || 0,
-      uploaded_at: p.uploaded_at,
-      pick_type: (p.pick_type as PickType) ?? 'none',
-      has_title: !!p.title,
-      has_category: !!p.category,
-      has_descriptor: !!(p.location || p.camera || p.lens),
-    }),
+    pulse: p.pulse != null ? Number(p.pulse) : 0,
     rank: 0,
   };
 }
@@ -326,14 +316,7 @@ export default function Page({ params }: PageProps) {
               const likes = typeof next.likes_count === 'number' ? next.likes_count : p.likes;
               const favorites = typeof next.favorites_count === 'number' ? next.favorites_count : p.favorites;
               const comments = typeof next.comments_count === 'number' ? next.comments_count : p.comments;
-              const pulse = computePulse({
-                likes_count: likes,
-                favorites_count: favorites,
-                comments_count: comments,
-                impressions_count: 0,
-                uploaded_at: p.date,
-              });
-              return { ...p, likes, favorites, comments, pulse };
+              return { ...p, likes, favorites, comments };
             }),
           );
         },

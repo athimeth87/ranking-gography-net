@@ -248,13 +248,6 @@ export function PhotoDetailClient({ id }: { id: string }) {
               likes,
               comments,
               favorites,
-              pulse: computePulse({
-                likes_count: likes,
-                favorites_count: favorites,
-                comments_count: comments,
-                impressions_count: 0,
-                uploaded_at: curr.date,
-              }),
             };
           });
         }
