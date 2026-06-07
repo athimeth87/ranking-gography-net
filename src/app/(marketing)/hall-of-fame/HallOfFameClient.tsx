@@ -1,7 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
+import { useRealtimePulse } from '@/hooks/useRealtimePulse';
+import { mergeLivePulse } from '@/lib/realtime-pulse';
 import { getSeasons, getPhotos, getPhotographers } from '@/lib/data';
 import type { Category, Photo, Photographer, Season, SeasonWinner } from '@/lib/types';
 import { MobileHallOfFame } from '@/components/mobile/MobileHallOfFame';
@@ -50,6 +52,10 @@ export function HallOfFameClient() {
   const [allPhotos, setAllPhotos] = useState<Photo[]>([]);
   const [photographers, setPhotographers] = useState<Photographer[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const liveIds = useMemo(() => allPhotos.map((p) => p.id), [allPhotos]);
+  const live = useRealtimePulse(liveIds);
+  const livePhotos = useMemo(() => mergeLivePulse(allPhotos, live), [allPhotos, live]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -164,7 +170,7 @@ export function HallOfFameClient() {
       <div className="md:hidden">
         <MobileHallOfFame
           realSeasons={seasons}
-          realAllPhotos={allPhotos}
+          realAllPhotos={livePhotos}
           realPhotographers={photographers}
         />
       </div>
@@ -172,7 +178,7 @@ export function HallOfFameClient() {
       <div className="hidden md:block">
         <DesktopHallOfFame
           seasons={seasons}
-          allPhotos={allPhotos}
+          allPhotos={livePhotos}
           photographers={photographers}
           loading={loading}
         />
