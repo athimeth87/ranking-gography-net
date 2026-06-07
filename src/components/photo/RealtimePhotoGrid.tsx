@@ -1,6 +1,5 @@
 'use client';
 import { useMemo } from 'react';
-import type { Photo } from '@/lib/types';
 import { PhotoGrid } from './PhotoGrid';
 import { useRealtimePulse } from '@/hooks/useRealtimePulse';
 import { mergeLivePulse } from '@/lib/realtime-pulse';

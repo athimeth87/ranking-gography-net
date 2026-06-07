@@ -372,7 +372,7 @@ export default function ExplorePage() {
           ) : photos.length === 0 ? (
             <EmptyState />
           ) : (
-            <RealtimePhotoGrid photos={photos} cols={3} showRank={sort === 'pulse'} showLike liveSort />
+            <RealtimePhotoGrid photos={photos} cols={3} showRank={sort === 'pulse'} showLike liveSort={sort === 'pulse'} />
           )}
         </div>
       </section>
