@@ -73,14 +73,20 @@ export function HallOfFameClient() {
 
       try {
         // Fetch seasons and users first
-        const [{ data: dbUsers }, { data: dbSeasons }, { data: dbPhotographersRanking }] = await Promise.all([
+        const [{ data: dbUsers }, { data: dbSeasons }] = await Promise.all([
           supabase.from('users').select('*'),
-          supabase.from('seasons').select('*').order('start_date', { ascending: true }),
-          supabase.rpc('get_v5_hall_of_fame').limit(15) // Top 15 Photographers!
+          supabase.from('seasons').select('*').order('start_date', { ascending: true })
         ]);
 
         const users   = dbUsers   || [];
         const seasonRows = dbSeasons || [];
+        
+        // Find the active season
+        const liveSeason = seasonRows.find(s => s.status === 'active' || s.status === 'live');
+        const liveSeasonId = liveSeason?.id || null;
+
+        // Fetch Top Photographers specifically for this season!
+        const { data: dbPhotographersRanking } = await supabase.rpc('get_v5_hall_of_fame', { p_season_id: liveSeasonId }).limit(15);
         const rankData = dbPhotographersRanking || [];
 
         // Fetch Top 50 Photos directly instead of paginating 1500 photos!

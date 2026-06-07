@@ -40,11 +40,13 @@ export default function PhotographersPage() {
       const { data: photosData } = await supabase.from('photos').select('*').order('pulse', { ascending: false }).limit(200); // Only fetch some photos for cover previews
       const { data: followsData } = await supabase.from('follows').select('*');
       const follows = followsData || [];
+      const { data: seasonsData } = await supabase.from('seasons').select('id, status');
       
       const rankMasters = computeRankMasters(photosData || []);
+      const liveSeasonId = seasonsData?.find(s => s.status === 'active' || s.status === 'live')?.id || null;
       
       // V5 HOF scoring via Database RPC! Super fast and accurate.
-      const { data: rankData } = await supabase.rpc('get_v5_hall_of_fame');
+      const { data: rankData } = await supabase.rpc('get_v5_hall_of_fame', { p_season_id: liveSeasonId });
       const hofResults = rankData || [];
 
       const mappedPhotographers: Photographer[] = users.map(u => {
