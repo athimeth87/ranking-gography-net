@@ -189,7 +189,7 @@ export default function PhotographersPage() {
       {/* Main content */}
       <section className="py-[56px] pb-[96px]">
         <div className="wrap">
-          <div className="grid grid-cols-1 xl:grid-cols-[1fr_260px] gap-10 xl:gap-12 items-start">
+          <div className="grid grid-cols-1 xl:grid-cols-[1fr_220px] gap-10 xl:gap-8 items-start">
 
             {/* Photographer grid */}
             <div>
@@ -200,7 +200,7 @@ export default function PhotographersPage() {
               ) : list.length === 0 ? (
                 <div className="py-[120px] text-center text-fg-soft th">ไม่พบช่างภาพในตัวกรองนี้</div>
               ) : (
-                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-3">
                   {list.map((p, i) => (
                     <PhotographerCard
                       key={p.username}
