@@ -157,6 +157,7 @@
   "Notifications": {
     "title": "การแจ้งเตือน",
     "mark_all_read": "อ่านแล้วทั้งหมด",
+    "view_all": "ดูทั้งหมด",
     "no_notifications": "ยังไม่มีการแจ้งเตือน",
     "liked_your_photo": "ถูกใจรูปภาพของคุณ",
     "favorited_your_photo": "ชื่นชอบรูปภาพของคุณ",
@@ -190,6 +191,7 @@
     "nav_photos": "รูปภาพของฉัน",
     "nav_favorites": "รายการโปรด",
     "nav_stats": "สถิติ",
+    "nav_notifications": "การแจ้งเตือน",
     "nav_settings": "ตั้งค่า",
     "edit_profile": "แก้ไขโปรไฟล์",
     "share": "แชร์",

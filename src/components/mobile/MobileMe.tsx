@@ -38,7 +38,7 @@ export function MobileMe({
     { id: 'photos',    label: t('nav_photos') },
     { id: 'favorites', label: t('nav_favorites') },
     { id: 'stats',     label: t('nav_stats') },
-    { id: 'notifications', label: 'Notifications' },
+    { id: 'notifications', label: t('nav_notifications') || 'Notifications' },
     { id: 'settings',  label: t('nav_settings') },
   ];
   const [activeTab, setActiveTab] = useState<SectionKey>(

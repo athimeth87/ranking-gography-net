@@ -370,7 +370,7 @@ export default function Page({ params }: PageProps) {
     { id: 'photos', label: t('nav_photos'), path: '/me/photos', count: myPhotos.length },
     { id: 'favorites', label: t('nav_favorites'), path: '/me/favorites', count: favs.length },
     { id: 'stats', label: t('nav_stats'), path: '/me/stats' },
-    { id: 'notifications', label: 'Notifications', path: '/me/notifications' },
+    { id: 'notifications', label: t('nav_notifications') || 'Notifications', path: '/me/notifications' },
     { id: 'settings', label: t('nav_settings'), path: '/me/settings' },
   ];
 

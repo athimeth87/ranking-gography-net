@@ -157,6 +157,7 @@
   "Notifications": {
     "title": "Notifications",
     "mark_all_read": "Mark all read",
+    "view_all": "View all",
     "no_notifications": "No notifications yet.",
     "liked_your_photo": "liked your photo",
     "favorited_your_photo": "favorited your photo",
@@ -190,6 +191,7 @@
     "nav_photos": "My Photos",
     "nav_favorites": "Favorites",
     "nav_stats": "Stats",
+    "nav_notifications": "Notifications",
     "nav_settings": "Settings",
     "edit_profile": "Edit Profile",
     "share": "Share",

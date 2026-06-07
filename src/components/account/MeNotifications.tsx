@@ -3,9 +3,11 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { formatNotificationBody } from '@/lib/data/notifications';
 import { TranslatedNotificationBody, TranslatedTimeAgo } from '@/components/layout/NotificationsBell';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
 export function MeNotifications() {
   const router = useRouter();
+  const t = useTranslations('Notifications');
   const { notifications, markRead, markAllRead } = useNotifications();
 
   return (
@@ -13,21 +15,21 @@ export function MeNotifications() {
       <div className="flex justify-between items-baseline mb-[14px]">
         <div>
           <div className="caps opacity-55">Account</div>
-          <h1 className="th text-[36px] md:text-[56px] font-normal tracking-[-0.025em] m-0 leading-none">Notifications</h1>
+          <h1 className="th text-[36px] md:text-[56px] font-normal tracking-[-0.025em] m-0 leading-none">{t('title')}</h1>
         </div>
         {notifications.length > 0 && (
           <button 
             onClick={() => markAllRead()}
             className="caps text-[12px] opacity-65 hover:opacity-100 border-b border-rule pb-[2px] cursor-pointer"
           >
-            Mark all as read
+            {t('mark_all_read')}
           </button>
         )}
       </div>
 
       <div className="border border-rule bg-cream">
         {notifications.length === 0 ? (
-          <div className="px-6 py-[120px] text-center text-fg-soft th">ไม่มีการแจ้งเตือนในขณะนี้</div>
+          <div className="px-6 py-[120px] text-center text-fg-soft th">{t('no_notifications')}</div>
         ) : (
           <div className="divide-y divide-rule">
             {notifications.map((n) => (
