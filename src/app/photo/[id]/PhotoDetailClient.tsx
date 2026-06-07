@@ -20,6 +20,7 @@ import { PhotoStatsPanel } from '@/components/photo/PhotoStatsPanel';
 import { usePhotoImpression } from '@/hooks/usePhotoImpression';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { useTranslations } from 'next-intl';
+import { useRealtimePulse } from '@/hooks/useRealtimePulse';
 
 // ===== Single photo detail page — /photo/[id] =====
 // Large image + sidebar (photographer, EXIF, pulse/stats, comments), like/favorite toggles, lightbox.
@@ -296,6 +297,10 @@ export function PhotoDetailClient({ id }: { id: string }) {
   // Category slug for links
   const catSlug = photo ? photo.cat.toLowerCase() : '';
 
+  // Live pulse overlay — realtime UPDATEs on the photos row.
+  const live = useRealtimePulse(photo?.id ? [photo.id] : []);
+  const l = photo?.id ? live[photo.id] : undefined;
+
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
@@ -303,6 +308,14 @@ export function PhotoDetailClient({ id }: { id: string }) {
   if (error || !photo) {
     return <div className="min-h-screen flex items-center justify-center">404 - Photo not found in database</div>;
   }
+
+  // Prefer realtime values when present, falling back to the loaded photo row.
+  const livePulse     = l?.pulse      ?? photo.pulse;
+  const livePeak      = l?.peakPulse  ?? photo.peakPulse;
+  const liveBadge     = (l?.badge as typeof photo.badge) ?? photo.badge;
+  const liveLikes     = l?.likes      ?? photo.likes;
+  const liveFavorites = l?.favorites  ?? photo.favorites;
+  const liveComments  = l?.comments   ?? photo.comments;
 
   return (
     <div className="page-fade">
@@ -403,14 +416,14 @@ export function PhotoDetailClient({ id }: { id: string }) {
                     >
                       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                     </svg>
-                    <span>{likeState.count.toLocaleString()}</span>
+                    <span>{(l?.likes ?? likeState.count).toLocaleString()}</span>
                   </button>
                 ) : (
                   <span className="heart" aria-label="Likes (read-only seed)">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="13" height="13">
                       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                     </svg>
-                    <span>{photo.likes.toLocaleString()}</span>
+                    <span>{liveLikes.toLocaleString()}</span>
                   </span>
                 )}
 
@@ -426,14 +439,14 @@ export function PhotoDetailClient({ id }: { id: string }) {
                     <svg viewBox="0 0 24 24" fill={favoriteState.favorited ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" width="13" height="13">
                       <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
                     </svg>
-                    <span>{favoriteState.count}</span>
+                    <span>{l?.favorites ?? favoriteState.count}</span>
                   </button>
                 ) : (
                   <span className="heart" aria-label="Favorites (read-only seed)">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="13" height="13">
                       <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
                     </svg>
-                    <span>{photo.favorites}</span>
+                    <span>{liveFavorites}</span>
                   </span>
                 )}
 
@@ -441,7 +454,7 @@ export function PhotoDetailClient({ id }: { id: string }) {
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="13" height="13">
                     <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" />
                   </svg>
-                  <span>{photo.comments}</span>
+                  <span>{liveComments}</span>
                 </button>
 
                 <div className="flex-1" />
@@ -466,11 +479,11 @@ export function PhotoDetailClient({ id }: { id: string }) {
                   <div>
                     <div className="caps opacity-55 mb-2">{t('likes')}</div>
                     <div className="mono font-medium leading-[1] text-[48px] tracking-[-.02em]">
-                      {photo.likes}
+                      {liveLikes}
                     </div>
                   </div>
-                  <BreakdownStat label={t('favorites')} val={photo.favorites} />
-                  <BreakdownStat label={t('comments')} val={photo.comments} />
+                  <BreakdownStat label={t('favorites')} val={liveFavorites} />
+                  <BreakdownStat label={t('comments')} val={liveComments} />
                   <BreakdownStat
                     label={t('curation')}
                     val={photo.picks.length === 2 ? t('curation_both') : photo.picks.length === 1 ? t('curation_1pick') : '—'}
@@ -481,11 +494,11 @@ export function PhotoDetailClient({ id }: { id: string }) {
               {/* 500px-style stats — mobile only (sidebar shows the desktop one) */}
               <div className="lg:hidden">
                 <PhotoStatsPanel
-                  likes={photo.likes}
+                  likes={liveLikes}
                   impressions={photo.impressions ?? 0}
-                  highestPulse={photo.peakPulse ?? photo.pulse}
+                  highestPulse={livePeak ?? livePulse}
                   pickType={photo.pickType}
-                  badge={photo.badge}
+                  badge={liveBadge}
                 />
               </div>
 
@@ -563,11 +576,11 @@ export function PhotoDetailClient({ id }: { id: string }) {
               {/* 500px-style stats — desktop sidebar (mobile version is in the main column) */}
               <div className="hidden lg:block">
                 <PhotoStatsPanel
-                  likes={photo.likes}
+                  likes={liveLikes}
                   impressions={photo.impressions ?? 0}
-                  highestPulse={photo.peakPulse ?? photo.pulse}
+                  highestPulse={livePeak ?? livePulse}
                   pickType={photo.pickType}
-                  badge={photo.badge}
+                  badge={liveBadge}
                 />
               </div>
 
