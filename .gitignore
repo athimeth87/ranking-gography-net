@@ -40,3 +40,4 @@ next-env.d.ts
 /.venv/
 /_bmad
 /_bmad-output
+/.vscode
