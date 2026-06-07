@@ -26,10 +26,10 @@ export function PhotographerCard({
   return (
     <div
       onClick={() => router.push(`/photographer/${photographer.username}`)}
-      className="cursor-pointer flex flex-col rounded-[12px] overflow-hidden bg-[#111111] text-white relative h-[440px] hover:-translate-y-1 hover:shadow-2xl hover:shadow-white/5 transition-all duration-300 border border-white/10 group"
+      className="cursor-pointer flex flex-col rounded-[12px] overflow-hidden bg-[#111111] text-white relative h-[480px] hover:-translate-y-1 hover:shadow-2xl hover:shadow-white/5 transition-all duration-300 border border-white/10 group"
     >
       {/* Cover Image */}
-      <div className="relative h-[200px] w-full shrink-0">
+      <div className="relative h-[170px] w-full shrink-0">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={coverImg}
