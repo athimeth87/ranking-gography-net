@@ -4,6 +4,7 @@ RETURNS TABLE (
     username text,
     display_name text,
     avatar_url text,
+    cover_url text,
     photo_count bigint,
     hof_score numeric
 ) AS $$
@@ -42,6 +43,7 @@ BEGIN
         u.username,
         u.display_name,
         u.avatar_url,
+        u.cover_url,
         s.total_photos,
         round(t.raw_hof_score::numeric, 1) as hof_score
     FROM user_stats s

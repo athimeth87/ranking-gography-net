@@ -5,59 +5,14 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import type { Category } from '@/lib/types';
 
-export interface LeaderboardEntry {
-  id: string;
-  title: string;
-  name: string;
-  loc: string;
-  cat: Category;
-  pulse: number;
-  src: string;
-  voyageur?: boolean;
-}
-
-type Tab = 'all' | 'voyageurs' | Category;
-
-const TABS: { id: Tab; label: string; voyageur?: boolean }[] = [
-  { id: 'all', label: 'All' },
-  { id: 'voyageurs', label: 'Voyageurs', voyageur: true },
-  { id: 'Landscape', label: 'Landscape' },
-  { id: 'Portrait', label: 'Portrait' },
-  { id: 'BW', label: 'Black & White' },
-];
-
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-function formatClose(iso: string): string {
-  const [y, m, d] = iso.split('-').map(Number);
-  if (!y || !m || !d) return iso;
-  return `${d} ${MONTHS[m - 1]} ${y}`;
-}
-
-function CrownMark({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={className}>
-      <path d="M2 8l4.2 3.4L12 4l5.8 7.4L22 8l-1.7 10.4H3.7L2 8z" />
-    </svg>
-  );
-}
-
-function useCountdown(endIso: string) {
-  const [now, setNow] = useState<number | null>(null);
-  useEffect(() => {
-    setNow(Date.now());
-    const t = setInterval(() => setNow(Date.now()), 60_000);
-    return () => clearInterval(t);
-  }, []);
-  if (now === null) return null;
-  const end = new Date(`${endIso}T23:59:59`).getTime();
-  const diff = Math.max(0, end - now);
-  return {
-    over: diff <= 0,
-    days: Math.floor(diff / 86_400_000),
-    hours: Math.floor((diff % 86_400_000) / 3_600_000),
-    minutes: Math.floor((diff % 3_600_000) / 60_000),
-  };
+export interface PhotographerRanking {
+  photographer_id: string;
+  username: string;
+  display_name: string;
+  avatar_url: string;
+  photo_count: number;
+  hof_score: number;
+  cover_url?: string; // added from frontend join
 }
 
 export function LiveLeaderboard({
@@ -68,20 +23,12 @@ export function LiveLeaderboard({
 }: {
   seasonName: string;
   endDate: string;
-  entries: LeaderboardEntry[];
+  entries: PhotographerRanking[];
   rarityCount: number;
 }) {
-  const [tab, setTab] = useState<Tab>('all');
   const countdown = useCountdown(endDate);
 
-  const rows = (
-    tab === 'all'
-      ? entries
-      : tab === 'voyageurs'
-        ? entries.filter((e) => e.voyageur)
-        : entries.filter((e) => e.cat === tab)
-  ).slice(0, 10);
-
+  const rows = entries.slice(0, 10);
   const leader = rows[0];
   const runners = rows.slice(1, 3);
   const pack = rows.slice(3);
@@ -108,61 +55,45 @@ export function LiveLeaderboard({
           </div>
         </div>
 
-        {/* ── filter tabs ── */}
-        <div className="flex flex-wrap gap-2 mt-12 pt-7 border-t border-rule">
-          {TABS.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
-              className={cn(
-                'caps inline-flex items-center min-h-[44px] px-4 border transition-colors',
-                tab === t.id
-                  ? 'bg-fg text-bg border-fg'
-                  : t.voyageur
-                    ? 'border-rule text-gold hover:border-fg'
-                    : 'border-rule text-fg-soft hover:border-fg hover:text-fg',
-              )}
-            >
-              {t.voyageur && <CrownMark className="w-3.5 h-3.5 mr-2 text-gold" />}
-              {t.label}
-            </button>
-          ))}
-        </div>
-
         {rows.length === 0 ? (
-          <p className="th text-center text-fg-soft py-24">ยังไม่มีภาพในหมวดนี้</p>
+          <p className="th text-center text-fg-soft py-24">ยังไม่มีช่างภาพที่ผ่านเกณฑ์ (ต้องมี 22 ภาพขึ้นไป)</p>
         ) : (
           <>
             {/* ── #1 feature spread ── */}
             {leader && (
               <Link
-                href={`/photo/${leader.id}`}
+                href={`/photographer/${leader.username}`}
                 className="grid md:grid-cols-[1.1fr_0.9fr] gap-8 lg:gap-16 items-center mt-16 group"
               >
-                <div className="aspect-[4/3] bg-tile overflow-hidden order-1 md:order-none">
+                <div className="aspect-[4/3] bg-tile overflow-hidden order-1 md:order-none relative">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={leader.src}
-                    alt={leader.title}
+                    src={leader.cover_url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop'}
+                    alt={leader.display_name}
                     className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
                   />
+                  <div className="absolute bottom-6 left-6 w-24 h-24 rounded-full overflow-hidden border-4 border-bg shadow-xl">
+                     <img src={leader.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + leader.username} className="w-full h-full object-cover" alt="" />
+                  </div>
                 </div>
                 <div>
-                  <div className="flex items-center gap-2 caps text-fg-faint">
+                  <div className="flex items-center gap-2 caps text-gold">
                     <CrownMark className="w-4 h-4" /> The Leader
                   </div>
                   <div className="mono tabular-nums text-[clamp(96px,13vw,180px)] leading-[0.8] tracking-[-0.04em] mt-3 mb-1">
                     01
                   </div>
-                  <h3 className="text-[clamp(28px,3.4vw,46px)] font-normal tracking-[-0.02em] leading-[1.05] m-0">
-                    {leader.title}
+                  <h3 className="text-[clamp(28px,3.4vw,46px)] font-normal tracking-[-0.02em] leading-[1.05] m-0 text-gold">
+                    {leader.display_name}
                   </h3>
-                  <div className="th text-[15px] text-fg-soft mt-3">
-                    {leader.name}{leader.loc ? ` · ${leader.loc}` : ''}
+                  <div className="th text-[15px] text-fg-soft mt-3 flex items-center gap-4">
+                    <span>@{leader.username}</span>
+                    <span className="w-1 h-1 bg-rule rounded-full" />
+                    <span>{leader.photo_count} Photos</span>
                   </div>
                   <div className="flex items-baseline gap-3 mt-8 pt-6 border-t border-rule">
-                    <span className="mono tabular-nums text-[clamp(40px,5vw,64px)] leading-none">{leader.pulse}</span>
-                    <span className="caps text-fg-faint">Pulse</span>
+                    <span className="mono tabular-nums text-[clamp(40px,5vw,64px)] leading-none text-gold">{leader.hof_score}</span>
+                    <span className="caps text-fg-faint">HOF Score</span>
                   </div>
                 </div>
               </Link>
@@ -172,29 +103,32 @@ export function LiveLeaderboard({
             {runners.length > 0 && (
               <div className="grid md:grid-cols-2 gap-8 lg:gap-16 mt-16">
                 {runners.map((e, i) => (
-                  <Link key={e.id} href={`/photo/${e.id}`} className="group">
-                    <div className="aspect-[3/2] bg-tile overflow-hidden">
+                  <Link key={e.photographer_id} href={`/photographer/${e.username}`} className="group">
+                    <div className="aspect-[3/2] bg-tile overflow-hidden relative">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                        src={e.src}
-                        alt={e.title}
+                        src={e.cover_url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop'}
+                        alt={e.display_name}
                         loading="lazy"
                         className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
                       />
+                      <div className="absolute bottom-4 left-4 w-16 h-16 rounded-full overflow-hidden border-[3px] border-bg shadow-xl">
+                         <img src={e.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + e.username} className="w-full h-full object-cover" alt="" />
+                      </div>
                     </div>
                     <div className="flex items-start gap-5 mt-5">
                       <span className="mono tabular-nums text-[clamp(32px,4vw,52px)] leading-[0.8] text-fg-soft">
                         0{i + 2}
                       </span>
                       <div className="flex-1 min-w-0">
-                        <h4 className="text-[20px] md:text-[24px] font-normal tracking-[-0.015em] truncate m-0">{e.title}</h4>
+                        <h4 className="text-[20px] md:text-[24px] font-normal tracking-[-0.015em] truncate m-0">{e.display_name}</h4>
                         <div className="th text-[13px] text-fg-soft truncate mt-1">
-                          {e.name}{e.loc ? ` · ${e.loc}` : ''}
+                          @{e.username} · {e.photo_count} Photos
                         </div>
                       </div>
                       <div className="text-right shrink-0">
-                        <div className="mono tabular-nums text-[22px] md:text-[28px] leading-none">{e.pulse}</div>
-                        <div className="caps text-fg-faint text-[9px] mt-1">Pulse</div>
+                        <div className="mono tabular-nums text-[22px] md:text-[28px] leading-none text-gold">{e.hof_score}</div>
+                        <div className="caps text-fg-faint text-[9px] mt-1">HOF Score</div>
                       </div>
                     </div>
                   </Link>
@@ -209,26 +143,26 @@ export function LiveLeaderboard({
                 <div className="border-t border-fg">
                   {pack.map((e, i) => (
                     <Link
-                      key={e.id}
-                      href={`/photo/${e.id}`}
+                      key={e.photographer_id}
+                      href={`/photographer/${e.username}`}
                       className="flex items-center gap-6 lg:gap-10 py-5 border-b border-rule transition-colors hover:bg-cream"
                     >
                       <span className="mono tabular-nums text-[clamp(20px,2.4vw,32px)] w-[56px] text-right text-fg-soft leading-none shrink-0">
                         {String(i + 4).padStart(2, '0')}
                       </span>
-                      <div className="w-[64px] h-[80px] bg-tile overflow-hidden shrink-0">
+                      <div className="w-[56px] h-[56px] bg-tile overflow-hidden rounded-full shrink-0">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={e.src} alt={e.title} loading="lazy" className="w-full h-full object-cover" />
+                        <img src={e.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + e.username} alt={e.display_name} loading="lazy" className="w-full h-full object-cover" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-[18px] md:text-[22px] font-normal tracking-[-0.015em] truncate">{e.title}</div>
+                        <div className="text-[18px] md:text-[22px] font-normal tracking-[-0.015em] truncate">{e.display_name}</div>
                         <div className="th text-[13px] text-fg-soft truncate mt-1">
-                          {e.name}{e.loc ? ` · ${e.loc}` : ''}
+                          @{e.username} · {e.photo_count} Photos
                         </div>
                       </div>
                       <div className="text-right shrink-0">
-                        <div className="mono tabular-nums text-[20px] md:text-[26px] leading-none">{e.pulse}</div>
-                        <div className="caps text-fg-faint text-[9px] mt-1">Pulse</div>
+                        <div className="mono tabular-nums text-[20px] md:text-[26px] leading-none text-gold">{e.hof_score}</div>
+                        <div className="caps text-fg-faint text-[9px] mt-1">HOF Score</div>
                       </div>
                     </Link>
                   ))}
@@ -242,8 +176,8 @@ export function LiveLeaderboard({
         <div className="mt-16 border border-dashed border-rule-strong p-10 lg:p-16 grid md:grid-cols-[1fr_auto] md:items-center gap-8">
           <div>
             <div className="caps text-fg-faint">Reserved</div>
-            <div className="th text-[clamp(24px,3vw,38px)] tracking-[-0.01em] mt-3">ที่นี่รอภาพของคุณ</div>
-            <div className="th text-[14px] text-fg-soft mt-2">ภาพต่อไปบน Hall of Fame อาจเป็นของคุณ</div>
+            <div className="th text-[clamp(24px,3vw,38px)] tracking-[-0.01em] mt-3">ที่นี่รอชื่อของคุณ</div>
+            <div className="th text-[14px] text-fg-soft mt-2">ช่างภาพคนต่อไปบน Hall of Fame อาจเป็นคุณ</div>
           </div>
           <Link href="/upload" className="btn btn-solid justify-self-start md:justify-self-end whitespace-nowrap">
             <span className="th">ส่งภาพเข้าแข่ง →</span>
@@ -253,9 +187,9 @@ export function LiveLeaderboard({
         {/* ── rarity line ── */}
         <p className="th text-center text-[14px] text-fg-soft mt-12">
           {rarityCount > 0 ? (
-            <>มีเพียง <span className="mono tabular-nums">{rarityCount}</span> ภาพเท่านั้น ที่เคยได้ขึ้น Hall of Fame</>
+            <>มีเพียง <span className="mono tabular-nums">{rarityCount}</span> ช่างภาพเท่านั้น ที่เคยได้ขึ้น Hall of Fame</>
           ) : (
-            <>ยังไม่มีใครได้ขึ้น Hall of Fame — จงเป็นภาพแรกของประวัติศาสตร์</>
+            <>ยังไม่มีช่างภาพคนไหนได้ขึ้น Hall of Fame — จงเป็นตำนานคนแรก</>
           )}
         </p>
       </div>
