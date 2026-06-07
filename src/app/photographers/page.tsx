@@ -176,9 +176,9 @@ export default function PhotographersPage() {
       </PageCover>
 
       {/* Filter / Sort bar */}
-      <section className="py-[32px] border-t border-rule border-b border-rule sticky top-[60px] z-40 bg-bg/95 backdrop-blur-sm">
-        <div className="wrap">
-          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 md:gap-6">
+      <section className="border-b border-white/5 sticky top-[60px] z-40 bg-[#0a0a0a]/90 backdrop-blur-xl">
+        <div className="w-full max-w-[1920px] mx-auto px-4 md:px-10 2xl:px-16">
+          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center py-4 gap-4 md:gap-6">
             {/* Filter chips */}
             <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0 md:flex-wrap">
               {filterChips.map((f) => {
@@ -216,13 +216,13 @@ export default function PhotographersPage() {
         </div>
       </section>
 
-      {/* Main content */}
-      <section className="py-[56px] pb-[96px]">
-        <div className="wrap">
-          <div className="grid grid-cols-1 xl:grid-cols-[1fr_280px] gap-10 xl:gap-10 items-start">
+      {/* Main Content Layout */}
+      <section className="py-[40px] pb-[96px]">
+        <div className="w-full max-w-[1920px] mx-auto px-4 md:px-10 2xl:px-16">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 xl:gap-12">
 
             {/* Photographer grid */}
-            <div>
+            <div className="lg:col-span-8 xl:col-span-9">
               {loading ? (
                 <div className="py-[120px] text-center opacity-40 mono text-[12px] uppercase tracking-widest">
                   Loading...
@@ -230,9 +230,9 @@ export default function PhotographersPage() {
               ) : list.length === 0 ? (
                 <div className="py-[120px] text-center text-fg-soft th">ไม่พบช่างภาพในตัวกรองนี้</div>
               ) : (
-                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-3">
+                <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {list.map((p, i) => (
-                    <PhotographerCard
+                     <PhotographerCard
                       key={p.username}
                       photographer={p}
                       variant={p.isCustomer ? 'voyageur' : 'general'}
@@ -249,7 +249,7 @@ export default function PhotographersPage() {
             </div>
 
             {/* Top 10 sidebar */}
-            <aside className="hidden xl:block">
+            <aside className="hidden lg:block lg:col-span-4 xl:col-span-3">
               <div className="border border-rule p-6">
                 <div className="caps opacity-55 mb-5">Top 10 — Pulse Rank</div>
                 <div className="flex flex-col gap-0">
