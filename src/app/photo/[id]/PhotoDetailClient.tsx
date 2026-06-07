@@ -225,40 +225,13 @@ export function PhotoDetailClient({ id }: { id: string }) {
     fetchPhoto();
   }, [params.id]);
 
-  // Realtime counts: subscribe to the photo row so likes / comments /
-  // favorites / pulse update without reloading.
-  useEffect(() => {
-    if (!isDbPhoto || !photo?.id) return;
-    const supabase = getSupabaseBrowserClient();
-    if (!supabase) return;
+  // Realtime for this photo's likes / favorites / comments / pulse comes from a
+  // SINGLE useRealtimePulse subscription below. We intentionally do NOT open a
+  // second postgres_changes channel on `photos` here (nor in the like/favorite
+  // hooks on this page) — multiple channels on the same table over the one
+  // shared client drop events, which broke live updates on this page.
 
-    const channel = supabase
-      .channel(`photo-detail-${photo.id}`)
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'photos', filter: `id=eq.${photo.id}` },
-        (payload) => {
-          const next = payload.new as { likes_count?: number; comments_count?: number; favorites_count?: number };
-          setPhoto((curr) => {
-            if (!curr) return curr;
-            const likes = typeof next.likes_count === 'number' ? next.likes_count : curr.likes;
-            const comments = typeof next.comments_count === 'number' ? next.comments_count : curr.comments;
-            const favorites = typeof next.favorites_count === 'number' ? next.favorites_count : curr.favorites;
-            return {
-              ...curr,
-              likes,
-              comments,
-              favorites,
-            };
-          });
-        }
-      )
-      .subscribe();
-
-    return () => { supabase.removeChannel(channel); };
-  }, [isDbPhoto, photo?.id]);
-
-  const favoriteState = useFavoriteState(isDbPhoto && photo?.id ? photo.id : '');
+  const favoriteState = useFavoriteState(isDbPhoto && photo?.id ? photo.id : '', { realtime: false });
   const onFavoriteClick = async () => {
     if (!isDbPhoto) return;
     const res = await favoriteState.toggle();
@@ -267,7 +240,7 @@ export function PhotoDetailClient({ id }: { id: string }) {
     }
   };
 
-  const likeState = useLikeState(isDbPhoto && photo?.id ? photo.id : '');
+  const likeState = useLikeState(isDbPhoto && photo?.id ? photo.id : '', { realtime: false });
   const onLikeClick = async () => {
     const res = await likeState.toggle();
     if (res.kind === 'unauth') {

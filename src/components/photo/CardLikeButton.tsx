@@ -12,7 +12,10 @@ export function CardLikeButton({ photoId, ownerId }: CardLikeButtonProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { authUser } = useApp();
-  const { liked, toggle } = useLikeState(photoId);
+  // No realtime channel here — this button only needs `liked`; live counts come
+  // from the page's single useRealtimePulse subscription (avoids many photos
+  // channels per grid colliding on one socket).
+  const { liked, toggle } = useLikeState(photoId, { realtime: false });
 
   if (authUser && ownerId && authUser.id === ownerId) return null;
 
