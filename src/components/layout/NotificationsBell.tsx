@@ -128,6 +128,17 @@ export function NotificationsBell() {
               ))
             )}
           </div>
+          <div className="border-t border-rule">
+            <button 
+              onClick={() => {
+                setOpen(false);
+                router.push('/me/notifications');
+              }}
+              className="w-full text-center py-3 text-[12px] uppercase tracking-[0.1em] font-medium hover:bg-tile transition-colors"
+            >
+              {t('view_all') || 'ดูทั้งหมด'}
+            </button>
+          </div>
         </div>
       )}
     </div>

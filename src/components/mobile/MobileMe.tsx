@@ -7,6 +7,7 @@ import { useApp } from '@/providers/AppProvider';
 import { useTranslations } from 'next-intl';
 import { MobileFooter } from './MobileShared';
 import { MeSettings } from '../account/MeSettings';
+import { MeNotifications } from '../account/MeNotifications';
 import { ActivityHeatmap } from '../account/ActivityHeatmap';
 import { FollowListModal, type FollowTab } from '../account/FollowListModal';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
@@ -14,7 +15,7 @@ import { getPresignedUploadUrl } from '@/app/actions/r2-upload';
 import { convertToWebP } from '@/lib/imageConvert';
 import { getCashbackPercentage } from '@/lib/ranking-system';
 
-type SectionKey = 'dashboard' | 'photos' | 'favorites' | 'stats' | 'settings';
+type SectionKey = 'dashboard' | 'photos' | 'favorites' | 'stats' | 'notifications' | 'settings';
 
 export function MobileMe({
   section: initialSection = 'dashboard',
@@ -37,6 +38,7 @@ export function MobileMe({
     { id: 'photos',    label: t('nav_photos') },
     { id: 'favorites', label: t('nav_favorites') },
     { id: 'stats',     label: t('nav_stats') },
+    { id: 'notifications', label: 'Notifications' },
     { id: 'settings',  label: t('nav_settings') },
   ];
   const [activeTab, setActiveTab] = useState<SectionKey>(
@@ -513,6 +515,12 @@ export function MobileMe({
               ))}
             </div>
           )}
+        </section>
+      )}
+
+      {activeTab === 'notifications' && (
+        <section style={{ padding: '0px 0 0' }}>
+          <MeNotifications />
         </section>
       )}
 

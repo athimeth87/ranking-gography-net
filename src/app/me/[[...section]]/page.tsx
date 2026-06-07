@@ -11,6 +11,7 @@ import { MePhotos } from '@/components/account/MePhotos';
 import { MeFavorites } from '@/components/account/MeFavorites';
 import { MeStats } from '@/components/account/MeStats';
 import { MeSettings } from '@/components/account/MeSettings';
+import { MeNotifications } from '@/components/account/MeNotifications';
 import { MobileMe } from '@/components/mobile/MobileMe';
 import { useTranslations } from 'next-intl';
 import type { Photographer } from '@/lib/types';
@@ -369,6 +370,7 @@ export default function Page({ params }: PageProps) {
     { id: 'photos', label: t('nav_photos'), path: '/me/photos', count: myPhotos.length },
     { id: 'favorites', label: t('nav_favorites'), path: '/me/favorites', count: favs.length },
     { id: 'stats', label: t('nav_stats'), path: '/me/stats' },
+    { id: 'notifications', label: 'Notifications', path: '/me/notifications' },
     { id: 'settings', label: t('nav_settings'), path: '/me/settings' },
   ];
 
@@ -475,6 +477,7 @@ export default function Page({ params }: PageProps) {
               {section === 'settings' && (
                 <MeSettings persona={persona} isVoyageur={isVoyageur} />
               )}
+              {section === 'notifications' && <MeNotifications />}
             </main>
           </>
         )}
