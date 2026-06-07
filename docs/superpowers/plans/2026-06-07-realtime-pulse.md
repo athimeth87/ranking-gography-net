@@ -152,19 +152,19 @@ const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const key = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const db = createClient(url, key, { auth: { persistSession: false } });
 
-const TAG = 'parity-test-' + '0001';
+const TAG = 'parity-test-' + Date.now();
 const ENGAGEMENTS = [3, 8, 8, 15, 40, 120, 2, 0, 55, 9];
 
 async function main() {
-  // 1. test photographer
-  const { data: user, error: uErr } = await db.from('users')
-    .insert({ email: `${TAG}@example.com`, display_name: TAG, username: TAG })
-    .select('id').single();
-  if (uErr) throw uErr;
+  // 1. attribute test photos to an EXISTING user — public.users.id has a FK to
+  //    auth.users, so we cannot insert a fake user. We only create/delete photos.
+  const { data: anyUser, error: uErr } = await db.from('users').select('id').limit(1).single();
+  if (uErr || !anyUser) throw uErr ?? new Error('no users in db to attribute test photos to');
+  const photographerId = anyUser.id;
 
   // 2. test photos, all uploaded "now" (active), with controlled engagement + views
   const rows = ENGAGEMENTS.map((e, i) => ({
-    photographer_id: user!.id,
+    photographer_id: photographerId,
     title: `${TAG}-${i}`,
     slug: `${TAG}-${i}`,
     category: 'landscape',
