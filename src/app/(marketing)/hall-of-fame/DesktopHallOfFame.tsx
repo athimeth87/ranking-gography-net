@@ -25,11 +25,13 @@ export function DesktopHallOfFame({
   seasons,
   allPhotos,
   photographers,
+  photographersRanking,
   loading,
 }: {
   seasons: Season[];
   allPhotos: Photo[];
   photographers: Photographer[];
+  photographersRanking?: any[];
   loading: boolean;
 }) {
   const liveSeason = seasons.find((s) => s.status === 'live');
@@ -133,6 +135,49 @@ export function DesktopHallOfFame({
           </div>
         </div>
       </section>
+
+      {/* ── 02.5 — Photographer Standings ── */}
+      {photographersRanking && photographersRanking.length > 0 && (
+        <section className="py-20 lg:py-28 bg-[#111] text-white rule-bot">
+          <div className="wrap">
+            <div className="caps text-white/50 mb-10">02 / Top Photographers (V5 Logic)</div>
+            <div className="flex flex-col gap-4">
+              <div className="grid grid-cols-[auto_1fr_auto_auto_auto] gap-6 items-center px-6 py-3 caps text-[10px] text-white/40 border-b border-white/10">
+                <div className="w-8 text-center">Rank</div>
+                <div>Photographer</div>
+                <div className="w-24 text-right">Photos</div>
+                <div className="w-32 text-right">HOF Score</div>
+                <div className="w-32 text-right">Status</div>
+              </div>
+              {photographersRanking.map((r, i) => (
+                <div key={r.photographer_id} className="grid grid-cols-[auto_1fr_auto_auto_auto] gap-6 items-center px-6 py-4 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
+                  <div className="w-8 text-center mono text-xl text-white/50">{i + 1}</div>
+                  <div className="flex items-center gap-4 min-w-0">
+                    <div className="w-10 h-10 rounded-full bg-white/10 overflow-hidden shrink-0">
+                      {r.avatar_url && <img src={r.avatar_url} alt="" className="w-full h-full object-cover" />}
+                    </div>
+                    <div className="truncate">
+                      <div className="text-lg">{r.display_name}</div>
+                      <div className="text-sm text-white/50">@{r.username}</div>
+                    </div>
+                  </div>
+                  <div className="w-24 text-right mono">{r.photo_count}</div>
+                  <div className="w-32 text-right mono text-xl font-medium">{Number(r.hof_score).toFixed(1)}</div>
+                  <div className="w-32 text-right">
+                    {Number(r.hof_score) >= 90 ? (
+                      <span className="inline-flex px-3 py-1 bg-gold/20 text-gold rounded-full text-xs font-medium">🥇 Season Top</span>
+                    ) : Number(r.hof_score) >= 80 ? (
+                      <span className="inline-flex px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-xs font-medium">✨ Rising Talent</span>
+                    ) : (
+                      <span className="inline-flex px-3 py-1 bg-white/10 text-white/70 rounded-full text-xs font-medium">Qualified</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── 03 — Archive ── */}
       <section className="py-20 lg:py-28">

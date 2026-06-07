@@ -11,8 +11,27 @@ const supabase = createClient(
 
 async function run() {
   console.log('Fetching users and photos...');
-  const { data: users } = await supabase.from('users').select('id, username, display_name, created_at');
-  const { data: photos } = await supabase.from('photos').select('photographer_id, pulse').eq('is_hidden', false).eq('status', 'published');
+  const { data: users } = await supabase.from('users').select('id, username, display_name, created_at').limit(5000);
+  
+  let allPhotos: any[] = [];
+  let page = 0;
+  let hasMore = true;
+  while (hasMore) {
+    const { data: photosChunk } = await supabase
+      .from('photos')
+      .select('photographer_id, pulse')
+      .eq('is_hidden', false)
+      .eq('status', 'published')
+      .range(page * 1000, (page + 1) * 1000 - 1);
+      
+    if (!photosChunk || photosChunk.length === 0) {
+      hasMore = false;
+    } else {
+      allPhotos = [...allPhotos, ...photosChunk];
+      page++;
+    }
+  }
+  const photos = allPhotos;
 
   if (!users || !photos) {
     console.log('Error fetching data');

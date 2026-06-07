@@ -51,6 +51,7 @@ export function HallOfFameClient() {
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [allPhotos, setAllPhotos] = useState<Photo[]>([]);
   const [photographers, setPhotographers] = useState<Photographer[]>([]);
+  const [photographersRanking, setPhotographersRanking] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const liveIds = useMemo(() => allPhotos.map((p) => p.id), [allPhotos]);
@@ -71,15 +72,27 @@ export function HallOfFameClient() {
       }
 
       try {
-        const [{ data: dbPhotos }, { data: dbUsers }, { data: dbSeasons }] = await Promise.all([
-          supabase.from('photos').select('*'),
+        // Fetch seasons and users first
+        const [{ data: dbUsers }, { data: dbSeasons }, { data: dbPhotographersRanking }] = await Promise.all([
           supabase.from('users').select('*'),
           supabase.from('seasons').select('*').order('start_date', { ascending: true }),
+          supabase.rpc('get_v5_hall_of_fame').limit(15) // Top 15 Photographers!
         ]);
 
-        const photos  = dbPhotos  || [];
         const users   = dbUsers   || [];
         const seasonRows = dbSeasons || [];
+        const rankData = dbPhotographersRanking || [];
+
+        // Fetch Top 50 Photos directly instead of paginating 1500 photos!
+        const { data: dbPhotos } = await supabase
+          .from('photos')
+          .select('*')
+          .eq('is_hidden', false)
+          .eq('status', 'published')
+          .order('pulse', { ascending: false })
+          .limit(50);
+        
+        const photos = dbPhotos || [];
 
         // No real photos yet → fall back to full mock so the page looks right
         if (photos.length === 0) {
@@ -151,6 +164,7 @@ export function HallOfFameClient() {
 
         setAllPhotos(mappedPhotos);
         setPhotographers(mappedPhotographers);
+        setPhotographersRanking(rankData);
         setSeasons(computedSeasons);
       } catch (err) {
         console.error('Hall of Fame fetch error:', err);
@@ -180,6 +194,7 @@ export function HallOfFameClient() {
           seasons={seasons}
           allPhotos={livePhotos}
           photographers={photographers}
+          photographersRanking={photographersRanking}
           loading={loading}
         />
       </div>

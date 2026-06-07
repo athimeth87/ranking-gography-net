@@ -37,26 +37,19 @@ export default function PhotographersPage() {
 
       const { data: usersData } = await supabase.from('users').select('*');
       const users = usersData || [];
-      const { data: photosData } = await supabase.from('photos').select('*');
+      const { data: photosData } = await supabase.from('photos').select('*').order('pulse', { ascending: false }).limit(200); // Only fetch some photos for cover previews
       const { data: followsData } = await supabase.from('follows').select('*');
       const follows = followsData || [];
+      
       const rankMasters = computeRankMasters(photosData || []);
-
-      // V5 HOF scoring
-      const inputList = users.map(u => {
-        const uPhotos = (photosData || []).filter(p => p.photographer_id === u.id);
-        const ageDays = Math.floor((Date.now() - new Date(u.created_at || new Date()).getTime()) / (1000 * 60 * 60 * 24));
-        return {
-          id: u.id,
-          photoScores: uPhotos.map(p => p.pulse || p.engagement || 0),
-          accountAgeDays: ageDays,
-        };
-      });
-      const hofResults = rankPhotographers(inputList);
+      
+      // V5 HOF scoring via Database RPC! Super fast and accurate.
+      const { data: rankData } = await supabase.rpc('get_v5_hall_of_fame');
+      const hofResults = rankData || [];
 
       const mappedPhotographers: Photographer[] = users.map(u => {
         const uPhotos = (photosData || []).filter(p => p.photographer_id === u.id);
-        const hofRes = hofResults.find(r => r.item.id === u.id);
+        const hofRes = hofResults.find(r => r.photographer_id === u.id);
         const cats = new Set<string>();
         uPhotos.forEach(p => { if (p.category) cats.add(p.category); });
 
@@ -78,8 +71,8 @@ export default function PhotographersPage() {
           socialInstagram: u.social_instagram || '',
           socialFacebook: u.social_facebook || '',
           website: u.portfolio_url || '',
-          hofScore: hofRes?.hofScore ?? null,
-          avgPulse: hofRes?.avgScore || 0,
+          hofScore: hofRes?.hof_score ?? null, // From the DB RPC
+          avgPulse: uPhotos.length > 0 ? uPhotos.reduce((sum, p) => sum + (p.pulse || 0), 0) / uPhotos.length : 0, // True average of all photos
           isAmbassador: u.is_ambassador || false,
           isCustomer: u.is_customer || false,
           isRankMaster: rankMasters.has(u.username || u.display_name || u.id),
