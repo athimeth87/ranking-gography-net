@@ -129,6 +129,16 @@ export function MobileExplore({ initialCategory = 'All', dbPhotos = [] }: { init
   const [cat, setCat] = useState<typeof CATS[number]>(initialCategory);
   const [visible, setVisible] = useState(8);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 800) {
+        setVisible(v => v + 8);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const dataSource = dbPhotos.length > 0 ? dbPhotos : PHOTOS;
 
   const filtered = useMemo(() => {
@@ -349,10 +359,15 @@ export function MobileExplore({ initialCategory = 'All', dbPhotos = [] }: { init
           columnCount: 2,
           columnGap: 8,
         }}>
-          {filtered.map(p => (
+          {grid.map(p => (
             <MasonryTile key={p.id} photo={p} />
           ))}
         </div>
+        {visible < filtered.length && (
+          <div style={{ padding: '24px 0', textAlign: 'center', color: 'var(--fg-soft)', fontSize: 13 }}>
+            Loading more...
+          </div>
+        )}
       </div>
 
       {/* Trending — moved below grid */}
