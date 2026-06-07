@@ -23,6 +23,7 @@ export default function PhotographersPage() {
 
   const [filter, setFilter] = useState<FilterValue>('all');
   const [sort, setSort] = useState<SortValue>('pulse');
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -102,7 +103,11 @@ export default function PhotographersPage() {
   }, []);
 
   // Filter
+  const q = search.toLowerCase().trim();
   let list: Photographer[] = allPhotographers.slice();
+  if (q) list = list.filter(p =>
+    p.name.toLowerCase().includes(q) || p.username.toLowerCase().includes(q)
+  );
   if (filter === 'voyageurs')    list = list.filter(p => p.isCustomer);
   if (filter === 'ambassadors')  list = list.filter(p => p.isAmbassador);
   if (filter === 'photographers') list = list.filter(p => !p.isCustomer && !p.isAmbassador);
@@ -155,6 +160,18 @@ export default function PhotographersPage() {
               <span className="mono text-[10px] tracking-[.18em] uppercase text-white/55 mt-1">{label}</span>
             </div>
           ))}
+        </div>
+        <div className="relative w-full max-w-[420px] mt-4">
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search photographers, name or username…"
+            className="w-full bg-white/10 backdrop-blur-sm border border-white/25 text-white placeholder:text-white/40 px-4 py-3 pr-10 text-[13px] outline-none focus:border-white/60 transition-colors"
+          />
+          <svg className="absolute right-3 top-1/2 -translate-y-1/2 opacity-40" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
         </div>
       </PageCover>
 
