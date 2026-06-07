@@ -26,7 +26,7 @@ export function PhotographerCard({
   return (
     <div
       onClick={() => router.push(`/photographer/${photographer.username}`)}
-      className="cursor-pointer flex flex-col rounded-[12px] overflow-hidden bg-[#111111] text-white relative h-full min-h-[460px] hover:-translate-y-1 hover:shadow-2xl hover:shadow-white/5 transition-all duration-300 border border-white/10 group"
+      className="cursor-pointer flex flex-col rounded-[12px] overflow-hidden bg-[#111111] text-white relative h-full min-h-[400px] sm:min-h-[460px] hover:-translate-y-1 hover:shadow-2xl hover:shadow-white/5 transition-all duration-300 border border-white/10 group"
     >
       {/* Cover Image */}
       <div className="relative h-[170px] w-full shrink-0">
@@ -67,8 +67,8 @@ export function PhotographerCard({
       {/* Content Section */}
       <div className="relative px-5 pb-5 flex flex-col flex-1 -mt-16">
         {/* Avatar */}
-        <div className="flex flex-col mb-4">
-          <div className="w-[68px] h-[68px] rounded-full overflow-hidden border-[3px] border-[#111111] bg-neutral-900 shadow-xl relative z-10">
+        <div className="flex flex-col mb-3 sm:mb-4">
+          <div className="w-[56px] h-[56px] sm:w-[68px] sm:h-[68px] rounded-full overflow-hidden border-[3px] border-[#111111] bg-neutral-900 shadow-xl relative z-10">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={photographer.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + photographer.username}
@@ -92,19 +92,19 @@ export function PhotographerCard({
 
         {/* Name and Username */}
         <div className="mb-4">
-          <h3 className="text-[17px] font-serif tracking-wide text-[#e8e6e3] truncate">
+          <h3 className="text-[14px] sm:text-[17px] font-serif tracking-wide text-[#e8e6e3] truncate">
             {photographer.name.toUpperCase()}
           </h3>
-          <div className="text-white/50 text-[13px] truncate">
+          <div className="text-white/50 text-[11px] sm:text-[13px] truncate">
             @{photographer.username.toLowerCase()}
           </div>
-          <div className="text-white/40 text-[11px] mt-2 truncate">
+          <div className="text-white/40 text-[10px] sm:text-[11px] mt-1 sm:mt-2 truncate">
             {photographer.isAmbassador ? 'Ambassador' : photographer.isCustomer ? 'Traveller' : 'Photographer'}
           </div>
         </div>
 
         {/* Stats */}
-        <div className="flex justify-between text-[11px] border-t border-white/5 pt-4 mb-4">
+        <div className="flex flex-wrap justify-between gap-y-3 gap-x-2 text-[10px] sm:text-[11px] border-t border-white/5 pt-4 mb-4">
           {photographer.hofScore != null ? (
             <div className="flex flex-col">
               <span className="font-bold text-[#cda256] text-[13px]">{photographer.hofScore.toFixed(1)}</span>
@@ -145,9 +145,9 @@ export function PhotographerCard({
         </div>
 
         {/* View Profile Button */}
-        <div className="mt-5 w-full flex items-center justify-between px-4 py-2.5 rounded-lg border border-white/10 hover:bg-white/5 transition-colors">
-          <span className="text-[11px] uppercase tracking-widest text-white/70">View Profile</span>
-          <span className="text-white/40">→</span>
+        <div className="mt-4 sm:mt-5 w-full flex items-center justify-between px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg border border-white/10 hover:bg-white/5 transition-colors">
+          <span className="text-[9px] sm:text-[11px] uppercase tracking-widest text-white/70">Profile</span>
+          <span className="text-white/40 text-[10px] sm:text-[12px]">→</span>
         </div>
       </div>
     </div>
