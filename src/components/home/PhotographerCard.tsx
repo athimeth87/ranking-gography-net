@@ -1,11 +1,14 @@
 'use client';
 import { useRouter } from 'next/navigation';
-import type { Photographer, Photo } from '@/lib/types';
+import type { Photographer } from '@/lib/types';
+import { VoyageurMark, CrownIcon } from '@/components/icons';
+
+interface PhotoMini { by: string; src: string; }
 
 interface PhotographerCardProps {
   photographer: Photographer;
   variant?: 'general' | 'voyageur';
-  photos: Photo[];
+  photos: PhotoMini[];
   rank?: number;
 }
 
@@ -16,109 +19,98 @@ export function PhotographerCard({
   rank,
 }: PhotographerCardProps) {
   const router = useRouter();
-  
-  // Prioritize uploaded cover image, then fallback to first photo, then default
-  const theirPhotos = photos.filter((p) => p.by === photographer.username);
-  const coverImg = photographer.cover || (theirPhotos.length > 0 ? theirPhotos[0]!.src : 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop');
 
-  const loc = photographer.loc || 'Unknown';
-  
+  const theirPhotos = photos.filter((p) => p.by === photographer.username);
+  const coverImg =
+    photographer.cover ||
+    (theirPhotos.length > 0
+      ? theirPhotos[0]!.src
+      : 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop');
+
+  const formatStat = (num: number) => {
+    if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+    return String(num);
+  };
+
   return (
     <div
       onClick={() => router.push(`/photographer/${photographer.username}`)}
-      className="cursor-pointer flex flex-col rounded-[12px] overflow-hidden bg-[#111111] text-white relative h-[440px] hover:-translate-y-1 hover:shadow-2xl hover:shadow-white/5 transition-all duration-300 border border-white/10 group"
+      className="cursor-pointer group pcard"
     >
-      {/* Cover Image */}
-      <div className="relative h-[200px] w-full shrink-0">
+      {/* Cover image */}
+      <div className="relative aspect-[4/3] overflow-hidden bg-tile">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={coverImg}
-          alt="cover"
-          className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+          alt=""
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
           loading="lazy"
         />
-        {/* Dark gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-[#111111]/60 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
 
-        {/* Rank Badge */}
-        {rank !== undefined && (
-          <div className="absolute top-4 left-4 z-10">
-            {rank <= 3 ? (
-              <div className="w-[32px] h-[32px] rounded-full bg-gradient-to-br from-[#cda256] to-[#9a7638] flex items-center justify-center shadow-lg shadow-black/50">
-                <span className="text-white font-bold text-[14px]">{rank}</span>
-              </div>
-            ) : rank <= 10 ? (
-              <div className="bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20 shadow-lg">
-                <span className="text-white font-bold text-[11px] uppercase tracking-widest">Top {rank}</span>
-              </div>
-            ) : null}
+        {/* Rank badge — monochrome */}
+        {rank !== undefined && rank <= 10 && (
+          <div className="absolute top-3 left-3 bg-fg text-bg mono text-[9px] tracking-[.14em] uppercase px-2 py-[3px]">
+            #{rank}
           </div>
         )}
-      </div>
 
-      {/* Content Section */}
-      <div className="relative px-5 pb-5 flex flex-col flex-1 -mt-16">
-        {/* Avatar */}
-        <div className="flex flex-col mb-4">
-          <div className="w-[68px] h-[68px] rounded-full overflow-hidden border-[3px] border-[#111111] bg-neutral-900 shadow-xl relative z-10">
-            <img
-              src={photographer.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + photographer.username}
-              alt={photographer.username}
-              className="w-full h-full object-cover"
-            />
-          </div>
+        {/* Status badges top-right */}
+        <div className="absolute top-3 right-3 flex flex-col items-end gap-1">
+          {photographer.isRankMaster && (
+            <span className="inline-flex items-center gap-1 bg-fg text-bg mono text-[9px] tracking-[.14em] uppercase px-2 py-[3px]">
+              <CrownIcon /> Rank Master
+            </span>
+          )}
           {photographer.isAmbassador && (
-            <div className="absolute top-[48px] left-[48px] z-20 w-5 h-5 bg-[#cda256] rounded-full border-[2px] border-[#111111] flex items-center justify-center">
-              <span className="text-[10px]">✓</span>
-            </div>
+            <span className="inline-flex items-center gap-1 bg-gold text-white mono text-[9px] tracking-[.14em] uppercase px-2 py-[3px]">
+              Ambassador
+            </span>
+          )}
+          {photographer.isCustomer && !photographer.isAmbassador && (
+            <span className="inline-flex items-center gap-1 bg-black/50 text-gold backdrop-blur-sm mono text-[9px] tracking-[.14em] uppercase px-2 py-[3px]">
+              <VoyageurMark size={6} /> Voyageur
+            </span>
           )}
         </div>
 
-        {/* Name and Username */}
-        <div className="mb-4">
-          <h3 className="text-[17px] font-serif tracking-wide text-[#e8e6e3] truncate">
-            {photographer.name.toUpperCase()}
-          </h3>
-          <div className="text-white/50 text-[13px] truncate">
-            @{photographer.username.toLowerCase()}
+        {/* Name overlay at bottom */}
+        <div className="absolute bottom-0 left-0 right-0 px-4 pb-3">
+          <div className="text-white text-[15px] font-medium tracking-[-0.01em] leading-[1.2] truncate">
+            {photographer.name}
           </div>
-          <div className="text-white/40 text-[11px] mt-2 truncate">
-            {photographer.isAmbassador ? 'Ambassador' : photographer.isCustomer ? 'Traveller' : 'Photographer'}
+          <div className="text-white/60 mono text-[10px] tracking-[.1em] truncate">
+            @{photographer.username}
           </div>
         </div>
+      </div>
 
-        {/* Stats */}
-        <div className="flex justify-between text-[11px] border-t border-white/5 pt-4 mb-4">
-          <div className="flex flex-col">
-            <span className="font-bold text-[#e8e6e3] text-[13px]">{photographer.photos}</span>
-            <span className="text-white/40">Photos</span>
+      {/* Stats row */}
+      <div className="flex gap-0 border-b border-rule">
+        {/* HOF Score or avg pulse or photos */}
+        {photographer.hofScore != null ? (
+          <div className="flex-1 py-3 px-3 border-r border-rule">
+            <div className="mono text-[14px] font-semibold">{photographer.hofScore.toFixed(1)}</div>
+            <div className="caps text-[9px] opacity-45 mt-[2px]">HOF Score</div>
           </div>
-          <div className="flex flex-col">
-            <span className="font-bold text-[#e8e6e3] text-[13px]">{(photographer.photos * 3.4).toFixed(1)}K</span>
-            <span className="text-white/40">Views</span>
+        ) : photographer.avgPulse && photographer.avgPulse > 0 ? (
+          <div className="flex-1 py-3 px-3 border-r border-rule">
+            <div className="mono text-[14px] font-semibold">{photographer.avgPulse.toFixed(1)}</div>
+            <div className="caps text-[9px] opacity-45 mt-[2px]">Avg Pulse</div>
           </div>
-          <div className="flex flex-col">
-            <span className="font-bold text-[#e8e6e3] text-[13px]">{(photographer.photos * 0.8).toFixed(1)}K</span>
-            <span className="text-white/40">Likes</span>
+        ) : (
+          <div className="flex-1 py-3 px-3 border-r border-rule">
+            <div className="mono text-[14px] font-semibold">{photographer.photos}</div>
+            <div className="caps text-[9px] opacity-45 mt-[2px]">Photos</div>
           </div>
-          <div className="flex flex-col">
-            <span className="font-bold text-[#e8e6e3] text-[13px]">{Math.floor(photographer.photos * 120)}</span>
-            <span className="text-white/40">Saves</span>
-          </div>
+        )}
+        <div className="flex-1 py-3 px-3 border-r border-rule">
+          <div className="mono text-[14px] font-semibold">{formatStat(photographer.followers)}</div>
+          <div className="caps text-[9px] opacity-45 mt-[2px]">Followers</div>
         </div>
-
-        {/* Categories (Fake for now) */}
-        <div className="flex gap-2 mb-auto overflow-hidden">
-          {['Landscape', 'Travel'].map(c => (
-            <div key={c} className="px-2.5 py-1 rounded-full border border-white/10 text-white/50 text-[9px] uppercase tracking-widest bg-white/5 whitespace-nowrap">
-              {c}
-            </div>
-          ))}
-        </div>
-
-        {/* View Profile Button */}
-        <div className="mt-5 w-full flex items-center justify-between px-4 py-2.5 rounded-lg border border-white/10 hover:bg-white/5 transition-colors">
-          <span className="text-[11px] uppercase tracking-widest text-white/70">View Profile</span>
-          <span className="text-white/40">→</span>
+        <div className="flex-1 py-3 px-3">
+          <div className="mono text-[14px] font-semibold">{formatStat(photographer.totalLikes || 0)}</div>
+          <div className="caps text-[9px] opacity-45 mt-[2px]">Likes</div>
         </div>
       </div>
     </div>

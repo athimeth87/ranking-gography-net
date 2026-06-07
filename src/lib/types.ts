@@ -58,6 +58,12 @@ export interface Photographer {
   cover: string;
   followers: number;
   photos: number;
+  totalLikes?: number;
+  totalViews?: number;
+  totalSaves?: number;
+  categories?: string[];
+  hofScore?: number | null;
+  avgPulse?: number;
   isAmbassador: boolean;
   isCustomer?: boolean;
   isRankMaster?: boolean;

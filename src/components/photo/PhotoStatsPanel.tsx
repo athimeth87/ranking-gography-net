@@ -61,8 +61,9 @@ interface PhotoStatsPanelProps {
 
 export function PhotoStatsPanel({ likes, impressions, highestPulse, pickType = 'none', badge }: PhotoStatsPanelProps) {
   const t = useTranslations('PhotoStats');
-  const status: string = badge !== undefined
-    ? statusFromBadge((badge ?? null) as Badge, pickType)
+  const v4PickType = (pickType === 'both' ? 'editor' : pickType) as 'none' | 'editor' | 'ambassador';
+  const status = badge !== undefined
+    ? statusFromBadge((badge ?? null) as Badge, v4PickType)
     : pulseStatus(highestPulse, pickType);
 
   return (
@@ -86,7 +87,7 @@ export function PhotoStatsPanel({ likes, impressions, highestPulse, pickType = '
         </li>
         <li className="flex items-center gap-3">
           <FlameIcon />
-          <span className="mono text-[12px] font-medium uppercase tracking-[.12em]">{STATUS_LABEL[status]}</span>
+          <span className="mono text-[12px] font-medium uppercase tracking-[.12em]">{status ? STATUS_LABEL[status] : undefined}</span>
         </li>
       </ul>
     </div>

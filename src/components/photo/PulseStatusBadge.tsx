@@ -26,10 +26,11 @@ export function PulseStatusBadge({
   badge?: string | null;
   className?: string;
 }) {
+  const v4PickType = (pickType === 'both' ? 'editor' : pickType) as 'none' | 'editor' | 'ambassador';
   const status = badge !== undefined
-    ? statusFromBadge((badge ?? null) as Badge, pickType)
+    ? statusFromBadge((badge ?? null) as Badge, v4PickType)
     : pulseStatus(pulse, pickType);
-  if (status === 'undiscovered') return null;
+  if (!status || status === 'undiscovered') return null;
 
   const solid = SOLID.has(status);
   return (
