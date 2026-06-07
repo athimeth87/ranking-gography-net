@@ -152,6 +152,10 @@ export default function Page({ params }: PageProps) {
     setMyPhotos((photos || []).map((p: any) => mapPhoto(p, profileUsername, authUser?.email)));
   };
 
+  const handlePhotoDeleted = useCallback((id: string) => {
+    setMyPhotos((curr) => curr.filter((p) => p.id !== id));
+  }, []);
+
   useEffect(() => {
     if (!authUser?.id) {
       setLoading(false);
@@ -447,6 +451,7 @@ export default function Page({ params }: PageProps) {
                   daysLeft={daysLeft}
                   voyageurRank={voyageurRank}
                   topCategory={topCategory}
+                  onPhotoDeleted={handlePhotoDeleted}
                 />
               )}
               {section === 'photos' && (
@@ -456,6 +461,7 @@ export default function Page({ params }: PageProps) {
                   isPhotographer={isPhotographer || isVoyageur}
                   isVoyageur={isVoyageur}
                   onPhotoUploaded={() => fetchPhotos(profile?.username || '')}
+                  onPhotoDeleted={handlePhotoDeleted}
                 />
               )}
               {section === 'favorites' && (
