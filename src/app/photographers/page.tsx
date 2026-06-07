@@ -249,7 +249,7 @@ export default function PhotographersPage() {
             </div>
 
             {/* Top 10 sidebar */}
-            <aside className="hidden lg:block lg:col-span-4 xl:col-span-3">
+            <aside className="block mt-12 lg:mt-0 lg:col-span-4 xl:col-span-3">
               <div className="border border-rule p-6">
                 <div className="caps opacity-55 mb-5">Top 10 — Pulse Rank</div>
                 <div className="flex flex-col gap-0">

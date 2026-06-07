@@ -26,7 +26,7 @@ export function PhotographerCard({
   return (
     <div
       onClick={() => router.push(`/photographer/${photographer.username}`)}
-      className="cursor-pointer flex flex-col rounded-[12px] overflow-hidden bg-[#111111] text-white relative h-[480px] hover:-translate-y-1 hover:shadow-2xl hover:shadow-white/5 transition-all duration-300 border border-white/10 group"
+      className="cursor-pointer flex flex-col rounded-[12px] overflow-hidden bg-[#111111] text-white relative h-full min-h-[460px] hover:-translate-y-1 hover:shadow-2xl hover:shadow-white/5 transition-all duration-300 border border-white/10 group"
     >
       {/* Cover Image */}
       <div className="relative h-[170px] w-full shrink-0">
@@ -36,6 +36,15 @@ export function PhotographerCard({
           alt="cover"
           className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
           loading="lazy"
+          onError={(e) => {
+            const target = e.currentTarget as HTMLImageElement;
+            const fallback = theirPhotos.length > 0 ? theirPhotos[0]!.src : 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop';
+            if (target.src !== fallback) {
+              target.src = fallback;
+            } else {
+              target.src = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop';
+            }
+          }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-[#111111]/60 to-transparent" />
 
@@ -65,6 +74,13 @@ export function PhotographerCard({
               src={photographer.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + photographer.username}
               alt={photographer.username}
               className="w-full h-full object-cover"
+              onError={(e) => {
+                const target = e.currentTarget as HTMLImageElement;
+                const fallback = 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + photographer.username;
+                if (target.src !== fallback) {
+                  target.src = fallback;
+                }
+              }}
             />
           </div>
           {photographer.isAmbassador && (
@@ -89,10 +105,22 @@ export function PhotographerCard({
 
         {/* Stats */}
         <div className="flex justify-between text-[11px] border-t border-white/5 pt-4 mb-4">
-          <div className="flex flex-col">
-            <span className="font-bold text-[#e8e6e3] text-[13px]">{photographer.photos}</span>
-            <span className="text-white/40">Photos</span>
-          </div>
+          {photographer.hofScore != null ? (
+            <div className="flex flex-col">
+              <span className="font-bold text-[#cda256] text-[13px]">{photographer.hofScore.toFixed(1)}</span>
+              <span className="text-[#cda256]/60">HOF Score</span>
+            </div>
+          ) : photographer.avgPulse && photographer.avgPulse > 0 ? (
+            <div className="flex flex-col">
+              <span className="font-bold text-[#e8e6e3] text-[13px]">{photographer.avgPulse.toFixed(1)}</span>
+              <span className="text-white/40">Avg Pulse</span>
+            </div>
+          ) : (
+            <div className="flex flex-col">
+              <span className="font-bold text-[#e8e6e3] text-[13px]">{photographer.photos || 0}</span>
+              <span className="text-white/40">Photos</span>
+            </div>
+          )}
           <div className="flex flex-col">
             <span className="font-bold text-[#e8e6e3] text-[13px]">{photographer.followers}</span>
             <span className="text-white/40">Followers</span>
