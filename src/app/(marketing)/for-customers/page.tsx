@@ -99,7 +99,7 @@ const PATH_STEPS = [
 // ─── page ────────────────────────────────────────────────────────────────────
 
 export default function Page() {
-  const coverSrc = getPhoto('p003').src;
+  const coverSrc = "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2621&auto=format&fit=crop";
 
   return (
     <div className="page-fade">

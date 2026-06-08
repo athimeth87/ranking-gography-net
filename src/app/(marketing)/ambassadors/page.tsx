@@ -9,7 +9,7 @@ export const revalidate = 60; // Cache for 60 seconds
 
 export default async function Page() {
   const supabase = getSupabaseServerClient();
-  const coverSrc = getPhoto('p002').src;
+  const coverSrc = "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?q=80&w=2070&auto=format&fit=crop";
   
   // Fetch ambassadors
   const { data: users } = await supabase
