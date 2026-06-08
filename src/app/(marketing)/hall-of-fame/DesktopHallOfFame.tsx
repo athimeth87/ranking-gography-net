@@ -138,9 +138,15 @@ export function DesktopHallOfFame({
         </div>
       </section>
 
-          </section>
-        )}
-      </div>
+      {/* ── Coming Soon State ── */}
+      <section className="py-24 text-center">
+        <div className="caps text-fg-faint mb-4">Season Ranking</div>
+        <h2 className="text-[clamp(36px,5vw,64px)] font-normal tracking-[-0.03em] leading-[1] mb-6">Coming Soon</h2>
+        <p className="th text-[14px] text-fg-soft max-w-md mx-auto leading-[1.6]">
+          การจัดอันดับ Hall of Fame จะแสดงผลและประกาศรางวัลเมื่อสิ้นสุดฤดูกาล<br/>
+          มาร่วมส่งผลงานและสะสม Pulse Score เพื่อก้าวสู่ระดับโลกไปด้วยกัน
+        </p>
+      </section>
 
       <Footer />
     </div>
