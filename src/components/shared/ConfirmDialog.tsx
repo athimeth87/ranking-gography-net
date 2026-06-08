@@ -51,7 +51,7 @@ export function ConfirmDialog({
           {title}
         </h2>
         {body && (
-          <p className="th mt-3 text-[13px] leading-[1.6] text-fg-soft">{body}</p>
+          <p className="th mt-3 text-[14px] leading-[1.6] text-fg-soft">{body}</p>
         )}
         <div className="mt-7 flex justify-end gap-3">
           <button

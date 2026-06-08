@@ -12,7 +12,7 @@ export function RoleRibbon() {
         <div className="flex items-center gap-3">
           <VoyageurMark size={8} />
           <span>Traveller · Pim Asanachinda</span>
-          <span className="th opacity-60 ml-3 tracking-[.1em]">— ส่งภาพเข้าหมวด Travellers · ฤดูกาล Spring 2026</span>
+          <span className="th opacity-60 ml-3 tracking-[.1em]">— ส่งภาพเข้าหมวด Travellers · ฤดูกาล Season 01</span>
         </div>
         <div className="flex gap-5 items-center">
           <span className="opacity-60 font-mono">TODAY 0/1 · RESETS 00:00 ICT</span>

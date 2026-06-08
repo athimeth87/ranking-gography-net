@@ -46,7 +46,7 @@ export function ActionCard({ title, sub, onClick }: ActionCardProps) {
     >
       <div>
         <div className="text-[16px] font-medium tracking-[-0.005em] th">{title}</div>
-        <div className="th text-[12px] text-fg-soft mt-1">{sub}</div>
+        <div className="th text-[14px] text-fg-soft mt-1">{sub}</div>
       </div>
       <span className="text-[18px] opacity-35">→</span>
     </button>

@@ -305,9 +305,6 @@ export default function SearchPage() {
         eyebrow="Search"
         title="Find your photo"
         subtitle="ค้นจากชื่อภาพ ชื่อช่างภาพ สถานที่ หรือหมวดหมู่"
-        height="36vh"
-        minHeight={300}
-        maxHeight={420}
       />
       <Suspense fallback={<div className="wrap py-[96px]" />}>
         <SearchResults />

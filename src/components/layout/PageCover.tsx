@@ -38,9 +38,9 @@ export function PageCover({
   title,
   subtitle,
   children,
-  height = '56vh',
-  minHeight = 420,
-  maxHeight = 640,
+  height = '42vh',
+  minHeight = 340,
+  maxHeight = 520,
   align = 'left',
 }: PageCoverProps) {
   const photo: Photo | undefined = photoId ? getPhoto(photoId) : undefined;
@@ -80,13 +80,9 @@ export function PageCover({
           )}
         </div>
 
-        {/* main text block */}
-        <div
-          className={cn(
-            'absolute left-4 right-4 md:left-10 md:right-10 bottom-6 md:bottom-14 text-white flex flex-col gap-5',
-            align === 'center' ? 'items-center text-center' : 'items-start text-left',
-          )}
-        >
+        {/* main text block — aligned to the site content column (.wrap) */}
+        <div className="absolute inset-x-0 bottom-10 md:bottom-16 text-white">
+          <div className="wrap">
           <div
             className={cn(
               'flex flex-col',
@@ -118,6 +114,7 @@ export function PageCover({
                 {children}
               </div>
             )}
+          </div>
           </div>
         </div>
 

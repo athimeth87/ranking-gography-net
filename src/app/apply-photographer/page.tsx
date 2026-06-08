@@ -244,7 +244,7 @@ export default function ApplyPhotographerPage() {
 
               <div className="mt-8 py-6 px-7 bg-cream border border-rule">
                 <div className="caps opacity-55 mb-3">OR upload sample photos</div>
-                <p className="th text-[13px] text-fg-soft mb-4">
+                <p className="th text-[14px] text-fg-soft mb-4">
                   ถ้าไม่มี portfolio online ส่ง 3 ภาพตัวอย่างของคุณ — JPEG/PNG/WebP ≤ 25MB ต่อภาพ
                 </p>
                 <div className="grid grid-cols-3 gap-3">

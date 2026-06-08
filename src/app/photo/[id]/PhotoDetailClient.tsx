@@ -509,7 +509,7 @@ export function PhotoDetailClient({ id }: { id: string }) {
                         <div className="caps opacity-55 mt-1">{photographer.loc}</div>
                       </div>
                     </Link>
-                    <p className="th mt-[18px] text-[13px] text-fg-soft leading-[1.65]">
+                    <p className="th mt-[18px] text-[14px] text-fg-soft leading-[1.65]">
                       {photographer.bio}
                     </p>
                     <div className="mono flex gap-6 mt-5">
