@@ -23,26 +23,20 @@ interface UserProps {
 }
 
 export function AdminUserRow({ user, onUpdate }: { user: UserProps, onUpdate?: () => void }) {
-  const [role, setRole] = useState(user.isCustomer ? 'voyageur' : user.photographerStatus === 'approved' ? 'photographer' : 'member');
+  const [role, setRole] = useState(user.isCustomer ? 'voyageur' : 'classic');
   const [isUpdating, setIsUpdating] = useState(false);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    setRole(user.isCustomer ? 'voyageur' : user.photographerStatus === 'approved' ? 'photographer' : 'member');
-  }, [user.isCustomer, user.photographerStatus]);
+    setRole(user.isCustomer ? 'voyageur' : 'classic');
+  }, [user.isCustomer]);
 
   const handleUpdateRole = async () => {
     setIsUpdating(true);
     const supabase = getSupabaseBrowserClient();
-    
-    let is_customer = false;
-    let photographer_status = 'none';
 
-    if (role === 'voyageur') {
-      is_customer = true;
-    } else if (role === 'photographer') {
-      photographer_status = 'approved';
-    }
+    const is_customer = role === 'voyageur';
+    const photographer_status = 'none';
 
     const { data, error } = await supabase.rpc('update_user_role', {
       target_id: user.id,
@@ -87,13 +81,9 @@ export function AdminUserRow({ user, onUpdate }: { user: UserProps, onUpdate?: (
           <Badge variant="outline" className="rounded-none px-2 py-0.5 text-[10px] font-mono uppercase tracking-widest border-neutral-300 text-neutral-700 bg-neutral-50">
             Traveller
           </Badge>
-        ) : user.photographerStatus === 'approved' ? (
-          <Badge variant="outline" className="rounded-none px-2 py-0.5 text-[10px] font-mono uppercase tracking-widest bg-neutral-900 text-white border-neutral-900">
-            Photographer
-          </Badge>
         ) : (
           <Badge variant="outline" className="rounded-none px-2 py-0.5 text-[10px] font-mono uppercase tracking-widest border-neutral-200 text-neutral-500 bg-transparent">
-            Member
+            Classic
           </Badge>
         )}
         {user.isAmbassador && (
@@ -155,9 +145,8 @@ export function AdminUserRow({ user, onUpdate }: { user: UserProps, onUpdate?: (
               <div className="grid gap-2">
                 <Label htmlFor="role" className="font-mono text-xs uppercase tracking-widest text-neutral-500">Assign Role</Label>
                 <select id="role" value={role} onChange={(e) => setRole(e.target.value)} className="flex h-10 w-full border border-neutral-300 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 rounded-none">
-                  <option value="member">Member</option>
-                  <option value="photographer">Photographer</option>
-                  <option value="voyageur">Traveller (Customer)</option>
+                  <option value="classic">Classic</option>
+                  <option value="voyageur">Traveller</option>
                 </select>
               </div>
             </div>

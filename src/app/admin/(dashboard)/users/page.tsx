@@ -90,8 +90,8 @@ export default function AdminUsersPage() {
                 <div className="grid gap-2 mt-2">
                   <Label htmlFor="role" className="font-mono text-xs uppercase tracking-widest text-neutral-500">Assign Role</Label>
                   <select id="role" className="flex h-10 w-full border border-neutral-300 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 rounded-none">
-                    <option value="photographer">Photographer</option>
-                    <option value="voyageur">Traveller (Customer)</option>
+                    <option value="classic">Classic</option>
+                    <option value="voyageur">Traveller</option>
                   </select>
                 </div>
               </div>
