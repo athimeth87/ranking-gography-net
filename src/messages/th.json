@@ -20,7 +20,7 @@
     "view_photo": "ดูรูปภาพ"
   },
   "TrendsNowSection": {
-    "title": "กำลังมาแรง",
+    "title": "Popular",
     "subtitle": "สัปดาห์ที่ผ่านมา · ท็อป 9",
     "see_all": "ดูทั้งหมด",
     "likes": "ถูกใจ"
@@ -38,7 +38,7 @@
   },
   "FeaturedPhotographersSection": {
     "section_label": "ช่างภาพยอดเยี่ยม · ตลอดกาล",
-    "title": "ช่างภาพยอดเยี่ยม",
+    "title": "Photographers",
     "view_all": "ดูช่างภาพทั้งหมด"
   },
   "VoyageursSection": {

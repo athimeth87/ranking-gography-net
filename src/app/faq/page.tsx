@@ -37,7 +37,7 @@ const FAQ_ITEMS: FaqItem[] = [
           <h4 className="text-[18px] font-normal tracking-[-0.015em] m-0 mb-[10px]">Classic</h4>
           <p className="th text-[15px] leading-[1.85] text-fg-soft m-0">
             หมวดเปิดสำหรับทุกคน ส่งภาพได้ทุกแนว ทั้ง Landscape, Portrait หรือ Black & White
-            มาประชันกันบนการจัดอันดับประจำสัปดาห์
+            มาประชันกันบนการจัดอันดับประจำซีซั่น
           </p>
         </div>
         <div>
