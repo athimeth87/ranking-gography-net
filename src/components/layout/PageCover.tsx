@@ -92,7 +92,7 @@ export function PageCover({
             {title && (
               <h1
                 className={cn(
-                  'text-[clamp(20px,4.5vw,54px)] md:text-[clamp(28px,3.6vw,54px)] font-normal tracking-[-.015em] leading-[1.05] text-white m-0',
+                  'font-display text-[clamp(20px,4.5vw,54px)] md:text-[clamp(28px,3.6vw,54px)] font-normal tracking-[-.015em] leading-[1.05] text-white m-0',
                   align === 'center' ? 'max-w-[20ch]' : 'max-w-[16ch]',
                 )}
               >
