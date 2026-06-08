@@ -65,7 +65,7 @@ export function VoyageursSection({ featuredPhoto }: VoyageursSectionProps) {
     reward2_amount: '10–20%',
     reward2_label: 'ส่วนลดทริป',
     reward2_sub: 'RANK 2–3',
-    image_url: ''
+    image_url: '/traveller-pick.jpg'
   });
 
   useEffect(() => {

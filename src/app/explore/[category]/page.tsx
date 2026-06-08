@@ -228,7 +228,11 @@ export default function ExploreCategoryPage({
     : catKey === 'BW' ? 'BW'
     : 'All';
 
-  const coverSrc = photos[0]?.src ?? 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop';
+  const coverSrc = catKey === 'Portrait'
+    ? '/portrait-cover.jpg'
+    : catKey === 'BW'
+    ? '/bw-cover.jpg'
+    : (photos[0]?.src ?? 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop');
 
   return (
     <>
@@ -258,7 +262,7 @@ export default function ExploreCategoryPage({
                 {photos.length} frames
               </span>
             </div>
-            <h1 className="text-white font-light text-[clamp(48px,9vw,104px)] leading-[.9] tracking-[-.04em] m-0">
+            <h1 className="font-display text-white font-light text-[clamp(48px,9vw,104px)] leading-[.9] tracking-[-.04em] m-0">
               {headingLabel}
             </h1>
             <p className="th text-white/75 text-[15px] leading-[1.6] mt-5 mb-0 max-w-[460px]">
