@@ -114,28 +114,43 @@ export function MobileHallOfFame({
     }}>
       <MobileNav />
 
-      {/* Hero */}
-      <div style={{ position: 'relative', width: '100%', height: '80vh', minHeight: 480, maxHeight: 640, overflow: 'hidden', color: '#fff', background: '#000' }}>
-        <img src={coverPhoto.src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', opacity: 0.8 }} />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0.95) 100%)' }} />
+      {/* ── Cinematic Hero Header ── */}
+      <section className="relative overflow-hidden bg-black h-[42vh] min-h-[340px] max-h-[520px]">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={coverPhoto.src}
+          alt="Hall of Fame"
+          className="w-full h-full object-cover opacity-60"
+          loading="eager"
+        />
+        {/* gradient overlay */}
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,.32)_0%,rgba(0,0,0,.06)_38%,rgba(0,0,0,.74)_100%)]" />
 
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 16, fontFamily: mono, fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase' }}>
-          <span>GOGRAPHY</span>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e' }} />Live</span>
-        </div>
-
-        <div style={{ position: 'absolute', left: 16, right: 16, bottom: 32, zIndex: 2 }}>
-          <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', opacity: 0.9, marginBottom: 16, color: '#22c55e', fontWeight: 700 }}>{liveSeason?.name || 'Season 1'}</div>
-          <div style={{ fontWeight: 800, fontSize: 'clamp(46px, 15vw, 64px)', lineHeight: 0.95, letterSpacing: '-0.03em', textShadow: '0 4px 20px rgba(0,0,0,0.3)' }}>HALL OF<br/>FAME</div>
-          <div style={{ fontFamily: thai, fontSize: 14, lineHeight: 1.55, opacity: 0.9, maxWidth: '34ch', marginTop: 18 }}>
-            The best photographers.<br/>One global stage.
+        {/* content overlay */}
+        <div className="absolute inset-0 flex flex-col justify-end">
+          <div className="pb-8 px-4">
+            {/* eyebrow */}
+            <div className="flex items-center gap-3 mb-4">
+              <span className="mono text-[10px] tracking-[.3em] uppercase text-white/75">
+                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5 align-middle" />
+                 {liveSeason?.name || 'LIVE SEASON'}
+              </span>
+              <span className="h-px w-8 bg-white/30" />
+              <span className="mono text-[10px] tracking-[.3em] uppercase text-white/55 tabular-nums">
+                {countdown ? countdown.days : '—'} DAYS LEFT
+              </span>
+            </div>
+            {/* title */}
+            <h1 className="text-white font-light text-[40px] leading-[.9] tracking-[-.04em] m-0">
+              Hall of Fame
+            </h1>
+            <p className="th text-white/75 text-[14px] leading-[1.6] mt-4 mb-0 max-w-[460px]">
+              The best photographers. One global stage. <br/>
+              ค้นพบภาพถ่ายและช่างภาพยอดเยี่ยมประจำฤดูกาล
+            </p>
           </div>
-          <div style={{ marginTop: 24, display: 'flex', gap: 12, alignItems: 'center' }}>
-            <div style={{ fontFamily: mono, fontSize: 18, fontWeight: 700 }}>{countdown ? countdown.days : '—'}</div>
-            <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', opacity: 0.8 }}>DAYS LEFT</div>
-          </div>
         </div>
-      </div>
+      </section>
 
       {/* Segmented Control */}
       <div style={{ position: 'sticky', top: 61, zIndex: 30, background: 'rgba(var(--bg-rgb), 0.9)', backdropFilter: 'blur(8px)', borderBottom: '1px solid var(--rule)', padding: '0 16px' }}>

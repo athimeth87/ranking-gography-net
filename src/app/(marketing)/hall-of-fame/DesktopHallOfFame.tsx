@@ -100,35 +100,43 @@ export function DesktopHallOfFame({
 
   return (
     <div className="page-fade min-h-screen text-fg bg-[var(--bg)]">
-      {/* ── Hero ── */}
-      <div className="relative h-[65vh] min-h-[500px] w-full overflow-hidden flex items-center justify-center text-white">
+      {/* ── Cinematic Hero Header ── */}
+      <section className="relative overflow-hidden bg-black h-[42vh] min-h-[340px] max-h-[520px]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={coverSrc} alt="" className="absolute inset-0 w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-black/40" />
+        <img
+          src={coverSrc}
+          alt="Hall of Fame"
+          className="w-full h-full object-cover opacity-60"
+          loading="eager"
+        />
+        {/* gradient overlay */}
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,.32)_0%,rgba(0,0,0,.06)_38%,rgba(0,0,0,.74)_100%)]" />
 
-        <div className="absolute top-0 inset-x-0 z-10">
-          <div className="wrap flex items-center justify-between py-6 caps text-white/80">
-            <span>GOGRAPHY</span>
-            <span className="inline-flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-green-500" />Live</span>
+        {/* content overlay */}
+        <div className="absolute inset-0 flex flex-col justify-end">
+          <div className="wrap pb-10 md:pb-16">
+            {/* eyebrow */}
+            <div className="flex items-center gap-3 mb-5">
+              <span className="mono text-[10px] tracking-[.3em] uppercase text-white/75">
+                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5 align-middle" />
+                 {liveSeason?.name ?? 'LIVE SEASON'}
+              </span>
+              <span className="h-px w-10 bg-white/30" />
+              <span className="mono text-[10px] tracking-[.3em] uppercase text-white/55 tabular-nums">
+                {countdown?.days ?? 0} DAYS LEFT
+              </span>
+            </div>
+            {/* title */}
+            <h1 className="text-white font-light text-[clamp(48px,9vw,104px)] leading-[.9] tracking-[-.04em] m-0">
+              Hall of Fame
+            </h1>
+            <p className="th text-white/75 text-[15px] leading-[1.6] mt-5 mb-0 max-w-[460px]">
+              The best photographers. One global stage. <br/>
+              ค้นพบภาพถ่ายและช่างภาพยอดเยี่ยมประจำฤดูกาล
+            </p>
           </div>
         </div>
-
-        <div className="relative z-10 text-center max-w-4xl px-4 flex flex-col items-center mt-12">
-          <h1 className="text-5xl md:text-[5.5rem] font-bold tracking-tight mb-4 drop-shadow-lg">HALL OF FAME</h1>
-          <p className="text-xl md:text-2xl font-medium mb-8 leading-snug drop-shadow-md">The best photographers.<br />One global stage.</p>
-
-          <div className="flex items-center gap-3 text-xs tracking-widest font-bold uppercase mb-8">
-            <span className="w-2 h-2 rounded-full bg-green-500" />
-            <span>{liveSeason?.name ?? 'SEASON 1'}</span>
-            <span className="opacity-50">|</span>
-            <span>{countdown?.days ?? 0} DAYS LEFT</span>
-          </div>
-
-          <a href="#ranking" className="bg-white text-black px-8 py-3.5 rounded-md font-bold flex items-center gap-2 hover:bg-gray-100 transition-colors">
-            View full ranking <span>→</span>
-          </a>
-        </div>
-      </div>
+      </section>
 
       {/* ── Tab Navigation ── */}
       <div className="border-b border-rule sticky top-0 bg-[var(--bg)]/80 backdrop-blur-md z-40">
