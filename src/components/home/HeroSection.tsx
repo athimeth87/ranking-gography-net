@@ -16,7 +16,7 @@ interface HeroSectionProps {
   topPhotographer: Photographer | undefined;
 }
 
-export function HeroSection({ banner, top, bannerPhotographer, topPhotographer }: HeroSectionProps) {
+export function HeroSection({ banner, top, topPhotographer }: HeroSectionProps) {
   const router = useRouter();
   const t = useTranslations('HeroSection');
   const live = useRealtimePulse([top?.id, banner?.id].filter(Boolean) as string[]);
@@ -44,7 +44,7 @@ export function HeroSection({ banner, top, bannerPhotographer, topPhotographer }
         className="relative overflow-hidden bg-black h-[68vh] min-h-[460px] md:min-h-[520px] max-h-[760px]"
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={(content as any).image_url || banner.src} alt={banner.title} className="w-full h-full object-cover" />
+        <img src="/home-cover.jpg" alt="GOGRAPHY Ranking" className="w-full h-full object-cover" />
         {/* Gradient overlay */}
         <div
           className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,.45)_0%,rgba(0,0,0,.08)_35%,rgba(0,0,0,.1)_65%,rgba(0,0,0,.65)_100%)]"
@@ -61,12 +61,7 @@ export function HeroSection({ banner, top, bannerPhotographer, topPhotographer }
         {/* Bottom copy */}
         <div className="absolute left-4 right-4 md:left-10 md:right-10 bottom-6 md:bottom-12 text-white">
           <div className="wrap !p-0 !max-w-none">
-            <h1
-              className="th font-light leading-[.92] text-white m-0 max-w-[14ch] text-[clamp(44px,11vw,128px)] md:text-[clamp(64px,8vw,128px)] tracking-[-.035em]"
-              dangerouslySetInnerHTML={{ __html: content.headline }}
-            >
-            </h1>
-            <div className="mt-6 md:mt-7 flex flex-col md:flex-row items-start md:items-end justify-between gap-6 md:gap-10">
+            <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-6 md:gap-10">
               <p className="th text-[14px] md:text-[16px] leading-[1.55] max-w-[460px] text-white/85 m-0" dangerouslySetInnerHTML={{ __html: content.description }}>
               </p>
               <div className="flex flex-col sm:flex-row gap-[10px] w-full md:w-auto shrink-0">
@@ -84,12 +79,6 @@ export function HeroSection({ banner, top, bannerPhotographer, topPhotographer }
                 </button>
               </div>
             </div>
-          </div>
-        </div>
-        {/* Banner credit */}
-        <div className="absolute bottom-3 right-4 md:right-10 text-white/55 hidden sm:block">
-          <div className="mono text-[10px] tracking-[.18em] uppercase">
-            {t('banner_credit', { title: banner.title, name: bannerPhotographer?.name || '' })}
           </div>
         </div>
       </div>
