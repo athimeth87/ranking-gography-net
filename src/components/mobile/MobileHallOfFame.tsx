@@ -1,18 +1,11 @@
 // @ts-nocheck
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { PHOTOS, pulseScore, PHOTOGRAPHERS } from '@/lib/data';
 import { useApp } from '@/providers/AppProvider';
 import { MobileNav, MobileFooter, MobileMarquee } from './MobileShared';
-import { MasonryTile } from './MobileExplore';
 
-const LB_TABS = [
-  { id: 'voyageurs', label: 'Voy', voyageur: true },
-  { id: 'Landscape', label: 'Land' },
-  { id: 'Portrait', label: 'Port' },
-  { id: 'BW', label: 'B&W' },
-];
 const LB_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 function formatCloseShort(iso) {
@@ -40,57 +33,73 @@ function useMobileCountdown(endIso) {
   };
 }
 
-const tiers = [
-  { t: 'Rank #1', p: 'Voucher 50K + 15%', l: 'รางวัลชนะเลิศประจำหมวด', tag: 'champion' },
-  { t: 'Rank #2–5', p: 'Cashback 10%', l: 'ส่วนลดทริปครั้งถัดไป', tag: 'elite' },
-  { t: 'Rank #6–10', p: 'Cashback 5%', l: 'ส่วนลดทริปครั้งถัดไป', tag: '' },
-  { t: 'Rank #11–50', p: 'Cashback 3%', l: 'ส่วนลดทริปครั้งถัดไป', tag: '' },
-];
+function Crown({ size = 15, color = "currentColor" }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={color} aria-hidden="true">
+      <path d="M2 8l4.2 3.4L12 4l5.8 7.4L22 8l-1.7 10.4H3.7L2 8z" />
+    </svg>
+  );
+}
+
+function ProBadge() {
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '2px 5px', borderRadius: 3, background: 'var(--fg)', color: 'var(--bg)', fontSize: 9, fontWeight: 700, letterSpacing: '0.05em', lineHeight: 1, marginLeft: 6 }}>
+      PRO
+    </span>
+  );
+}
 
 export function MobileHallOfFame({
   realSeasons = [],
   realAllPhotos = [],
-  realPhotographers = []
+  realPhotographers = [],
+  photographersRanking = []
 }: {
   realSeasons?: any[];
   realAllPhotos?: any[];
   realPhotographers?: any[];
+  photographersRanking?: any[];
 }) {
   const { theme } = useApp();
   const dark = theme === 'dark';
   const inkBg = dark ? '#fff' : '#000';
   const inkFg = dark ? '#000' : '#fff';
+  const tileBg = 'var(--tile)';
+  const fgColor = 'var(--fg)';
+  const bgRule = 'var(--rule)';
 
   const coverPhoto = realAllPhotos.find(p => p.id === 'p010') || PHOTOS.find(p => p.id === 'p010') || PHOTOS[0];
 
-  // ── Live leaderboard (gamification) ──────────────────────────────────────
-  const [lbTab, setLbTab] = useState('voyageurs');
   const liveSeason = (realSeasons || []).find(s => s.status === 'live');
   const lbEndDate = liveSeason?.endDate || '2026-09-30';
   const countdown = useMobileCountdown(lbEndDate);
 
-  const voyageurSet = new Set([
-    ...(realPhotographers || []).filter(p => p.isCustomer).map(p => p.username),
-    ...PHOTOGRAPHERS.filter(p => p.isCustomer).map(p => p.username),
-  ]);
-  const isVoyageurPhoto = (p) => p.voyageurOnly || voyageurSet.has(p.by);
-
-  const lbSource = (realAllPhotos && realAllPhotos.length > 0 ? realAllPhotos : PHOTOS).slice();
-  const lbRanked = lbSource.sort((a, b) => (b.pulse ?? pulseScore(b)) - (a.pulse ?? pulseScore(a)));
-  const lbFiltered = lbTab === 'voyageurs' ? lbRanked.filter(isVoyageurPhoto)
-    : lbRanked.filter(p => p.cat === lbTab);
-  const lbRows = lbFiltered
-    .slice(0, 10)
-    .map((p, i) => ({ ...p, lbRank: i + 1 }));
-  const lbRest = lbRows.slice(3);
-  const seasonTotalDays = 122; // ~4 months
-  const seasonPct = countdown ? Math.max(0, Math.min(100, Math.round((seasonTotalDays - countdown.days) / seasonTotalDays * 100))) : 0;
-  const rarityCount = (realSeasons || [])
-    .filter(s => s.status === 'closed' && s.winners)
-    .reduce((n, s) => n + Object.keys(s.winners).length, 0);
-
   const lookupName = (by) =>
     (realPhotographers.find(p => p.username === by) || PHOTOGRAPHERS.find(p => p.username === by))?.name || by;
+
+  const resolvePhotographer = (username) => realPhotographers.find(p => p.username === username) || PHOTOGRAPHERS.find(p => p.username === username);
+
+  const rankingEntries = useMemo(() => {
+    return (photographersRanking || []).map(r => {
+      const owner = resolvePhotographer(r.username);
+      return {
+        ...r,
+        cover_url: r.cover_url || owner?.cover || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop',
+        is_customer: owner?.isCustomer ?? false,
+      };
+    });
+  }, [photographersRanking, realPhotographers]);
+
+  const [lbTab, setLbTab] = useState('classic');
+
+  const filteredRanking = useMemo(() => {
+    return lbTab === 'classic'
+      ? rankingEntries.filter(e => !e.is_customer)
+      : rankingEntries.filter(e => e.is_customer);
+  }, [lbTab, rankingEntries]);
+
+  const top3 = filteredRanking.slice(0, 3);
+  const pack = filteredRanking.slice(3, 10);
 
   const mono = "'IBM Plex Mono', monospace";
   const thai = "'Noto Sans Thai', sans-serif";
@@ -99,234 +108,236 @@ export function MobileHallOfFame({
   return (
     <div className="gpa-mobile" style={{
       display: 'flex', flexDirection: 'column', minHeight: '100vh',
-      background: dark ? '#0a0a0a' : '#fff',
-      color: dark ? '#fff' : '#000',
+      background: 'var(--bg)',
+      color: 'var(--fg)',
       fontFamily: "'Inter', system-ui, sans-serif",
     }}>
       <MobileNav />
 
-      {/* Hero — full-bleed editorial */}
-      <div style={{ position: 'relative', width: '100%', height: '86vh', minHeight: 520, maxHeight: 780, overflow: 'hidden', color: '#fff', background: '#000' }}>
-        <img src={coverPhoto.src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', opacity: 0.92 }} />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 26%, rgba(0,0,0,0.3) 58%, rgba(0,0,0,0.88) 100%)' }} />
+      {/* Hero */}
+      <div style={{ position: 'relative', width: '100%', height: '80vh', minHeight: 480, maxHeight: 640, overflow: 'hidden', color: '#fff', background: '#000' }}>
+        <img src={coverPhoto.src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', opacity: 0.8 }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0.95) 100%)' }} />
 
-        {/* top meta bar */}
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 16, fontFamily: mono, fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase' }}>
           <span>GOGRAPHY</span>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span style={{ width: 6, height: 6, borderRadius: '50%', background: '#fff' }} />Live</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e' }} />Live</span>
         </div>
 
-        {/* title */}
-        <div style={{ position: 'absolute', left: 16, right: 16, bottom: 30, zIndex: 2 }}>
-          <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', opacity: 0.85, marginBottom: 16 }}>Hall of Fame · {liveSeason?.name || 'Season 1'}</div>
-          <div style={{ fontFamily: serif, fontWeight: 700, fontSize: 'clamp(46px, 15vw, 78px)', lineHeight: 0.9, letterSpacing: '-0.03em' }}>Be the first<br /><span style={{ fontStyle: 'italic' }}>legend.</span></div>
-          <div style={{ fontFamily: thai, fontSize: 14, lineHeight: 1.55, opacity: 0.85, maxWidth: '34ch', marginTop: 18 }}>
-            ทุก 4 เดือน ภาพที่มี Pulse สูงสุดในแต่ละหมวดจะได้ขึ้น Hall of Fame ตลอดไป
+        <div style={{ position: 'absolute', left: 16, right: 16, bottom: 32, zIndex: 2 }}>
+          <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', opacity: 0.9, marginBottom: 16, color: '#22c55e', fontWeight: 700 }}>{liveSeason?.name || 'Season 1'}</div>
+          <div style={{ fontWeight: 800, fontSize: 'clamp(46px, 15vw, 64px)', lineHeight: 0.95, letterSpacing: '-0.03em', textShadow: '0 4px 20px rgba(0,0,0,0.3)' }}>HALL OF<br/>FAME</div>
+          <div style={{ fontFamily: thai, fontSize: 14, lineHeight: 1.55, opacity: 0.9, maxWidth: '34ch', marginTop: 18 }}>
+            The best photographers.<br/>One global stage.
           </div>
-          <div style={{ marginTop: 22, display: 'inline-flex', alignItems: 'center', gap: 8, fontFamily: mono, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', opacity: 0.8 }}>
-            Scroll
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M6 13l6 6 6-6" /></svg>
+          <div style={{ marginTop: 24, display: 'flex', gap: 12, alignItems: 'center' }}>
+            <div style={{ fontFamily: mono, fontSize: 18, fontWeight: 700 }}>{countdown ? countdown.days : '—'}</div>
+            <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', opacity: 0.8 }}>DAYS LEFT</div>
           </div>
         </div>
       </div>
 
-      {/* ═══ Season Standings — iOS editorial ═══ */}
-      <section style={{ paddingTop: 28 }}>
-        {/* hero */}
-        <div style={{ padding: '0 16px' }}>
-          <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--fg-soft)' }}>01 — Standings</div>
-          <div style={{ fontFamily: serif, fontWeight: 700, fontSize: 'clamp(34px, 10vw, 52px)', lineHeight: 0.98, letterSpacing: '-0.02em', marginTop: 12 }}>{liveSeason?.name || 'This Season'}</div>
+      {/* Segmented Control */}
+      <div style={{ position: 'sticky', top: 61, zIndex: 30, background: 'rgba(var(--bg-rgb), 0.9)', backdropFilter: 'blur(8px)', borderBottom: '1px solid var(--rule)', padding: '0 16px' }}>
+        <div style={{ display: 'flex', width: '100%', height: 50 }}>
+          <button onClick={() => setLbTab('classic')} style={{
+            flex: 1, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontFamily: mono, fontSize: 12, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase',
+            background: 'transparent', color: lbTab === 'classic' ? 'var(--fg)' : 'var(--fg-soft)',
+            borderBottom: lbTab === 'classic' ? '3px solid var(--fg)' : '3px solid transparent',
+            cursor: 'pointer', transition: 'all 0.2s'
+          }}>
+            Classic
+          </button>
+          <button onClick={() => setLbTab('traveller')} style={{
+            flex: 1, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+            fontFamily: mono, fontSize: 12, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase',
+            background: 'transparent', color: lbTab === 'traveller' ? '#cd7f32' : 'var(--fg-soft)',
+            borderBottom: lbTab === 'traveller' ? '3px solid #cd7f32' : '3px solid transparent',
+            cursor: 'pointer', transition: 'all 0.2s'
+          }}>
+            Traveller <Crown size={12} />
+          </button>
+        </div>
+      </div>
 
-          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 22 }}>
-            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10 }}>
-              <span style={{ fontFamily: mono, fontVariantNumeric: 'tabular-nums', fontSize: 64, fontWeight: 500, lineHeight: 0.8 }}>{countdown ? countdown.days : '—'}</span>
-              <div style={{ paddingBottom: 4 }}>
-                <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--fg-soft)' }}>days left</div>
-                <div style={{ fontFamily: mono, fontVariantNumeric: 'tabular-nums', fontSize: 11, color: 'var(--fg-soft)', marginTop: 3, opacity: 0.7 }}>
-                  {countdown && !countdown.over ? `${countdown.hours}h ${countdown.minutes}m` : ' '}
+      {/* TOP 3 THIS SEASON */}
+      <section style={{ padding: '32px 16px' }}>
+        <div style={{ fontFamily: mono, fontSize: 11, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: fgColor, marginBottom: 24, display: 'flex', alignItems: 'center', gap: 8 }}>
+          TOP 3 {lbTab === 'classic' ? 'CLASSIC' : 'TRAVELLER'}
+        </div>
+
+        {top3.length === 0 ? (
+          <div style={{ padding: '60px 20px', textAlign: 'center', border: '1px dashed var(--rule)', borderRadius: 12, color: 'var(--fg-soft)', fontSize: 13, fontFamily: thai }}>
+            ยังไม่มีช่างภาพที่ผ่านเกณฑ์ในหมวดหมู่นี้
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            {/* Rank 1 */}
+            {top3[0] && (
+              <Link href={`/photographer/${top3[0].username}`} style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
+                <div style={{ background: tileBg, borderRadius: 16, border: '1px solid #eab308', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingBottom: 24, position: 'relative' }}>
+                  <div style={{ width: '100%', height: 140, background: bgRule, borderTopLeftRadius: 16, borderTopRightRadius: 16, overflow: 'hidden' }}>
+                    <img src={top3[0].cover_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+                  </div>
+                  <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', width: 32, height: 32, background: '#eab308', color: '#fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 14, border: '2px solid var(--bg)', zIndex: 2 }}>1</div>
+                  <div style={{ width: 80, height: 80, borderRadius: '50%', border: '4px solid var(--bg)', background: tileBg, overflow: 'hidden', marginTop: -40, position: 'relative', zIndex: 1 }}>
+                    <img src={top3[0].avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + top3[0].username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+                  </div>
+                  <div style={{ color: '#eab308', marginTop: 8 }}><Crown size={20} color="#eab308" /></div>
+                  <div style={{ fontSize: 20, fontWeight: 700, marginTop: 4, display: 'flex', alignItems: 'center' }}>
+                    {top3[0].display_name} {top3[0].is_customer && <ProBadge />}
+                  </div>
+                  <div style={{ fontFamily: mono, fontSize: 9, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--fg-soft)', marginTop: 12 }}>Pulse Score</div>
+                  <div style={{ fontSize: 36, fontWeight: 800, color: '#eab308', marginTop: 2, fontFamily: mono }}>{top3[0].hof_score}</div>
                 </div>
-              </div>
-            </div>
-            <div style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 11px', border: '1px solid var(--fg)', fontFamily: mono, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase' }}>
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'currentColor' }} />Live
+              </Link>
+            )}
+
+            {/* Rank 2 & 3 Side by Side */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              {/* Rank 2 */}
+              {top3[1] && (
+                <Link href={`/photographer/${top3[1].username}`} style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
+                  <div style={{ background: tileBg, borderRadius: 12, border: '1px solid var(--rule)', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingBottom: 16, position: 'relative' }}>
+                    <div style={{ width: '100%', height: 90, background: bgRule, borderTopLeftRadius: 12, borderTopRightRadius: 12, overflow: 'hidden' }}>
+                      <img src={top3[1].cover_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+                    </div>
+                    <div style={{ position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)', width: 24, height: 24, background: bgRule, color: fgColor, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 11, border: '1px solid var(--rule)', zIndex: 2 }}>2</div>
+                    <div style={{ width: 56, height: 56, borderRadius: '50%', border: '3px solid var(--bg)', background: tileBg, overflow: 'hidden', marginTop: -28, position: 'relative', zIndex: 1 }}>
+                      <img src={top3[1].avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + top3[1].username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+                    </div>
+                    <div style={{ fontSize: 14, fontWeight: 700, marginTop: 12, display: 'flex', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center', padding: '0 8px', textAlign: 'center' }}>
+                      {top3[1].display_name} {top3[1].is_customer && <ProBadge />}
+                    </div>
+                    <div style={{ fontFamily: mono, fontSize: 8, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--fg-soft)', marginTop: 8 }}>Pulse Score</div>
+                    <div style={{ fontSize: 24, fontWeight: 800, color: fgColor, marginTop: 2, fontFamily: mono }}>{top3[1].hof_score}</div>
+                  </div>
+                </Link>
+              )}
+
+              {/* Rank 3 */}
+              {top3[2] && (
+                <Link href={`/photographer/${top3[2].username}`} style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
+                  <div style={{ background: tileBg, borderRadius: 12, border: '1px solid var(--rule)', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingBottom: 16, position: 'relative' }}>
+                    <div style={{ width: '100%', height: 90, background: bgRule, borderTopLeftRadius: 12, borderTopRightRadius: 12, overflow: 'hidden' }}>
+                      <img src={top3[2].cover_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+                    </div>
+                    <div style={{ position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)', width: 24, height: 24, background: '#cd7f32', color: '#fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 11, border: '1px solid var(--rule)', zIndex: 2 }}>3</div>
+                    <div style={{ width: 56, height: 56, borderRadius: '50%', border: '3px solid var(--bg)', background: tileBg, overflow: 'hidden', marginTop: -28, position: 'relative', zIndex: 1 }}>
+                      <img src={top3[2].avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + top3[2].username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+                    </div>
+                    <div style={{ fontSize: 14, fontWeight: 700, marginTop: 12, display: 'flex', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center', padding: '0 8px', textAlign: 'center' }}>
+                      {top3[2].display_name} {top3[2].is_customer && <ProBadge />}
+                    </div>
+                    <div style={{ fontFamily: mono, fontSize: 8, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--fg-soft)', marginTop: 8 }}>Pulse Score</div>
+                    <div style={{ fontSize: 24, fontWeight: 800, color: fgColor, marginTop: 2, fontFamily: mono }}>{top3[2].hof_score}</div>
+                  </div>
+                </Link>
+              )}
             </div>
           </div>
-
-          {/* season progress */}
-          <div style={{ marginTop: 20 }}>
-            <div style={{ height: 4, background: 'var(--rule)', overflow: 'hidden' }}>
-              <div style={{ height: 4, width: `${seasonPct}%`, background: 'var(--fg)' }} />
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, fontFamily: mono, fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--fg-soft)' }}>
-              <span>closes {formatCloseShort(lbEndDate)}</span>
-              <span>{seasonPct}%</span>
-            </div>
-          </div>
-        </div>
-
-        {/* divider */}
-        <div style={{ height: 1, background: 'var(--rule-strong)', marginTop: 28 }} />
-
-        {/* sticky segmented control (iOS) */}
-        <div style={{ position: 'sticky', top: 61, zIndex: 30, background: dark ? '#0a0a0a' : '#fff', borderBottom: '1px solid var(--rule)', padding: '10px 16px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', border: `1px solid ${inkBg}` }}>
-            {LB_TABS.map((t, i) => {
-              const active = lbTab === t.id;
-              return (
-                <button key={t.id} onClick={() => setLbTab(t.id)} aria-label={t.voyageur ? 'Voyageurs' : t.label} style={{
-                  height: 40, padding: 0,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontFamily: mono, fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase',
-                  background: active ? inkBg : 'transparent',
-                  color: active ? inkFg : 'var(--fg-soft)',
-                  borderLeft: i === 0 ? 'none' : `1px solid ${inkBg}`,
-                  cursor: 'pointer', whiteSpace: 'nowrap',
-                }}>
-                  {t.voyageur ? (
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="#b08e54" aria-hidden="true"><path d="M2 8l4.2 3.4L12 4l5.8 7.4L22 8l-1.7 10.4H3.7L2 8z" /></svg>
-                  ) : t.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* #1 — featured */}
-        {lbRows[0] && (
-          <Link href={`/photo/${lbRows[0].id}`} style={{ display: 'block', padding: '22px 16px 0', color: 'inherit', textDecoration: 'none' }}>
-            <div style={{ position: 'relative', width: '100%', height: 268, background: 'var(--tile)', overflow: 'hidden' }}>
-              <img src={lbRows[0].src} alt={lbRows[0].title} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              <div style={{ position: 'absolute', top: 12, left: 12, display: 'inline-flex', alignItems: 'center', gap: 7, background: 'var(--bg)', color: 'var(--fg)', padding: '7px 12px' }}>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2 8l4.2 3.4L12 4l5.8 7.4L22 8l-1.7 10.4H3.7L2 8z" /></svg>
-                <span style={{ fontFamily: mono, fontVariantNumeric: 'tabular-nums', fontSize: 16, fontWeight: 700, lineHeight: 1 }}>01</span>
-              </div>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginTop: 12 }}>
-              <div style={{ minWidth: 0 }}>
-                <div style={{ fontFamily: serif, fontWeight: 700, fontSize: 22, lineHeight: 1.1, letterSpacing: '-0.01em' }}>{lbRows[0].title}</div>
-                <div style={{ fontFamily: thai, fontSize: 13, color: 'var(--fg-soft)', marginTop: 4 }}>{lookupName(lbRows[0].by)}</div>
-              </div>
-              <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                <div style={{ fontFamily: mono, fontVariantNumeric: 'tabular-nums', fontSize: 22, fontWeight: 700, lineHeight: 1 }}>{lbRows[0].pulse ?? pulseScore(lbRows[0])}</div>
-                <div style={{ fontFamily: mono, fontSize: 9, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--fg-soft)', marginTop: 4 }}>Pulse</div>
-              </div>
-            </div>
-          </Link>
         )}
+      </section>
 
-        {/* #2 / #3 */}
-        {(lbRows[1] || lbRows[2]) && (
-          <div style={{ padding: '16px 16px 0', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            {[lbRows[1], lbRows[2]].filter(Boolean).map((p) => (
-              <Link key={p.id} href={`/photo/${p.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
-                <div style={{ position: 'relative', width: '100%', height: 162, background: 'var(--tile)', overflow: 'hidden' }}>
-                  <img src={p.src} alt={p.title} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  <div style={{ position: 'absolute', top: 10, left: 10, background: 'var(--bg)', color: 'var(--fg)', padding: '3px 9px', fontFamily: mono, fontVariantNumeric: 'tabular-nums', fontSize: 13, fontWeight: 700, lineHeight: 1 }}>{String(p.lbRank).padStart(2, '0')}</div>
+      {/* RUNNER UPS (4-10) */}
+      {pack.length > 0 && (
+        <div style={{ padding: '0 16px 32px' }}>
+          <div style={{ borderTop: '1px solid var(--rule)' }}>
+            {pack.map((e, i) => (
+              <Link key={e.photographer_id} href={`/photographer/${e.username}`} style={{
+                display: 'grid', gridTemplateColumns: '26px 42px 1fr auto', alignItems: 'center', gap: 12,
+                padding: '12px 0', borderBottom: '1px solid var(--rule)', color: 'inherit', textDecoration: 'none',
+              }}>
+                <span style={{ fontFamily: mono, fontSize: 16, fontWeight: 700, textAlign: 'right', color: 'var(--fg-soft)', lineHeight: 1 }}>{String(i + 4).padStart(2, '0')}</span>
+                <div style={{ width: 42, height: 42, background: 'var(--rule)', overflow: 'hidden', borderRadius: '50%' }}>
+                  <img src={e.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + e.username} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
-                <div style={{ fontSize: 13, fontWeight: 500, marginTop: 8, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.title}</div>
-                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 6, marginTop: 4 }}>
-                  <span style={{ fontFamily: thai, fontSize: 12, color: 'var(--fg-soft)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{lookupName(p.by)}</span>
-                  <span style={{ fontFamily: mono, fontVariantNumeric: 'tabular-nums', fontSize: 13, fontWeight: 700, lineHeight: 1, flexShrink: 0 }}>{p.pulse ?? pulseScore(p)}</span>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', alignItems: 'center', gap: 4 }}>
+                    {e.display_name} {e.is_customer && <ProBadge />}
+                  </div>
+                  <div style={{ fontFamily: thai, fontSize: 11, color: 'var(--fg-soft)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: 4 }}>@{e.username}</div>
                 </div>
+                <span style={{ fontFamily: mono, fontSize: 18, fontWeight: 800, lineHeight: 1, color: '#eab308' }}>{e.hof_score}</span>
               </Link>
             ))}
           </div>
-        )}
-
-        {/* the chasing pack — 4 to 10 */}
-        {lbRest.length > 0 && (
-          <div style={{ padding: '24px 16px 0' }}>
-            <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--fg-soft)', marginBottom: 8 }}>The chasing pack</div>
-            <div style={{ borderTop: '1px solid var(--rule-strong)' }}>
-              {lbRest.map((p) => (
-                <Link key={p.id} href={`/photo/${p.id}`} style={{
-                  display: 'grid', gridTemplateColumns: '26px 46px 1fr auto', alignItems: 'center', gap: 12,
-                  padding: '10px 0', borderBottom: '1px solid var(--rule)', color: 'inherit', textDecoration: 'none',
-                }}>
-                  <span style={{ fontFamily: mono, fontVariantNumeric: 'tabular-nums', fontSize: 16, fontWeight: 700, textAlign: 'right', color: 'var(--fg-soft)', lineHeight: 1 }}>{String(p.lbRank).padStart(2, '0')}</span>
-                  <div style={{ width: 46, height: 58, background: 'var(--tile)', overflow: 'hidden' }}>
-                    <img src={p.src} alt={p.title} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  </div>
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontSize: 14, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.title}</div>
-                    <div style={{ fontFamily: thai, fontSize: 12, color: 'var(--fg-soft)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: 2 }}>{lookupName(p.by)}</div>
-                  </div>
-                  <span style={{ fontFamily: mono, fontVariantNumeric: 'tabular-nums', fontSize: 17, fontWeight: 700, lineHeight: 1 }}>{p.pulse ?? pulseScore(p)}</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* submit CTA + rarity */}
-        <div style={{ padding: '26px 16px 0' }}>
-          <Link href="/upload" style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-            height: 56, background: inkBg, color: inkFg,
-            fontFamily: thai, fontSize: 14, fontWeight: 600, textDecoration: 'none',
-          }}>ส่งภาพเพื่อติดอันดับ <span style={{ fontFamily: mono }}>→</span></Link>
-          <div style={{ fontFamily: thai, fontSize: 12, color: 'var(--fg-soft)', textAlign: 'center', marginTop: 14, lineHeight: 1.5 }}>
-            {rarityCount > 0
-              ? <>มีเพียง <span style={{ fontFamily: mono, fontVariantNumeric: 'tabular-nums' }}>{rarityCount}</span> ภาพเท่านั้น ที่เคยได้ขึ้น Hall of Fame</>
-              : <>ยังไม่มีใครได้ขึ้น Hall of Fame — จงเป็นภาพแรกของประวัติศาสตร์</>}
-          </div>
         </div>
-      </section>
+      )}
 
-      {/* 02 — The Prize */}
-      <section style={{ background: dark ? '#131310' : 'var(--cream)', marginTop: 48, padding: '44px 0' }}>
-        <div style={{ padding: '0 16px' }}>
-          <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--fg-soft)' }}>02 — The Prize</div>
-          <div style={{ fontFamily: serif, fontWeight: 700, fontSize: 'clamp(42px, 13vw, 62px)', lineHeight: 0.92, letterSpacing: '-0.02em', marginTop: 12 }}>
-            50,000<span style={{ fontFamily: mono, fontWeight: 500, fontSize: '0.4em', letterSpacing: '0.04em', verticalAlign: 'middle', marginLeft: 8 }}>THB</span>
-          </div>
-          <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--fg-soft)', marginTop: 12 }}>Best Photo of Season · per category</div>
-          <p style={{ fontFamily: thai, fontSize: 13, lineHeight: 1.6, color: 'var(--fg-soft)', marginTop: 14, maxWidth: '36ch' }}>
-            ผู้ชนะแต่ละหมวดรับ Voucher 50,000 บาท และที่นั่งใน Hall of Fame ตลอดไป
-          </p>
-        </div>
+      {/* HALL OF FAME WALL */}
+      <section style={{ padding: '32px 16px 48px', background: 'var(--cream)' }}>
+        <div style={{ fontFamily: mono, fontSize: 11, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: fgColor, marginBottom: 6 }}>HALL OF FAME WALL</div>
+        <p style={{ fontFamily: thai, fontSize: 13, color: 'var(--fg-soft)', marginBottom: 20 }}>Honoring the champions of each season.</p>
 
-        {/* Voyageur cashback */}
-        <div style={{ padding: '0 16px', marginTop: 32 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontFamily: mono, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#b08e54' }}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="#b08e54" aria-hidden="true"><path d="M2 8l4.2 3.4L12 4l5.8 7.4L22 8l-1.7 10.4H3.7L2 8z" /></svg>
-            Voyageur cashback
-          </div>
-          <p style={{ fontFamily: thai, fontSize: 12, lineHeight: 1.55, color: 'var(--fg-soft)', marginTop: 6, maxWidth: '34ch' }}>
-            ลูกค้าทริป GOGRAPHY ที่ติดอันดับ รับ cashback สำหรับทริปถัดไป
-          </p>
-          <div style={{ marginTop: 18, borderTop: '1px solid var(--rule-strong)' }}>
-            {tiers.map((t) => (
-              <div key={t.t} style={{ display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: 12, padding: '16px 0', borderBottom: '1px solid var(--rule)' }}>
-                <div>
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: mono, fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#b08e54' }}>
-                    <span style={{ width: 6, height: 6, background: '#b08e54', transform: 'rotate(45deg)' }} />{t.t}
-                  </div>
-                  <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--fg-soft)', marginTop: 5 }}>{t.l}</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {realSeasons.map((season, i) => {
+            let topPhoto;
+            let topName;
+            let topPulse;
+            if (season.status === 'live' && top3[0]) {
+              topPhoto = top3[0].cover_url;
+              topName = top3[0].display_name;
+              topPulse = top3[0].hof_score;
+            } else if (season.winners) {
+              const w = season.winners['Landscape'] || Object.values(season.winners)[0];
+              if (w) {
+                const p = resolvePhoto(w.photoId);
+                topPhoto = p?.src;
+                topName = p?.by;
+                topPulse = p?.pulse;
+              }
+            }
+
+            return (
+              <div key={season.id} style={{ position: 'relative', width: '100%', height: 180, borderRadius: 12, overflow: 'hidden', background: tileBg, border: '1px solid var(--rule)' }}>
+                <img src={topPhoto || coverPhoto.src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.7 }} />
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.5) 100%)' }} />
+                
+                <div style={{ position: 'absolute', top: 12, left: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#fff' }}>{season.name}</span>
+                  {season.status === 'live' ? (
+                    <span style={{ background: '#22c55e', color: '#fff', fontSize: 9, textTransform: 'uppercase', padding: '2px 6px', borderRadius: 3, fontWeight: 700 }}>Live</span>
+                  ) : (
+                    <span style={{ background: '#eab308', color: '#fff', fontSize: 9, textTransform: 'uppercase', padding: '2px 6px', borderRadius: 3, fontWeight: 700 }}>Winner</span>
+                  )}
                 </div>
-                <div style={{ fontFamily: mono, fontVariantNumeric: 'tabular-nums', fontSize: 22, fontWeight: 600, lineHeight: 1 }}>{t.p}</div>
+
+                <div style={{ position: 'absolute', bottom: 12, left: 12, right: 12 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#eab308', marginBottom: 6 }}>
+                    <Crown size={14} color="#eab308" /> <span style={{ fontWeight: 700, color: '#fff', fontSize: 15 }}>{topName || 'Winner'}</span>
+                  </div>
+                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.8)', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.05em', marginBottom: 4 }}>{season.range || 'N/A'}</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: '#fff', fontFamily: mono }}>Pulse {topPulse?.toFixed(2) || '0.00'}</div>
+                </div>
               </div>
-            ))}
-          </div>
+            );
+          })}
+
+          {/* Empty state / Upload CTA */}
+          {realSeasons.length <= 2 && (
+            <div style={{ width: '100%', borderRadius: 12, background: tileBg, border: '1px solid var(--rule)', padding: 24, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+              <div style={{ width: 48, height: 48, background: bgRule, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                <Crown size={24} color="#eab308" />
+              </div>
+              <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 16, lineHeight: 1.3 }}>Could your name<br />be next?</h3>
+              <Link href="/upload" style={{ background: inkBg, color: inkFg, padding: '12px 24px', borderRadius: 6, fontSize: 13, fontWeight: 700, textDecoration: 'none', width: '100%' }}>
+                Upload your photo
+              </Link>
+            </div>
+          )}
         </div>
+        
+        {realSeasons.length === 1 && (
+           <div style={{ marginTop: 24, textAlign: 'center', fontSize: 12, color: 'var(--fg-soft)', fontFamily: thai }}>
+             ฤดูกาลที่ 1 กำลังแข่งขันอยู่ 🏆 ตำนานคนแรกอาจเป็นคุณ
+           </div>
+        )}
       </section>
 
-      {/* 03 — The Field */}
-      <section style={{ padding: '52px 16px 0' }}>
-        <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--fg-soft)' }}>03 — The Field</div>
-        <div style={{ fontFamily: serif, fontWeight: 700, fontSize: 'clamp(30px, 9vw, 44px)', lineHeight: 1, letterSpacing: '-0.02em', marginTop: 10 }}>This season&apos;s frames</div>
-        <p style={{ fontFamily: thai, fontSize: 13, lineHeight: 1.55, color: 'var(--fg-soft)', marginTop: 8, maxWidth: '34ch' }}>ทุกภาพที่กำลังแข่งในซีซั่นนี้ — เรียงตาม Pulse</p>
-      </section>
-      <div style={{ padding: '16px 6px 0' }}>
-        <div style={{ columnCount: 3, columnGap: 6 }}>
-          {(realAllPhotos.length > 0 ? realAllPhotos : PHOTOS).slice().sort((a, b) => pulseScore(b) - pulseScore(a)).slice(0, 18).map((p) => (
-            <MasonryTile key={p.id} photo={p} />
-          ))}
-        </div>
-      </div>
-
-      <div style={{ height: 48 }} />
-      <MobileMarquee text="◆ Season 1 is live ◆ Be the first legend ◆ 50,000 THB per category ◆" />
+      <div style={{ height: 48, background: 'var(--cream)' }} />
+      <MobileMarquee text="◆ Season 1 is live ◆ Be the first legend ◆" />
       <MobileFooter />
     </div>
   );

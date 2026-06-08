@@ -192,6 +192,7 @@ export function HallOfFameClient() {
           realSeasons={seasons}
           realAllPhotos={livePhotos}
           realPhotographers={photographers}
+          photographersRanking={photographersRanking}
         />
       </div>
 
