@@ -140,7 +140,7 @@ function DropZone({ draft, setDraft, dragOver, setDragOver }: DropZoneProps) {
       <div>
         <div className="text-[64px] font-light tracking-[-0.04em] leading-none mb-4 mono">↑</div>
         <div className="th text-[18px] font-normal">Drop a photo here</div>
-        <p className="th text-[13px] text-fg-soft mt-3 leading-[1.6]">
+        <p className="th text-[14px] text-fg-soft mt-3 leading-[1.6]">
           หรือคลิกเพื่อเลือกจากเครื่อง — JPEG/PNG/WebP สูงสุด 5 MB · แปลงเป็น WebP อัตโนมัติ
         </p>
       </div>
@@ -364,8 +364,8 @@ export default function UploadPage() {
                 {/* Unlimited uploads notice */}
                 <div className="mt-6 py-[18px] px-6 bg-cream border border-rule flex justify-between items-center">
                   <div>
-                    <div className="th text-[13px] font-medium">อัพโหลดได้ไม่จำกัด</div>
-                    <div className="th text-[12px] text-fg-soft mt-1">
+                    <div className="th text-[14px] font-medium">อัพโหลดได้ไม่จำกัด</div>
+                    <div className="th text-[14px] text-fg-soft mt-1">
                       ไม่มี cap ต่อวัน · โหวตภาพอื่นได้ไม่จำกัด
                     </div>
                   </div>
@@ -417,7 +417,7 @@ export default function UploadPage() {
                         >
                           <div className="caps text-[9px] opacity-55">General</div>
                           <div className="text-[15px] font-medium">หมวดทั่วไป</div>
-                          <div className="th text-[11px] text-fg-soft leading-[1.5]">
+                          <div className="th text-[14px] text-fg-soft leading-[1.5]">
                             แข่งกับทุกคน · เข้า Pulse Score
                           </div>
                         </button>
@@ -437,7 +437,7 @@ export default function UploadPage() {
                             <VoyageurMark size={7} /> Travellers
                           </div>
                           <div className="text-[15px] font-medium">หมวดลูกค้า</div>
-                          <div className="th text-[11px] opacity-70 leading-[1.5]">
+                          <div className="th text-[14px] opacity-70 leading-[1.5]">
                             แข่งเฉพาะ Traveller · ลุ้น 50,000 THB
                           </div>
                         </button>

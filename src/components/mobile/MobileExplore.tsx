@@ -119,7 +119,7 @@ export function MasonryTile({ photo }: { photo: any }) {
   );
 }
 
-const CATS = ['All', 'Voyageurs', 'Landscape', 'Portrait', 'BW'] as const;
+const CATS = ['All', 'Travellers', 'Landscape', 'Portrait', 'BW'] as const;
 
 export function MobileExplore({ initialCategory = 'All', dbPhotos = [] }: { initialCategory?: typeof CATS[number], dbPhotos?: any[] }) {
   const router = useRouter();
@@ -143,7 +143,7 @@ export function MobileExplore({ initialCategory = 'All', dbPhotos = [] }: { init
 
   const filtered = useMemo(() => {
     const base = cat === 'All' ? dataSource
-      : cat === 'Voyageurs' ? dataSource.filter(p => p.isVoyageur)
+      : cat === 'Travellers' ? dataSource.filter(p => p.isVoyageur)
       : dataSource.filter(p => p.cat === cat || p.cat.toLowerCase() === cat.toLowerCase());
     return sort === 'Hirest'
       ? base.slice().sort((a, b) => (b.pulse !== undefined ? b.pulse : pulseScore(b)) - (a.pulse !== undefined ? a.pulse : pulseScore(a)))
@@ -318,7 +318,7 @@ export function MobileExplore({ initialCategory = 'All', dbPhotos = [] }: { init
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, padding: '0 16px' }}>
         {CATS.map(c => {
           const active = cat === c;
-          const gold = c === 'Voyageurs';
+          const gold = c === 'Travellers';
           const border = gold ? '#b08e54' : active ? (dark ? '#fff' : '#000') : 'var(--rule)';
           const background = gold
             ? '#b08e54'

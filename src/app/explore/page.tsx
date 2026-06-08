@@ -15,7 +15,7 @@ const TIME_OPTIONS = [
   { v: 'day', l: '24 hours' },
   { v: 'week', l: 'This week' },
   { v: 'month', l: 'This month' },
-  { v: 'season', l: 'Spring 2026' },
+  { v: 'season', l: 'Season 01' },
   { v: 'all', l: 'All time' },
 ] as const;
 
@@ -221,7 +221,7 @@ export default function ExplorePage() {
           <div className="wrap pb-10 md:pb-16">
             {/* eyebrow */}
             <div className="flex items-center gap-3 mb-5">
-              <span className="mono text-[10px] tracking-[.3em] uppercase text-white/75">Spring 2026</span>
+              <span className="mono text-[10px] tracking-[.3em] uppercase text-white/75">Season 01</span>
               <span className="h-px w-10 bg-white/30" />
               <span className="mono text-[10px] tracking-[.3em] uppercase text-white/55 tabular-nums">{photos.length} frames</span>
             </div>
@@ -229,9 +229,6 @@ export default function ExplorePage() {
             <h1 className="text-white font-light text-[clamp(48px,9vw,104px)] leading-[.9] tracking-[-.04em] m-0">
               Explore
             </h1>
-            <p className="th text-white/75 text-[15px] leading-[1.6] mt-5 mb-0 max-w-[460px]">
-              เลือกชมภาพถ่ายทั้งหมด — กรองตามหมวด เวลา และอันดับ
-            </p>
           </div>
         </div>
       </section>
@@ -249,7 +246,7 @@ export default function ExplorePage() {
                     key="voyageurs"
                     onClick={() => router.push('/explore/voyageurs')}
                     className="group relative py-[18px] px-5 cursor-pointer"
-                    aria-label="Voyageurs"
+                    aria-label="Travellers"
                   >
                     <span className="inline-flex items-center gap-1.5 bg-gold text-black px-3 py-[6px] text-[11px] tracking-[.16em] uppercase font-semibold transition-[filter] duration-150 group-hover:brightness-[1.06]">
                       <VoyageurCrown />

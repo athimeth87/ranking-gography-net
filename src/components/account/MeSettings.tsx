@@ -34,7 +34,7 @@ function ToggleRow({ label, sub, value, onChange, disabled = false }: ToggleRowP
     >
       <div>
         <div className="th text-[14px] font-medium">{label}</div>
-        <div className="th text-[12px] text-fg-soft mt-1">{sub}</div>
+        <div className="th text-[14px] text-fg-soft mt-1">{sub}</div>
       </div>
       <Switch
         checked={value}
@@ -230,7 +230,7 @@ export function MeSettings({ persona, isVoyageur }: MeSettingsProps) {
           <div className="flex flex-col md:flex-row justify-between items-start gap-6">
             <div>
               <div className="th text-[15px] font-medium">ลบบัญชีทั้งหมด</div>
-              <p className="th text-[12px] text-fg-soft mt-[6px] leading-[1.6] max-w-[480px]">
+              <p className="th text-[14px] text-fg-soft mt-[6px] leading-[1.6] max-w-[480px]">
                 ภาพทุกภาพ ความเห็น และ favorites จะถูกลบถาวร — ไม่สามารถกู้คืนได้
               </p>
             </div>

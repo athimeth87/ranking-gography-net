@@ -358,7 +358,7 @@ export function PhotographerClient({ username }: { username: string }) {
           {photographer.isCustomer && !photographer.isAmbassador && (
             <div className="absolute right-[14px] top-3 z-[2] inline-flex items-center gap-[5px] text-gold bg-black/50 backdrop-blur-[4px] px-2 py-[3px] mono text-[9px] tracking-[.14em] uppercase">
               <span className="w-[5px] h-[5px] bg-gold rotate-45" />
-              Voyageur
+              Traveller
             </div>
           )}
         </div>
@@ -520,7 +520,7 @@ export function PhotographerClient({ username }: { username: string }) {
               <div className="mb-6 bg-[#f9f7f4] dark:bg-[#1a1916] border border-black/[0.08] dark:border-white/[0.08] p-4">
                 <div className="flex items-center gap-[6px] mb-3 mono text-[10px] tracking-[.14em] uppercase text-gold">
                   <span className="w-[6px] h-[6px] bg-gold rotate-45" />
-                  Voyageur · Spring 2026
+                  Traveller · Season 01
                 </div>
                 <div className="mono text-[12px] leading-[2.2]">
                   <div className="flex justify-between border-b border-black/[0.06] dark:border-white/[0.06] pb-[6px] mb-[6px]">
@@ -580,9 +580,6 @@ export function PhotographerClient({ username }: { username: string }) {
           title={photographer.name}
           subtitle={photographer.bio}
           credit={`${photographer.loc} · ${myPhotos.length} photos · ${follow.followersCount.toLocaleString()} followers`}
-          height="50vh"
-          minHeight={380}
-          maxHeight={560}
         />
 
         {/* Identity header */}
@@ -715,8 +712,8 @@ export function PhotographerClient({ username }: { username: string }) {
                         </div>
                       </div>
                       <div className="border-l border-rule pl-8">
-                        <div className="caps opacity-55 mb-3">Travellers · Spring 2026</div>
-                        <div className="th text-[13px] leading-[1.7]">
+                        <div className="caps opacity-55 mb-3">Travellers · Season 01</div>
+                        <div className="th text-[14px] leading-[1.7]">
                           <div className="flex justify-between py-2 border-b border-rule">
                             <span>Photos submitted</span>
                             <span className="mono font-medium">{myPhotos.length}</span>

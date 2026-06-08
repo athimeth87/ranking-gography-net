@@ -187,7 +187,7 @@ export function LiveLeaderboard({
                       </span>
                       <div className="flex-1 min-w-0">
                         <h4 className="text-[20px] md:text-[24px] font-normal tracking-[-0.015em] truncate m-0">{e.display_name}</h4>
-                        <div className="th text-[13px] text-fg-soft truncate mt-1">
+                        <div className="th text-[14px] text-fg-soft truncate mt-1">
                           @{e.username} · {e.photo_count} Photos
                         </div>
                       </div>
@@ -221,7 +221,7 @@ export function LiveLeaderboard({
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-[18px] md:text-[22px] font-normal tracking-[-0.015em] truncate">{e.display_name}</div>
-                        <div className="th text-[13px] text-fg-soft truncate mt-1">
+                        <div className="th text-[14px] text-fg-soft truncate mt-1">
                           @{e.username} · {e.photo_count} Photos
                         </div>
                       </div>

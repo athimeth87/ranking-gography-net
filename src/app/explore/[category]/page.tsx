@@ -16,7 +16,7 @@ const TIME_OPTIONS = [
   { v: 'day', l: '24 hours' },
   { v: 'week', l: 'This week' },
   { v: 'month', l: 'This month' },
-  { v: 'season', l: 'Spring 2026' },
+  { v: 'season', l: 'Season 01' },
   { v: 'all', l: 'All time' },
 ] as const;
 
@@ -221,8 +221,8 @@ export default function ExploreCategoryPage({
     : `เลือกชมหมวด ${catKey === 'BW' ? 'Black & White' : catKey} — เรียงตามอันดับ ภาพล่าสุด หรือยอดโหวต`;
 
   // Map category to MobileExplore's CAT type
-  const mobileInitial: 'All' | 'Landscape' | 'Portrait' | 'BW' | 'Voyageurs' =
-    isVoyageurFilter ? 'Voyageurs'
+  const mobileInitial: 'All' | 'Landscape' | 'Portrait' | 'BW' | 'Travellers' =
+    isVoyageurFilter ? 'Travellers'
     : catKey === 'Landscape' ? 'Landscape'
     : catKey === 'Portrait' ? 'Portrait'
     : catKey === 'BW' ? 'BW'

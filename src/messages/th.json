@@ -42,8 +42,8 @@
     "view_all": "ดูช่างภาพทั้งหมด"
   },
   "VoyageursSection": {
-    "title": "เคยร่วมเดินทางกับเรา?<br />มาเป็น Traveller สิ",
-    "description": "ลูกค้าที่เคยเดินทางกับ GOGRAPHY จะได้รับสถานะ <strong>Traveller</strong> — มีสิทธิ์ส่งภาพในหมวดหมู่พิเศษสำหรับลูกค้าเท่านั้น ทุกฤดูกาลผู้ชนะจะได้รับ Voucher มูลค่า 50,000 บาท และ Top 10 จะได้รับ Cashback สำหรับทริปถัดไป",
+    "title": "เคยร่วมเดินทางกับเรา?<br />มาเป็น Traveller",
+    "description": "ลูกค้า GOGRAPHY ทุกคนได้สถานะ <strong>Traveller</strong> — มีหมวดประกวดเฉพาะกลุ่ม แข่งกันเองเฉพาะคนที่เคยร่วมเดินทางกับเรา ปลายฤดูกาลภาพอันดับ 1–3 รับรางวัล — อันดับ 1 Cashback 50,000 บาท, อันดับ 2–3 รับส่วนลดทริปถัดไป",
     "reward1_sub": "ต่อหมวด",
     "program_name": "The Travellers Programme",
     "exclusive": "สิทธิพิเศษ · เฉพาะ TRAVELLER",
@@ -207,7 +207,7 @@
     "voting_activity": "กิจกรรมการโหวต",
     "following": "กำลังติดตาม",
     "favorites": "รายการโปรด",
-    "voyageurs_awards": "Travellers Awards · ฤดูใบไม้ผลิ 2026",
+    "voyageurs_awards": "Travellers Awards · Season 01",
     "cashback": "เครดิตเงินคืน",
     "how_to_reach_10": "ทำอย่างไรถึงได้ 10%",
     "rank_master_recognition": "★ รางวัล Rank Master",
