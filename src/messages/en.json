@@ -43,7 +43,7 @@
   },
   "VoyageursSection": {
     "title": "Travelled with us?<br />Become a Traveller",
-    "description": "Customers who have travelled with GOGRAPHY earn <strong>Traveller</strong> status — eligible to submit photos in a customer-only category. Each season the winner receives a 50,000 THB voucher, and the top 10 receive cashback on their next trip.",
+    "description": "Every GOGRAPHY traveller earns <strong>Traveller</strong> status — a category of your own, judged only against people who have travelled with us. At the end of each season the top 3 photos win: Rank 1 takes a 50,000 THB cashback, Ranks 2–3 get a discount toward their next trip.",
     "reward1_sub": "per category",
     "program_name": "The Travellers Programme",
     "exclusive": "EXCLUSIVE · TRAVELLERS ONLY",
@@ -207,7 +207,7 @@
     "voting_activity": "Voting activity",
     "following": "FOLLOWING",
     "favorites": "FAVORITES",
-    "voyageurs_awards": "Travellers Awards · Spring 2026",
+    "voyageurs_awards": "Travellers Awards · Season 01",
     "cashback": "CASHBACK",
     "how_to_reach_10": "How to reach 10%",
     "rank_master_recognition": "★ Rank Master recognition",

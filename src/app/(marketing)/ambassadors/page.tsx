@@ -133,7 +133,7 @@ export default async function Page() {
                   <p className="th text-[16px] md:text-[18px] leading-[1.6] m-0 tracking-[-0.005em]">
                     {a.ambassador_bio || 'ยังไม่มีคำอธิบายตัวตน'}
                   </p>
-                  <p className="th text-[13px] md:text-[14px] leading-[1.7] text-[var(--fg-soft)] mt-[16px] md:mt-[20px]">
+                  <p className="th text-[14px] md:text-[14px] leading-[1.7] text-[var(--fg-soft)] mt-[16px] md:mt-[20px]">
                     คัดเลือกภาพในแนว{' '}
                     <strong className="text-[var(--fg)] font-medium">
                       {a.username === 'wattana'

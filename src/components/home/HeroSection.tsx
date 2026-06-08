@@ -55,7 +55,7 @@ export function HeroSection({ banner, top, bannerPhotographer, topPhotographer }
             GOGRAPHY Ranking
           </div>
           <div className="mono text-[11px] tracking-[.22em] uppercase opacity-85">
-            {t('season_live', { season: 'Spring 2026' })}
+            {t('season_live', { season: 'Season 01' })}
           </div>
         </div>
         {/* Bottom copy */}

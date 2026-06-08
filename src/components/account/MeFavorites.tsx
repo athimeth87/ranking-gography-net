@@ -27,7 +27,7 @@ export function MeFavorites({ favs, isPublic, onToggleVisibility }: MeFavoritesP
           </span>
         </label>
       </div>
-      <p className="th mt-4 text-[13px] text-fg-soft max-w-[600px] leading-[1.7]">
+      <p className="th mt-4 text-[14px] text-fg-soft max-w-[600px] leading-[1.7]">
         ภาพที่คุณบันทึกไว้ — โดยปกติเป็นส่วนตัว สามารถเปิดให้สาธารณะเห็นได้บน profile ของคุณ
       </p>
       <div className="mt-8">

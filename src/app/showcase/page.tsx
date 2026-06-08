@@ -26,9 +26,6 @@ function PageShowcase() {
         eyebrow="Internal · shadcn/ui"
         title="UI Showcase"
         subtitle="Reference page for shadcn/ui primitives wired into GOGRAPHY Ranking — tuned to the monochrome premium palette (no rounded corners, black/white only)."
-        height="40vh"
-        minHeight={320}
-        maxHeight={440}
       />
 
       <section className="py-[80px] pb-[120px]">
@@ -129,7 +126,7 @@ import { Card, CardHeader, CardContent } from '@/components/ui/card';
   </CardContent>
 </Card>`}
             </pre>
-            <p className="th text-[13px] text-[var(--fg-soft)] mt-4 leading-[1.7]">
+            <p className="th text-[14px] text-[var(--fg-soft)] mt-4 leading-[1.7]">
               เพิ่ม component เพิ่ม: <code className="bg-[var(--cream)] px-[6px] py-[2px]">npx shadcn@latest add &lt;name&gt;</code> — ดูทั้งหมดที่ ui.shadcn.com/docs/components
             </p>
           </div>

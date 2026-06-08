@@ -60,11 +60,11 @@ export function VoyageursSection({ featuredPhoto }: VoyageursSectionProps) {
     title: t.raw('title'),
     description: t.raw('description'),
     reward1_amount: '50,000 THB',
-    reward1_label: 'VOUCHER',
-    reward1_sub: t('reward1_sub'),
-    reward2_amount: '3-15%',
-    reward2_label: 'CASHBACK',
-    reward2_sub: 'TOP 10',
+    reward1_label: 'CASHBACK',
+    reward1_sub: 'RANK 1',
+    reward2_amount: '10–20%',
+    reward2_label: 'ส่วนลดทริป',
+    reward2_sub: 'RANK 2–3',
     image_url: ''
   });
 
@@ -73,8 +73,9 @@ export function VoyageursSection({ featuredPhoto }: VoyageursSectionProps) {
       const supabase = getSupabaseBrowserClient();
       if (!supabase) return;
       const { data } = await supabase.from('site_settings').select('value').eq('id', 'voyageurs_section').single();
-      if (data?.value) {
-        setContent({ ...content, ...data.value });
+      if (data?.value?.image_url) {
+        // copy + reward figures stay in code; DB only supplies the featured image
+        setContent((c) => ({ ...c, image_url: data.value.image_url }));
       }
     };
     fetchContent();

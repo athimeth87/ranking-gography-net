@@ -186,7 +186,7 @@ export function GlobalUploadModal() {
                 ) : (
                   <div className="text-center p-4 text-white/50">
                     <div className="text-[24px] mb-1 mono text-white">↑</div>
-                    <div className="th text-[12px]">คลิกเพื่อเลือกภาพ</div>
+                    <div className="th text-[14px]">คลิกเพื่อเลือกภาพ</div>
                   </div>
                 )}
                 <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
@@ -246,7 +246,7 @@ export function GlobalUploadModal() {
 
               <div className="flex items-center justify-between border border-white/10 rounded-lg p-3 bg-white/5">
                 <div>
-                  <div className="th text-[12px] font-medium text-white">Traveller Only</div>
+                  <div className="th text-[14px] font-medium text-white">Traveller Only</div>
                   <div className="th text-[10px] text-white/50 mt-0.5">ภาพนี้จะเห็นได้เฉพาะสมาชิก Traveller ด้วยกันเท่านั้น</div>
                 </div>
                 <Switch

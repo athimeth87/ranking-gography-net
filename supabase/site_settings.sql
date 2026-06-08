@@ -14,13 +14,13 @@ on public.site_settings for all using (
   exists (select 1 from public.users u where u.id = auth.uid() and u.is_admin = true)
 );
 
--- Insert default Voyageurs section content
+-- Insert default Travellers section content
 insert into public.site_settings (id, value)
 values (
   'voyageurs_section',
   '{
-    "title": "Travelled with us?\\nBecome a Voyageur",
-    "description": "Customers who have travelled with GOGRAPHY earn Voyageur status — eligible to submit photos in a customer-only category. Each season the winner receives a 50,000 THB voucher, and the top 10 receive cashback on their next trip.",
+    "title": "Travelled with us?\\nBecome a Traveller",
+    "description": "Every GOGRAPHY traveller earns Traveller status — a category of your own, judged only against people who have travelled with us. Each season the top photo wins a 50,000 THB voucher, and the Top 10 earn cashback toward their next trip.",
     "reward1_amount": "50,000 THB",
     "reward1_label": "VOUCHER",
     "reward1_sub": "ต่อหมวด",

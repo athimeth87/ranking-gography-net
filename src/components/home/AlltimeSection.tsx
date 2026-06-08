@@ -41,7 +41,7 @@ export function AlltimeSection({ allPhotos, voyageurUsernames }: AlltimeSectionP
             <h2 className="text-[48px] font-normal leading-none m-0 tracking-[-.025em]">
               {t('title')}
             </h2>
-            <p className="th mt-[14px] text-[13px] text-[var(--fg-soft)] max-w-[540px] leading-[1.6]">
+            <p className="th mt-[14px] text-[14px] text-[var(--fg-soft)] max-w-[540px] leading-[1.6]">
               {t('subtitle')}
             </p>
           </div>

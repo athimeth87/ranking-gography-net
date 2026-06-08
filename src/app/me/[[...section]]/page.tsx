@@ -387,9 +387,6 @@ export default function Page({ params }: PageProps) {
           eyebrow={t('your_account')}
           title={t('your_dashboard')}
           subtitle="ภาพของคุณ คะแนน favorites ทริปกับ GOGRAPHY — รวมที่เดียว"
-          height="38vh"
-          minHeight={300}
-          maxHeight={420}
         />
         <label className="absolute top-6 right-10 bg-black/50 text-white px-4 py-2 rounded text-[11px] tracking-[.1em] uppercase cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity z-20 hover:bg-black/80">
           {uploadingCover ? t('uploading') : t('change_cover')}

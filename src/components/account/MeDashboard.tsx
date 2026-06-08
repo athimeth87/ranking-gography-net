@@ -90,7 +90,7 @@ export function MeDashboard({ persona, isVoyageur, isPhotographer, myPhotos, fol
               : <>ส่งรูปเพื่อเริ่มต้นในหมวด {topCategory ?? 'Landscape'}</>
             }
           </h3>
-          <p className="th mt-3 text-[13px] text-fg-soft leading-[1.7] max-w-[480px]">
+          <p className="th mt-3 text-[14px] text-fg-soft leading-[1.7] max-w-[480px]">
             {daysLeft != null ? `เหลือเวลา ${daysLeft} วัน ก่อนปิดประกวด` : 'กำลังโหลด…'}
           </p>
           <button
