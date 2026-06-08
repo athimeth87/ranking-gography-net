@@ -1,7 +1,7 @@
 // Ambassadors — list of trusted curators (invite-only)
 
 import { getSupabaseServerClient } from '@/lib/supabase/server';
-import { PageCover } from '@/components/layout/PageCover';
+import { getPhoto } from '@/lib/data';
 import { Footer } from '@/components/layout/Footer';
 import { ProfileButton, PhotoThumb } from './_components';
 
@@ -9,6 +9,7 @@ export const revalidate = 60; // Cache for 60 seconds
 
 export default async function Page() {
   const supabase = getSupabaseServerClient();
+  const coverSrc = getPhoto('p002').src;
   
   // Fetch ambassadors
   const { data: users } = await supabase
@@ -65,7 +66,7 @@ export default async function Page() {
       <section className="relative overflow-hidden bg-black h-[42vh] min-h-[340px] max-h-[520px]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="https://ranking.gography.net/cover-of-the-week.jpg"
+          src={coverSrc}
           alt="Ambassadors"
           className="w-full h-full object-cover opacity-60"
           loading="eager"

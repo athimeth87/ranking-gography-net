@@ -2,7 +2,7 @@
 
 import { Fragment } from 'react';
 import Link from 'next/link';
-import { PageCover } from '@/components/layout/PageCover';
+import { getPhoto } from '@/lib/data';
 import { Footer } from '@/components/layout/Footer';
 import { LoginButton } from './_components';
 
@@ -99,13 +99,15 @@ const PATH_STEPS = [
 // ─── page ────────────────────────────────────────────────────────────────────
 
 export default function Page() {
+  const coverSrc = getPhoto('p003').src;
+
   return (
     <div className="page-fade">
       {/* ── Cinematic Hero Header ── */}
       <section className="relative overflow-hidden bg-black h-[42vh] min-h-[340px] max-h-[520px]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="https://ranking.gography.net/cover-of-the-week.jpg"
+          src={coverSrc}
           alt="For Travellers"
           className="w-full h-full object-cover opacity-60"
           loading="eager"
