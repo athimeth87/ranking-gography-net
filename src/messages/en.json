@@ -20,7 +20,7 @@
     "view_photo": "View photo"
   },
   "TrendsNowSection": {
-    "title": "Trends Now",
+    "title": "Popular",
     "subtitle": "Past Week · Top 9",
     "see_all": "See all",
     "likes": "likes"
@@ -38,7 +38,7 @@
   },
   "FeaturedPhotographersSection": {
     "section_label": "Top Photographers · All time",
-    "title": "Top Photographers",
+    "title": "Photographers",
     "view_all": "View all photographers"
   },
   "VoyageursSection": {
