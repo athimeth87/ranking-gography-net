@@ -19,7 +19,7 @@ export const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
 
 export async function convertToWebP(
   source: File,
-  { quality = 0.85, maxDimension }: ConvertOptions = {},
+  { quality = 0.85, maxDimension = 2048 }: ConvertOptions = {},
 ): Promise<ConvertResult> {
   const originalBytes = source.size;
   const bitmap = await loadBitmap(source);

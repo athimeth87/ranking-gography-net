@@ -8,7 +8,7 @@ import { useApp } from '@/providers/AppProvider';
 import { PageCover } from '@/components/layout/PageCover';
 import type { Category } from '@/lib/types';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
-import { MAX_UPLOAD_BYTES, formatBytes } from '@/lib/imageConvert';
+import { MAX_UPLOAD_BYTES, formatBytes, convertToWebP } from '@/lib/imageConvert';
 import { getPresignedUploadUrl } from '@/app/actions/r2-upload';
 import { toast } from 'sonner';
 
@@ -45,41 +45,25 @@ interface DropZoneProps {
 }
 
 function DropZone({ draft, setDraft, dragOver, setDragOver }: DropZoneProps) {
-  const handleFile = (f: File) => {
+  const handleFile = async (f: File) => {
     if (f.size > MAX_UPLOAD_BYTES) {
       alert(`ไฟล์ใหญ่เกินไป (${formatBytes(f.size)}) — สูงสุด 5 MB`);
       return;
     }
-    const url = URL.createObjectURL(f);
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-      
-      ctx.drawImage(img, 0, 0);
-      
-      // Convert to WebP
-      canvas.toBlob((blob) => {
-        if (!blob) return;
-        
-        // Replace old extension with .webp
-        const newName = f.name.replace(/\.[^/.]+$/, "") + ".webp";
-        const webpFile = new File([blob], newName, { type: 'image/webp' });
-        const webpUrl = URL.createObjectURL(webpFile);
+    try {
+      const result = await convertToWebP(f, { quality: 0.85 });
+      const webpUrl = URL.createObjectURL(result.file);
 
-        setDraft((d) => ({
-          ...d,
-          file: { name: webpFile.name, size: webpFile.size, url: webpUrl },
-          actualFile: webpFile,
-          width: img.width,
-          height: img.height
-        }));
-      }, 'image/webp', 0.85); // 85% quality to save space while retaining good detail
-    };
-    img.src = url;
+      setDraft((d) => ({
+        ...d,
+        file: { name: result.file.name, size: result.file.size, url: webpUrl },
+        actualFile: result.file,
+        width: result.width,
+        height: result.height
+      }));
+    } catch (err) {
+      alert('เกิดข้อผิดพลาดในการแปลงรูปภาพ: ' + (err instanceof Error ? err.message : 'unknown'));
+    }
   };
 
   const onDrop = (e: React.DragEvent<HTMLDivElement>) => {
