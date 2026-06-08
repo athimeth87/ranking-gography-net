@@ -56,40 +56,27 @@ export function DesktopHallOfFame({
   return (
     <div className="page-fade">
       {/* ── Hero ── */}
-      <div className="relative h-[88vh] min-h-[620px] w-full overflow-hidden text-white bg-black">
+      <div className="relative h-[78vh] min-h-[560px] w-full overflow-hidden text-white bg-black">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={coverSrc} alt="" className="absolute inset-0 w-full h-full object-cover opacity-55" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/20 to-black/90" />
+        <img src={coverSrc} alt="" className="absolute inset-0 w-full h-full object-cover opacity-90" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/85" />
 
-        {/* Top bar */}
-        <div className="absolute top-0 inset-x-0 z-10 border-b border-white/10">
-          <div className="wrap flex items-center justify-between py-5 caps text-[10px] tracking-[0.14em] text-white/50">
+        <div className="absolute top-0 inset-x-0 z-10">
+          <div className="wrap flex items-center justify-between py-6 caps text-white/80">
             <span>GOGRAPHY · Hall of Fame</span>
-            <span className="inline-flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />Live Season
-            </span>
+            <span className="inline-flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-white" />Live</span>
           </div>
         </div>
 
-        {/* Bottom text */}
-        <div className="absolute bottom-0 inset-x-0 z-10 pb-16 lg:pb-24">
+        <div className="absolute bottom-0 inset-x-0 z-10 pb-14 lg:pb-20">
           <div className="wrap">
-            <div className="caps text-white/50 mb-5 text-[10px] tracking-[0.14em]">{liveSeason?.name ?? 'Season 1'} · Awards Archive</div>
-            <h1 className="text-[clamp(60px,11vw,150px)] font-normal tracking-[-0.04em] leading-[0.85] m-0 max-w-[12ch]">
+            <div className="caps text-white/80 mb-6">{liveSeason?.name ?? 'Season 1'} · Awards Archive</div>
+            <h1 className="text-[clamp(56px,10vw,140px)] font-normal tracking-[-0.04em] leading-[0.85] m-0 max-w-[14ch]">
               Be the first legend.
             </h1>
-            <div className="flex flex-wrap items-end gap-8 mt-8">
-              <p className="th text-[clamp(14px,1.5vw,18px)] text-white/70 max-w-[46ch] leading-[1.65] m-0">
-                ทุก 4 เดือน GOGRAPHY คัดเลือกช่างภาพที่มี Pulse สูงสุดเฉลี่ย — ผู้ชนะรับ Voucher 50,000 THB และที่ใน Hall of Fame ตลอดไป
-              </p>
-              <div className="flex items-center gap-4 shrink-0">
-                <div className="w-px h-10 bg-white/20" />
-                <div>
-                  <div className="mono tabular-nums text-[clamp(28px,4vw,52px)] leading-none text-gold">{rarityCount}</div>
-                  <div className="caps text-white/40 mt-1 text-[10px]">Legends so far</div>
-                </div>
-              </div>
-            </div>
+            <p className="th text-[clamp(15px,1.6vw,20px)] text-white/85 max-w-[54ch] mt-8 leading-[1.55]">
+              ทุก 4 เดือน GOGRAPHY คัดเลือกช่างภาพที่มี Pulse สูงสุดเฉลี่ย — ผู้ชนะรับ Voucher 50,000 THB และที่ใน Hall of Fame ตลอดไป
+            </p>
           </div>
         </div>
       </div>

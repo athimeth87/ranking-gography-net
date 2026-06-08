@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import type { Category } from '@/lib/types';
 
 export interface PhotographerRanking {
   photographer_id: string;
@@ -11,11 +12,9 @@ export interface PhotographerRanking {
   avatar_url: string;
   photo_count: number;
   hof_score: number;
-  cover_url?: string;
-  is_customer?: boolean;
+  cover_url?: string; // added from frontend join
+  is_customer?: boolean; // Traveller flag
 }
-
-export type LeaderboardEntry = PhotographerRanking;
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -77,32 +76,29 @@ export function LiveLeaderboard({
   const pack = rows.slice(3);
 
   return (
-    <section className="rule-bot">
-
-      {/* ── Section header ── */}
-      <div className="wrap border-b border-rule py-10 md:py-14">
-        <div className="flex flex-wrap items-end justify-between gap-6">
+    <section className="py-16 md:py-24 rule-bot">
+      <div className="wrap">
+        {/* ── header ── */}
+        <div className="flex flex-wrap items-end justify-between gap-x-12 gap-y-8">
           <div>
-            <div className="caps text-fg-soft mb-3">01 / Standings — The Race Is On</div>
-            <h2 className="text-[clamp(36px,6vw,80px)] font-normal tracking-[-0.035em] leading-[0.92] m-0">
+            <div className="caps text-fg-soft mb-4">01 / Standings — The Race Is On</div>
+            <h2 className="text-[clamp(40px,7vw,84px)] font-normal tracking-[-0.03em] leading-[0.95] m-0">
               {seasonName}
             </h2>
+            <span className="pick solid mt-5 inline-block">● Live now</span>
           </div>
-          <div className="flex flex-col items-end gap-3">
-            <span className="pick solid">● Live now</span>
-            <div className="text-right">
-              <div className="mono tabular-nums text-[clamp(40px,5vw,64px)] leading-none">
-                {countdown ? countdown.days : '—'}<span className="text-[0.38em] text-fg-soft ml-2 align-middle tracking-[0.1em]">DAYS</span>
-              </div>
-              <div className="caps text-fg-faint mt-1 text-[10px]">
-                {countdown && !countdown.over ? `${countdown.hours}h ${countdown.minutes}m · ` : ''}closes {formatClose(endDate)}
-              </div>
+          <div className="text-right">
+            <div className="mono tabular-nums text-[clamp(52px,8vw,96px)] leading-[0.8]">
+              {countdown ? countdown.days : '—'}
+            </div>
+            <div className="caps text-fg-faint mt-3">
+              days left{countdown && !countdown.over ? ` · ${countdown.hours}h ${countdown.minutes}m` : ''} · closes {formatClose(endDate)}
             </div>
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="flex items-center gap-1.5 mt-8">
+        {/* ── tabs ── */}
+        <div className="flex gap-2 mt-10 pt-7 border-t border-rule">
           {([
             { id: 'classic', label: 'Classic' },
             { id: 'traveller', label: 'Traveller', gold: true },
@@ -110,170 +106,158 @@ export function LiveLeaderboard({
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={cn(
-                'caps inline-flex items-center gap-2 h-[36px] px-5 border transition-colors text-[10px] tracking-[0.12em]',
+              className={`caps inline-flex items-center min-h-[44px] px-5 border transition-colors ${
                 tab === t.id
                   ? 'bg-fg text-bg border-fg'
                   : t.gold
                     ? 'border-rule text-gold hover:border-gold'
                     : 'border-rule text-fg-soft hover:border-fg hover:text-fg'
-              )}
+              }`}
             >
-              {t.gold && <CrownMark className="w-[11px] h-[11px]" />}
+              {t.gold && <CrownMark className="w-3.5 h-3.5 mr-2 text-gold" />}
               {t.label}
             </button>
           ))}
         </div>
-      </div>
 
-      {rows.length === 0 ? (
-        <div className="wrap py-24 text-center">
-          <p className="th text-fg-soft">ยังไม่มีช่างภาพที่ผ่านเกณฑ์ในหมวดนี้</p>
-        </div>
-      ) : (
-        <>
-          {/* ── #1 — Full-bleed dark hero ── */}
-          {leader && (
-            <Link href={`/photographer/${leader.username}`} className="block relative bg-black text-white overflow-hidden group border-b border-[#111]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={leader.cover_url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop'}
-                alt=""
-                className="absolute inset-0 w-full h-full object-cover opacity-30 transition-transform duration-700 ease-out group-hover:scale-[1.04]"
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/60 to-black/10" />
-
-              <div className="relative wrap py-14 md:py-20">
-                <div className="flex flex-wrap items-end justify-between gap-8">
-                  {/* Left: rank + name */}
-                  <div className="flex items-end gap-4 md:gap-8">
-                    <div className="mono tabular-nums text-[clamp(80px,13vw,180px)] leading-none tracking-[-0.05em] text-white/[0.07] select-none shrink-0">
-                      01
-                    </div>
-                    <div className="pb-1">
-                      <div className="flex items-center gap-2 caps text-gold/75 mb-3 text-[10px] tracking-[0.14em]">
-                        <CrownMark className="w-3 h-3" /> The Leader
-                      </div>
-                      <h3 className="text-[clamp(26px,4vw,58px)] font-normal tracking-[-0.025em] leading-[1.0] m-0 text-gold">
-                        {leader.display_name}
-                      </h3>
-                      <div className="flex items-center gap-3 mt-4">
-                        <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 border border-white/15">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={leader.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${leader.username}`} className="w-full h-full object-cover" alt="" />
-                        </div>
-                        <span className="th text-white/45 text-[13px]">@{leader.username}</span>
-                        <span className="w-0.5 h-0.5 bg-white/20 rounded-full" />
-                        <span className="font-mono text-white/35 text-[12px]">{leader.photo_count} photos</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Right: score */}
-                  <div className="text-right pb-1">
-                    <div className="caps text-white/30 mb-2 text-[10px] tracking-[0.15em]">HOF Score</div>
-                    <div className="mono tabular-nums text-[clamp(52px,7vw,100px)] leading-none text-gold">
-                      {leader.hof_score}
-                    </div>
+        {rows.length === 0 ? (
+          <p className="th text-center text-fg-soft py-24">ยังไม่มีช่างภาพที่ผ่านเกณฑ์ในหมวดนี้</p>
+        ) : (
+          <>
+            {/* ── #1 feature spread ── */}
+            {leader && (
+              <Link
+                href={`/photographer/${leader.username}`}
+                className="grid md:grid-cols-[1.1fr_0.9fr] gap-8 lg:gap-16 items-center mt-16 group"
+              >
+                <div className="aspect-[4/3] bg-tile overflow-hidden order-1 md:order-none relative">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={leader.cover_url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop'}
+                    alt={leader.display_name}
+                    className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+                  />
+                  <div className="absolute bottom-6 left-6 w-24 h-24 rounded-full overflow-hidden border-4 border-bg shadow-xl">
+                     <img src={leader.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + leader.username} className="w-full h-full object-cover" alt="" />
                   </div>
                 </div>
-              </div>
-            </Link>
-          )}
-
-          {/* ── #2 / #3 ── */}
-          {runners.length > 0 && (
-            <div className="grid md:grid-cols-2 border-b border-rule">
-              {runners.map((e, i) => (
-                <Link
-                  key={e.photographer_id}
-                  href={`/photographer/${e.username}`}
-                  className={cn(
-                    'group flex items-center gap-5 md:gap-6 px-10 py-7 md:py-10 transition-colors hover:bg-cream',
-                    i === 0 ? 'border-b md:border-b-0 md:border-r border-rule' : ''
-                  )}
-                >
-                  <span className="mono tabular-nums text-[clamp(36px,4vw,56px)] text-fg/15 leading-none shrink-0">
-                    0{i + 2}
-                  </span>
-                  <div className="w-[60px] h-[60px] shrink-0 overflow-hidden bg-tile">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={e.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${e.username}`}
-                      alt={e.display_name}
-                      className="w-full h-full object-cover"
-                    />
+                <div>
+                  <div className="flex items-center gap-2 caps text-gold">
+                    <CrownMark className="w-4 h-4" /> The Leader
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-[17px] md:text-[20px] font-normal tracking-[-0.015em] truncate">{e.display_name}</div>
-                    <div className="th text-[12px] text-fg-soft mt-1.5">@{e.username} · {e.photo_count} photos</div>
+                  <div className="mono tabular-nums text-[clamp(96px,13vw,180px)] leading-[0.8] tracking-[-0.04em] mt-3 mb-1">
+                    01
                   </div>
-                  <div className="text-right shrink-0 ml-2">
-                    <div className="mono tabular-nums text-[clamp(22px,2.5vw,34px)] leading-none text-gold">{e.hof_score}</div>
-                    <div className="caps text-fg-faint text-[9px] mt-1">HOF Score</div>
+                  <h3 className="text-[clamp(28px,3.4vw,46px)] font-normal tracking-[-0.02em] leading-[1.05] m-0 text-gold">
+                    {leader.display_name}
+                  </h3>
+                  <div className="th text-[15px] text-fg-soft mt-3 flex items-center gap-4">
+                    <span>@{leader.username}</span>
+                    <span className="w-1 h-1 bg-rule rounded-full" />
+                    <span>{leader.photo_count} Photos</span>
                   </div>
-                </Link>
-              ))}
-            </div>
-          )}
-
-          {/* ── #4–10 table ── */}
-          {pack.length > 0 && (
-            <div className="wrap">
-              <div className="flex items-center justify-between pt-8 pb-3 border-b border-fg caps text-[9px] tracking-[0.14em] text-fg-faint">
-                <span>The chasing pack</span>
-                <span>HOF Score</span>
-              </div>
-              {pack.map((e, i) => (
-                <Link
-                  key={e.photographer_id}
-                  href={`/photographer/${e.username}`}
-                  className="flex items-center gap-5 md:gap-7 py-4 border-b border-rule transition-colors hover:bg-cream"
-                >
-                  <span className="mono tabular-nums text-[18px] md:text-[22px] w-8 text-right text-fg/20 leading-none shrink-0">
-                    {String(i + 4).padStart(2, '0')}
-                  </span>
-                  <div className="w-9 h-9 shrink-0 overflow-hidden rounded-full bg-tile">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={e.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${e.username}`}
-                      alt={e.display_name}
-                      loading="lazy"
-                      className="w-full h-full object-cover"
-                    />
+                  <div className="flex items-baseline gap-3 mt-8 pt-6 border-t border-rule">
+                    <span className="mono tabular-nums text-[clamp(40px,5vw,64px)] leading-none text-gold">{leader.hof_score}</span>
+                    <span className="caps text-fg-faint">HOF Score</span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-[15px] md:text-[17px] font-normal tracking-[-0.01em] truncate">{e.display_name}</div>
-                    <div className="th text-[12px] text-fg-soft mt-0.5 truncate">@{e.username} · {e.photo_count} photos</div>
-                  </div>
-                  <div className="mono tabular-nums text-[18px] md:text-[22px] leading-none text-gold shrink-0">{e.hof_score}</div>
-                </Link>
-              ))}
-            </div>
-          )}
-
-          {/* ── CTA + rarity ── */}
-          <div className="wrap py-14 md:py-20">
-            <div className="border border-dashed border-rule-strong p-8 lg:p-14 grid md:grid-cols-[1fr_auto] md:items-center gap-7">
-              <div>
-                <div className="caps text-fg-faint">Reserved</div>
-                <div className="th text-[clamp(20px,2.5vw,34px)] tracking-[-0.01em] mt-3">ที่นี่รอชื่อของคุณ</div>
-                <div className="th text-[13px] text-fg-soft mt-2">ช่างภาพคนต่อไปบน Hall of Fame อาจเป็นคุณ</div>
-              </div>
-              <Link href="/upload" className="btn btn-solid justify-self-start md:justify-self-end whitespace-nowrap">
-                <span className="th">ส่งภาพเข้าแข่ง →</span>
+                </div>
               </Link>
-            </div>
-            <p className="th text-center text-[13px] text-fg-soft mt-10">
-              {rarityCount > 0 ? (
-                <>มีเพียง <span className="mono tabular-nums">{rarityCount}</span> ช่างภาพเท่านั้น ที่เคยได้ขึ้น Hall of Fame</>
-              ) : (
-                <>ยังไม่มีช่างภาพคนไหนได้ขึ้น Hall of Fame — จงเป็นตำนานคนแรก</>
-              )}
-            </p>
+            )}
+
+            {/* ── #2 / #3 ── */}
+            {runners.length > 0 && (
+              <div className="grid md:grid-cols-2 gap-8 lg:gap-16 mt-16">
+                {runners.map((e, i) => (
+                  <Link key={e.photographer_id} href={`/photographer/${e.username}`} className="group">
+                    <div className="aspect-[3/2] bg-tile overflow-hidden relative">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={e.cover_url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop'}
+                        alt={e.display_name}
+                        loading="lazy"
+                        className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+                      />
+                      <div className="absolute bottom-4 left-4 w-16 h-16 rounded-full overflow-hidden border-[3px] border-bg shadow-xl">
+                         <img src={e.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + e.username} className="w-full h-full object-cover" alt="" />
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-5 mt-5">
+                      <span className="mono tabular-nums text-[clamp(32px,4vw,52px)] leading-[0.8] text-fg-soft">
+                        0{i + 2}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-[20px] md:text-[24px] font-normal tracking-[-0.015em] truncate m-0">{e.display_name}</h4>
+                        <div className="th text-[13px] text-fg-soft truncate mt-1">
+                          @{e.username} · {e.photo_count} Photos
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <div className="mono tabular-nums text-[22px] md:text-[28px] leading-none text-gold">{e.hof_score}</div>
+                        <div className="caps text-fg-faint text-[9px] mt-1">HOF Score</div>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+
+            {/* ── #4–10 list ── */}
+            {pack.length > 0 && (
+              <div className="mt-20">
+                <div className="caps text-fg-faint mb-2">The chasing pack</div>
+                <div className="border-t border-fg">
+                  {pack.map((e, i) => (
+                    <Link
+                      key={e.photographer_id}
+                      href={`/photographer/${e.username}`}
+                      className="flex items-center gap-6 lg:gap-10 py-5 border-b border-rule transition-colors hover:bg-cream"
+                    >
+                      <span className="mono tabular-nums text-[clamp(20px,2.4vw,32px)] w-[56px] text-right text-fg-soft leading-none shrink-0">
+                        {String(i + 4).padStart(2, '0')}
+                      </span>
+                      <div className="w-[56px] h-[56px] bg-tile overflow-hidden rounded-full shrink-0">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={e.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + e.username} alt={e.display_name} loading="lazy" className="w-full h-full object-cover" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[18px] md:text-[22px] font-normal tracking-[-0.015em] truncate">{e.display_name}</div>
+                        <div className="th text-[13px] text-fg-soft truncate mt-1">
+                          @{e.username} · {e.photo_count} Photos
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <div className="mono tabular-nums text-[20px] md:text-[26px] leading-none text-gold">{e.hof_score}</div>
+                        <div className="caps text-fg-faint text-[9px] mt-1">HOF Score</div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* ── empty pedestal CTA ── */}
+        <div className="mt-16 border border-dashed border-rule-strong p-10 lg:p-16 grid md:grid-cols-[1fr_auto] md:items-center gap-8">
+          <div>
+            <div className="caps text-fg-faint">Reserved</div>
+            <div className="th text-[clamp(24px,3vw,38px)] tracking-[-0.01em] mt-3">ที่นี่รอชื่อของคุณ</div>
+            <div className="th text-[14px] text-fg-soft mt-2">ช่างภาพคนต่อไปบน Hall of Fame อาจเป็นคุณ</div>
           </div>
-        </>
-      )}
+          <Link href="/upload" className="btn btn-solid justify-self-start md:justify-self-end whitespace-nowrap">
+            <span className="th">ส่งภาพเข้าแข่ง →</span>
+          </Link>
+        </div>
+
+        {/* ── rarity line ── */}
+        <p className="th text-center text-[14px] text-fg-soft mt-12">
+          {rarityCount > 0 ? (
+            <>มีเพียง <span className="mono tabular-nums">{rarityCount}</span> ช่างภาพเท่านั้น ที่เคยได้ขึ้น Hall of Fame</>
+          ) : (
+            <>ยังไม่มีช่างภาพคนไหนได้ขึ้น Hall of Fame — จงเป็นตำนานคนแรก</>
+          )}
+        </p>
+      </div>
     </section>
   );
 }
