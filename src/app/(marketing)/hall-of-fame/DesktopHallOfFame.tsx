@@ -1,17 +1,31 @@
 'use client';
 
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { getPhoto } from '@/lib/data';
 import type { Category, Photo, Photographer, Season, SeasonWinner } from '@/lib/types';
 import { Footer } from '@/components/layout/Footer';
-import { LiveLeaderboard, type LeaderboardEntry } from './LiveLeaderboard';
+import { cn } from '@/lib/utils';
 
-const TIERS = [
-  { t: 'Rank 1', amt: 'Voucher 50K', l: '15% cashback' },
-  { t: 'Rank 2–5', amt: 'Cashback', l: '10% cashback' },
-  { t: 'Rank 6–10', amt: 'Cashback', l: '5% cashback' },
-  { t: 'Rank 11–50', amt: 'Cashback', l: '3% cashback' },
-];
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+function useCountdown(endIso: string) {
+  const [now, setNow] = useState<number | null>(null);
+  useEffect(() => {
+    setNow(Date.now());
+    const t = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(t);
+  }, []);
+  if (now === null) return null;
+  const end = new Date(`${endIso}T23:59:59`).getTime();
+  const diff = Math.max(0, end - now);
+  return {
+    over: diff <= 0,
+    days: Math.floor(diff / 86_400_000),
+    hours: Math.floor((diff % 86_400_000) / 3_600_000),
+    minutes: Math.floor((diff % 3_600_000) / 60_000),
+  };
+}
 
 function Crown({ className }: { className?: string }) {
   return (
@@ -20,6 +34,21 @@ function Crown({ className }: { className?: string }) {
     </svg>
   );
 }
+
+function ProBadge({ className }: { className?: string }) {
+  return (
+    <span className={cn("inline-flex items-center justify-center px-[6px] py-[2px] rounded-[4px] bg-fg text-bg text-[9px] font-bold tracking-wider leading-none", className)}>
+      PRO
+    </span>
+  );
+}
+
+function formatCount(num: number) {
+  if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+  return num.toString();
+}
+
+type Tab = 'classic' | 'traveller';
 
 export function DesktopHallOfFame({
   seasons,
@@ -36,157 +65,323 @@ export function DesktopHallOfFame({
 }) {
   const liveSeason = seasons.find((s) => s.status === 'live');
   const archived = seasons.filter((s) => s.status === 'closed' && s.winners);
-  const rarityCount = archived.reduce((n, s) => n + Object.keys(s.winners!).length, 0);
 
   const resolvePhotographer = (username: string) => photographers.find((p) => p.username === username);
-  const coverSrc = getPhoto('p010').src;
+  const resolvePhoto = (photoId: string) => allPhotos.find((p) => p.id === photoId) ?? getPhoto(photoId);
+  const coverSrc = getPhoto('p010').src; // Background image
 
   // Enhance ranking with cover_url and is_customer from our pre-fetched photographers data
-  const rankingEntries = (photographersRanking || []).map(r => {
-    const owner = resolvePhotographer(r.username);
-    return {
-      ...r,
-      cover_url: r.cover_url || owner?.cover || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop',
-      is_customer: owner?.isCustomer ?? false,
-    };
-  });
+  const rankingEntries = useMemo(() => {
+    return (photographersRanking || []).map(r => {
+      const owner = resolvePhotographer(r.username);
+      return {
+        ...r,
+        cover_url: r.cover_url || owner?.cover || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop',
+        is_customer: owner?.isCustomer ?? false,
+      };
+    });
+  }, [photographersRanking, photographers]);
 
-  const resolvePhoto = (photoId: string) => allPhotos.find((p) => p.id === photoId) ?? getPhoto(photoId);
+  const countdown = useCountdown(liveSeason?.endDate ?? '2026-12-31');
+  const [tab, setTab] = useState<Tab>('classic');
+
+  const filteredRanking = useMemo(() => {
+    return tab === 'classic'
+      ? rankingEntries.filter(e => !e.is_customer)
+      : rankingEntries.filter(e => e.is_customer);
+  }, [tab, rankingEntries]);
+
+  const top3 = filteredRanking.slice(0, 3);
+  const pack = filteredRanking.slice(3, 10);
+
+  const recentPhotos = useMemo(() => {
+    return [...allPhotos].sort((a, b) => (b.pulse || 0) - (a.pulse || 0)).slice(0, 5);
+  }, [allPhotos]);
 
   return (
-    <div className="page-fade">
+    <div className="page-fade min-h-screen text-fg bg-[var(--bg)]">
       {/* ── Hero ── */}
-      <div className="relative h-[78vh] min-h-[560px] w-full overflow-hidden text-white bg-black">
+      <div className="relative h-[65vh] min-h-[500px] w-full overflow-hidden flex items-center justify-center text-white">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={coverSrc} alt="" className="absolute inset-0 w-full h-full object-cover opacity-90" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/85" />
+        <img src={coverSrc} alt="" className="absolute inset-0 w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-black/40" />
 
         <div className="absolute top-0 inset-x-0 z-10">
           <div className="wrap flex items-center justify-between py-6 caps text-white/80">
-            <span>GOGRAPHY · Hall of Fame</span>
-            <span className="inline-flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-white" />Live</span>
+            <span>GOGRAPHY</span>
+            <span className="inline-flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-green-500" />Live</span>
           </div>
         </div>
 
-        <div className="absolute bottom-0 inset-x-0 z-10 pb-14 lg:pb-20">
-          <div className="wrap">
-            <div className="caps text-white/80 mb-6">{liveSeason?.name ?? 'Season 1'} · Awards Archive</div>
-            <h1 className="text-[clamp(56px,10vw,140px)] font-normal tracking-[-0.04em] leading-[0.85] m-0 max-w-[14ch]">
-              Be the first legend.
-            </h1>
-            <p className="th text-[clamp(15px,1.6vw,20px)] text-white/85 max-w-[54ch] mt-8 leading-[1.55]">
-              ทุก 4 เดือน GOGRAPHY คัดเลือกช่างภาพที่มี Pulse สูงสุดเฉลี่ย — ผู้ชนะรับ Voucher 50,000 THB และที่ใน Hall of Fame ตลอดไป
-            </p>
+        <div className="relative z-10 text-center max-w-4xl px-4 flex flex-col items-center mt-12">
+          <h1 className="text-5xl md:text-[5.5rem] font-bold tracking-tight mb-4 drop-shadow-lg">HALL OF FAME</h1>
+          <p className="text-xl md:text-2xl font-medium mb-8 leading-snug drop-shadow-md">The best photographers.<br />One global stage.</p>
+
+          <div className="flex items-center gap-3 text-xs tracking-widest font-bold uppercase mb-8">
+            <span className="w-2 h-2 rounded-full bg-green-500" />
+            <span>{liveSeason?.name ?? 'SEASON 1'}</span>
+            <span className="opacity-50">|</span>
+            <span>{countdown?.days ?? 0} DAYS LEFT</span>
+          </div>
+
+          <a href="#ranking" className="bg-white text-black px-8 py-3.5 rounded-md font-bold flex items-center gap-2 hover:bg-gray-100 transition-colors">
+            View full ranking <span>→</span>
+          </a>
+        </div>
+      </div>
+
+      {/* ── Tab Navigation ── */}
+      <div className="border-b border-rule sticky top-0 bg-[var(--bg)]/80 backdrop-blur-md z-40">
+        <div className="max-w-7xl mx-auto px-6 overflow-x-auto no-scrollbar">
+          <div className="flex items-center justify-center gap-12 text-sm font-bold h-[60px] whitespace-nowrap">
+            <button
+              onClick={() => { setTab('classic'); document.getElementById('ranking')?.scrollIntoView({ behavior: 'smooth' }); }}
+              className={cn("h-full flex items-center transition-colors border-b-[3px]", tab === 'classic' ? "text-fg border-fg" : "text-fg-soft border-transparent hover:text-fg")}
+            >
+              Classic
+            </button>
+            <button
+              onClick={() => { setTab('traveller'); document.getElementById('ranking')?.scrollIntoView({ behavior: 'smooth' }); }}
+              className={cn("h-full flex items-center gap-2 transition-colors border-b-[3px]", tab === 'traveller' ? "text-gold border-gold" : "text-fg-soft border-transparent hover:text-gold")}
+            >
+              Traveller
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16L12 2L2 16H8V22H16V16H22Z" /></svg>
+            </button>
           </div>
         </div>
       </div>
 
-      {/* ── 01 — Standings ── */}
-      {!loading && liveSeason && rankingEntries && (
-        <LiveLeaderboard
-          seasonName={liveSeason.name}
-          endDate={liveSeason.endDate ?? '2026-09-30'}
-          entries={rankingEntries}
-          rarityCount={rarityCount}
-        />
-      )}
+      {/* ── Content ── */}
+      <div className="max-w-7xl mx-auto px-6 py-16 space-y-24">
 
-      {/* ── 02 — The Prize ── */}
-      <section className="py-20 lg:py-28 bg-cream rule-bot">
-        <div className="wrap">
-          <div className="caps text-fg-soft">02 / The Prize</div>
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 mt-8 items-start">
-            <div>
-              <div className="text-[clamp(64px,11vw,150px)] font-normal tracking-[-0.04em] leading-[0.8]">
-                50,000<span className="mono align-top text-[0.2em] ml-3 tracking-[0.05em]">THB</span>
-              </div>
-              <div className="caps text-fg-soft mt-6">Top Photographer of Season</div>
-              <p className="th text-[15px] text-fg-soft mt-5 max-w-[42ch] leading-[1.7]">
-                ผู้ชนะคะแนนรวมสูงสุด รับ Voucher 50,000 บาท และที่นั่งใน Hall of Fame ตลอดไป
-              </p>
-            </div>
-            <div>
-              <div className="inline-flex items-center gap-2 caps text-gold">
-                <Crown className="w-3.5 h-3.5" /> Voyageur cashback
-              </div>
-              <p className="th text-[13px] text-fg-soft mt-3 max-w-[40ch] leading-[1.6]">
-                ลูกค้าทริป GOGRAPHY ที่ติดอันดับ รับ cashback สำหรับทริปถัดไป
-              </p>
-              <div className="mt-8 border-t border-fg">
-                {TIERS.map((t) => (
-                  <div key={t.t} className="grid grid-cols-[1fr_auto] items-center gap-6 py-5 border-b border-rule">
-                    <div>
-                      <div className="inline-flex items-center gap-2 caps text-gold">
-                        <span className="w-1.5 h-1.5 bg-gold rotate-45 inline-block" />{t.t}
-                      </div>
-                      <div className="caps text-fg-faint mt-2">{t.l}</div>
-                    </div>
-                    <div className="mono tabular-nums text-[26px] lg:text-[30px]">{t.amt}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
+        {/* TOP 3 THIS SEASON */}
+        <section id="ranking" className="scroll-mt-24">
+          <div className="flex items-center justify-between mb-10">
+            <h2 className="text-lg font-extrabold tracking-widest uppercase flex items-center gap-2 text-fg">
+              TOP 3 {tab === 'classic' ? 'CLASSIC' : 'TRAVELLER'}
+              <span className="w-4 h-4 rounded-full border border-rule text-[10px] flex items-center justify-center text-fg-soft font-normal">i</span>
+            </h2>
           </div>
-        </div>
-      </section>
 
-
-
-      {/* ── 03 — Archive ── */}
-      <section className="py-20 lg:py-28">
-        <div className="wrap">
-          <div className="caps text-fg-soft mb-10">03 / Archive — Past winners</div>
-          {loading ? (
-            <div className="py-[64px] text-center opacity-50 mono text-[13px]">Loading Hall of Fame...</div>
-          ) : archived.length === 0 ? (
-            <div className="border border-rule-strong p-12 lg:p-20 text-center">
-              <h2 className="text-[clamp(28px,4vw,52px)] font-normal tracking-[-0.025em] leading-[1.05] m-0">
-                The first chapter is being written.
-              </h2>
-              <p className="th text-[15px] text-fg-soft max-w-[48ch] mx-auto mt-5 leading-[1.7]">
-                {liveSeason?.name ?? 'Season 1'} ยังเปิดอยู่ — เมื่อปิดฤดูกาล ผู้ชนะกลุ่มแรกจะถูกบันทึกไว้ที่นี่ตลอดไป
-              </p>
+          {top3.length === 0 ? (
+            <div className="text-center py-20 text-fg-soft font-mono text-sm border border-dashed border-rule rounded-xl">
+              ยังไม่มีช่างภาพที่ผ่านเกณฑ์ในหมวดหมู่นี้
             </div>
           ) : (
-            archived.map((season) => (
-              <div key={season.id} className="mb-16 lg:mb-24">
-                <div className="flex flex-wrap justify-between items-baseline gap-3 pb-6 mb-8 border-b border-[var(--fg)]">
-                  <h2 className="text-[clamp(28px,6.5vw,56px)] font-normal tracking-[-0.025em] m-0 leading-[1]">
-                    {season.name}
-                  </h2>
-                  <span className="caps th opacity-55">{season.range}</span>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-[32px]">
-                  {(Object.entries(season.winners!) as [Category, SeasonWinner][]).map(([cat, w]) => {
-                    const photo = resolvePhoto(w.photoId);
-                    if (!photo) return null;
-                    const photographer = resolvePhotographer(photo.by);
-                    return (
-                      <Link key={cat} href={`/photo/${photo.id}`} className="group">
-                        <div className="aspect-[4/5] bg-[var(--tile)] overflow-hidden relative">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={photo.src} alt={photo.title} loading="lazy" className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]" />
-                          <div className="absolute top-[12px] left-[12px] bg-[var(--bg)] px-[10px] py-[6px]">
-                            <div className="caps text-[9px]">{cat === 'BW' ? 'Black & White' : cat}</div>
-                          </div>
-                        </div>
-                        <div className="mt-[20px]">
-                          <div className="caps opacity-55 mb-[8px]">Winner</div>
-                          <h3 className="text-[24px] font-normal tracking-[-0.015em] m-0">{photo.title}</h3>
-                          <div className="mt-[12px] flex justify-between items-baseline">
-                            <div className="text-[13px] text-[var(--fg-soft)]">{photographer?.name || photo.by}</div>
-                            <div className="mono text-[11px] opacity-60">{w.voucher}</div>
-                          </div>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
-            ))
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-end max-w-5xl mx-auto px-4 mt-8">
+              {/* RANK 2 */}
+              {top3[1] && (
+                <Link href={`/photographer/${top3[1].username}`} className="group block bg-tile rounded-xl shadow-[0_4px_20px_rgb(0,0,0,0.05)] dark:shadow-none border border-rule relative flex flex-col items-center pb-6 mt-12 md:mt-0 hover:shadow-lg transition-all">
+                  <div className="absolute top-0 inset-x-0 h-40 bg-rule rounded-t-xl overflow-hidden">
+                    <img src={top3[1].cover_url} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="" />
+                  </div>
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 bg-tile border border-rule text-fg rounded-full flex items-center justify-center font-bold text-sm shadow-sm z-10">2</div>
+                  <div className="w-20 h-20 rounded-full border-4 border-[var(--bg)] overflow-hidden mt-28 relative z-10 bg-tile">
+                    <img src={top3[1].avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + top3[1].username} className="w-full h-full object-cover" alt="" />
+                  </div>
+                  <h3 className="mt-4 text-xl font-bold flex items-center gap-2 text-fg">
+                    {top3[1].display_name} {top3[1].is_customer && <ProBadge />}
+                  </h3>
+                  <div className="text-fg-faint text-[10px] font-bold tracking-widest uppercase mt-2">Pulse Score</div>
+                  <div className="text-4xl font-extrabold mt-1 text-fg">{top3[1].hof_score}</div>
+                </Link>
+              )}
+
+              {/* RANK 1 */}
+              {top3[0] && (
+                <Link href={`/photographer/${top3[0].username}`} className="group block bg-tile rounded-xl shadow-[0_8px_30px_rgb(212,175,55,0.15)] dark:shadow-[0_8px_30px_rgb(212,175,55,0.05)] border border-gold relative flex flex-col items-center pb-8 scale-100 md:scale-105 z-10 transform md:-translate-y-4 hover:shadow-[0_12px_40px_rgb(212,175,55,0.25)] transition-all">
+                  <div className="absolute top-0 inset-x-0 h-48 bg-rule rounded-t-xl overflow-hidden">
+                    <img src={top3[0].cover_url} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="" />
+                  </div>
+                  <div className="absolute -top-5 left-1/2 -translate-x-1/2 w-10 h-10 bg-gold text-[var(--bg)] rounded-full flex items-center justify-center font-bold text-lg shadow-md z-10 border-2 border-[var(--bg)]">1</div>
+                  <div className="w-24 h-24 rounded-full border-4 border-[var(--bg)] overflow-hidden mt-32 relative z-10 bg-tile shadow-sm">
+                    <img src={top3[0].avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + top3[0].username} className="w-full h-full object-cover" alt="" />
+                  </div>
+                  <div className="text-gold mt-3"><Crown className="w-6 h-6 drop-shadow-sm" /></div>
+                  <h3 className="mt-2 text-2xl font-bold flex items-center gap-2 text-fg">
+                    {top3[0].display_name} {top3[0].is_customer && <ProBadge />}
+                  </h3>
+                  <div className="text-fg-faint text-[10px] font-bold tracking-widest uppercase mt-2">Pulse Score</div>
+                  <div className="text-5xl font-extrabold mt-1 text-gold">{top3[0].hof_score}</div>
+                </Link>
+              )}
+
+              {/* RANK 3 */}
+              {top3[2] && (
+                <Link href={`/photographer/${top3[2].username}`} className="group block bg-tile rounded-xl shadow-[0_4px_20px_rgb(0,0,0,0.05)] dark:shadow-none border border-rule relative flex flex-col items-center pb-6 mt-12 md:mt-0 hover:shadow-lg transition-all">
+                  <div className="absolute top-0 inset-x-0 h-40 bg-rule rounded-t-xl overflow-hidden">
+                    <img src={top3[2].cover_url} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="" />
+                  </div>
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 bg-tile border border-rule text-fg rounded-full flex items-center justify-center font-bold text-sm shadow-sm z-10">3</div>
+                  <div className="w-20 h-20 rounded-full border-4 border-[var(--bg)] overflow-hidden mt-28 relative z-10 bg-tile">
+                    <img src={top3[2].avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + top3[2].username} className="w-full h-full object-cover" alt="" />
+                  </div>
+                  <h3 className="mt-4 text-xl font-bold flex items-center gap-2 text-fg">
+                    {top3[2].display_name} {top3[2].is_customer && <ProBadge />}
+                  </h3>
+                  <div className="text-fg-faint text-[10px] font-bold tracking-widest uppercase mt-2">Pulse Score</div>
+                  <div className="text-4xl font-extrabold mt-1 text-fg">{top3[2].hof_score}</div>
+                </Link>
+              )}
+            </div>
           )}
-        </div>
-      </section>
+
+          {/* RUNNER UPS (4-10) */}
+          {pack.length > 0 && (
+            <div className="max-w-4xl mx-auto mt-16 border-t border-rule">
+              {pack.map((e, i) => (
+                <Link
+                  key={e.photographer_id}
+                  href={`/photographer/${e.username}`}
+                  className="flex items-center gap-6 lg:gap-10 py-5 border-b border-rule transition-colors hover:bg-tile px-4"
+                >
+                  <span className="mono tabular-nums text-2xl w-10 text-right text-fg-soft font-bold shrink-0">
+                    {String(i + 4).padStart(2, '0')}
+                  </span>
+                  <div className="w-14 h-14 bg-rule overflow-hidden rounded-full shrink-0">
+                    <img src={e.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + e.username} alt="" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xl font-bold truncate flex items-center gap-2 text-fg">
+                      {e.display_name} {e.is_customer && <ProBadge />}
+                    </div>
+                    <div className="text-sm text-fg-soft font-medium mt-0.5">
+                      @{e.username} · {e.photo_count} Photos
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <div className="text-2xl font-extrabold text-gold">{e.hof_score}</div>
+                    <div className="text-[10px] font-bold text-fg-faint uppercase mt-0.5">Pulse Score</div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* HALL OF FAME WALL */}
+        <section id="wall" className="scroll-mt-24">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-lg font-extrabold tracking-widest uppercase text-fg">HALL OF FAME WALL</h2>
+          </div>
+          <p className="text-fg-soft font-medium mb-6 text-sm">Honoring the champions of each season.</p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {seasons.map((season, i) => {
+              let topPhoto;
+              let topName;
+              let topPulse;
+              if (season.status === 'live' && top3[0]) {
+                topPhoto = top3[0].cover_url;
+                topName = top3[0].display_name;
+                topPulse = top3[0].hof_score;
+              } else if (season.winners) {
+                const w = season.winners['Landscape'] || Object.values(season.winners)[0];
+                if (w) {
+                  const p = resolvePhoto(w.photoId);
+                  topPhoto = p?.src;
+                  topName = p?.by;
+                  topPulse = p?.pulse;
+                }
+              }
+
+              if (!topPhoto) {
+                const backup = recentPhotos[i % recentPhotos.length];
+                topPhoto = backup?.src;
+                topName = backup?.by;
+                topPulse = backup?.pulse;
+              }
+
+              return (
+                <div key={season.id} className="relative rounded-xl overflow-hidden aspect-[4/5] bg-tile text-white group cursor-pointer shadow-sm border border-rule">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={topPhoto || coverSrc} className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700" alt="" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/40" />
+
+                  <div className="absolute top-4 left-4 right-4 flex items-center gap-2">
+                    <span className="text-xs font-bold tracking-wider uppercase drop-shadow-md text-white">{season.name}</span>
+                    {season.status === 'live' ? (
+                      <span className="bg-green-500 text-[9px] uppercase px-1.5 py-0.5 rounded-[3px] font-bold tracking-wide text-white">Live</span>
+                    ) : (
+                      <span className="bg-gold text-[9px] uppercase px-1.5 py-0.5 rounded-[3px] font-bold tracking-wide text-white">Winner</span>
+                    )}
+                  </div>
+
+                  <div className="absolute bottom-5 left-5 right-5">
+                    <div className="flex items-center gap-1.5 mb-1.5 text-gold">
+                      <Crown className="w-4 h-4 shrink-0" /> <span className="font-bold text-white text-lg truncate drop-shadow-sm">{topName || 'Winner'}</span>
+                    </div>
+                    <div className="text-xs text-gray-200 font-semibold mb-1 uppercase tracking-wide">{season.range || 'N/A'}</div>
+                    <div className="text-sm font-bold text-white drop-shadow-sm">Pulse {topPulse?.toFixed(2) || '0.00'}</div>
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Upload CTA Card */}
+            {seasons.length <= 2 && (
+              <div className="rounded-xl overflow-hidden aspect-[4/5] bg-tile border border-rule flex flex-col items-center justify-center p-6 text-center shadow-sm">
+                <div className="w-16 h-16 bg-rule rounded-full flex items-center justify-center text-gold mb-4">
+                  <Crown className="w-8 h-8" />
+                </div>
+                <h3 className="font-extrabold text-xl mb-6 text-fg">Could your name<br />be next?</h3>
+                <Link href="/upload" className="bg-fg text-bg px-6 py-3 rounded-md text-sm font-bold w-full transition-colors">
+                  Upload your photo
+                </Link>
+              </div>
+            )}
+          </div>
+          
+          {seasons.length === 1 && (
+             <div className="mt-8 text-center text-sm font-medium text-fg-soft bg-cream py-6 rounded-xl border border-rule">
+               ฤดูกาลที่ 1 กำลังแข่งขันอยู่ 🏆 ตำนานคนแรกอาจเป็นคุณ
+             </div>
+          )}
+        </section>
+
+        {/* RECENT HALL OF FAME PHOTOS */}
+        {recentPhotos.length > 0 && (
+          <section id="recent" className="scroll-mt-24">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-lg font-extrabold tracking-widest uppercase text-fg">RECENT HALL OF FAME PHOTOS</h2>
+              <Link href="/explore" className="text-gold text-sm font-bold hover:underline flex items-center gap-1">
+                View more →
+              </Link>
+            </div>
+            <p className="text-fg-soft font-medium mb-6 text-sm">Top photos from this season.</p>
+
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              {recentPhotos.map(p => (
+                <Link key={p.id} href={`/photo/${p.id}`} className="group cursor-pointer block">
+                  <div className="aspect-[4/3] rounded-xl overflow-hidden bg-tile relative mb-3 border border-rule">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={p.src} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="absolute bottom-3 left-3 right-3 flex justify-between items-center text-white text-[11px] font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <div className="flex gap-3">
+                        <span className="flex items-center gap-1"><svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" /></svg> {formatCount(p.views || 1000)}</span>
+                        <span className="flex items-center gap-1"><svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" /></svg> {formatCount(p.likes || 100)}</span>
+                      </div>
+                      <div className="flex items-center gap-1 text-gold">
+                        <Crown className="w-3.5 h-3.5" /> {p.pulse?.toFixed(2)}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 px-1">
+                    <div className="w-6 h-6 rounded-full bg-rule overflow-hidden shrink-0 border border-rule">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={p.avatarUrl || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + p.by} className="w-full h-full object-cover" alt="" />
+                    </div>
+                    <div className="text-sm font-bold truncate flex-1 flex items-center gap-1 text-fg">
+                      {p.by} {p.isCustomer && <ProBadge className="scale-[0.85] origin-left" />}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
 
       <Footer />
     </div>
