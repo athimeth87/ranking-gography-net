@@ -142,40 +142,54 @@ export default function PhotographersPage() {
 
   return (
     <div className="page-fade">
-      <PageCover
-        photoId="p018"
-        eyebrow="Directory"
-        title="All Photographers"
-        subtitle="ค้นพบช่างภาพและนักเดินทางที่ร่วมส่งภาพบนเวที GOGRAPHY Ranking"
-      >
-        <div className="flex flex-wrap gap-6 md:gap-8 mt-6">
-          {[
-            { n: allPhotographers.length, label: 'Total Photographers' },
-            { n: allPhotographers.filter(p => p.isCustomer).length, label: 'Travellers' },
-            { n: allPhotographers.filter(p => p.isAmbassador).length, label: 'Ambassadors' },
-          ].map(({ n, label }) => (
-            <div key={label} className="flex flex-col">
-              <span className="mono text-[22px] md:text-[28px] font-semibold text-white leading-none">{n}</span>
-              <span className="mono text-[10px] tracking-[.18em] uppercase text-white/55 mt-2">{label}</span>
+      {/* ── Cinematic Hero Header ── */}
+      <section className="relative overflow-hidden bg-black h-[42vh] min-h-[340px] max-h-[520px]">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={allPhotos.length > 0 ? allPhotos[2]?.src || allPhotos[0]?.src : 'https://ranking.gography.net/cover-of-the-week.jpg'}
+          alt="Directory"
+          className="w-full h-full object-cover opacity-60"
+          loading="eager"
+        />
+        {/* gradient overlay */}
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,.32)_0%,rgba(0,0,0,.06)_38%,rgba(0,0,0,.74)_100%)]" />
+
+        {/* content overlay */}
+        <div className="absolute inset-0 flex flex-col justify-end">
+          <div className="wrap pb-10 md:pb-16">
+            {/* eyebrow */}
+            <div className="flex items-center gap-3 mb-5">
+              <span className="mono text-[10px] tracking-[.3em] uppercase text-white/75">Directory</span>
+              <span className="h-px w-10 bg-white/30" />
+              <span className="mono text-[10px] tracking-[.3em] uppercase text-white/55 tabular-nums">{allPhotographers.length} photographers</span>
             </div>
-          ))}
+            {/* title */}
+            <h1 className="text-white font-light text-[clamp(48px,9vw,104px)] leading-[.9] tracking-[-.04em] m-0">
+              All Photographers
+            </h1>
+            <p className="th text-white/75 text-[15px] leading-[1.6] mt-5 mb-0 max-w-[460px]">
+              ค้นพบช่างภาพและนักเดินทางที่ร่วมส่งภาพบนเวที GOGRAPHY Ranking
+            </p>
+
+            {/* Search */}
+            <div className="relative w-full max-w-[420px] mt-8">
+              <input
+                type="text"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Search photographers, name or username…"
+                className="w-full bg-white/10 backdrop-blur-sm border border-white/25 text-white placeholder:text-white/40 px-4 py-3 pr-10 text-[13px] outline-none focus:border-white/60 transition-colors"
+              />
+              <svg className="absolute right-3 top-1/2 -translate-y-1/2 opacity-40 text-white" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+              </svg>
+            </div>
+          </div>
         </div>
-        <div className="relative w-full max-w-[420px] mt-8">
-          <input
-            type="text"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Search photographers, name or username…"
-            className="w-full bg-white/10 backdrop-blur-sm border border-white/25 text-white placeholder:text-white/40 px-4 py-3 pr-10 text-[13px] outline-none focus:border-white/60 transition-colors"
-          />
-          <svg className="absolute right-3 top-1/2 -translate-y-1/2 opacity-40" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-          </svg>
-        </div>
-      </PageCover>
+      </section>
 
       {/* Filter / Sort bar */}
-      <section className="border-b border-white/5 sticky top-[60px] z-40 bg-[#0a0a0a]/90 backdrop-blur-xl">
+      <section className="border-b border-rule sticky top-[60px] z-40 bg-[var(--bg)]/90 backdrop-blur-xl">
         <div className="w-full max-w-[1920px] mx-auto px-4 md:px-10 2xl:px-16">
           <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center py-4 gap-4 md:gap-6">
             {/* Filter chips */}
@@ -198,12 +212,12 @@ export default function PhotographersPage() {
             </div>
 
             {/* Sort */}
-            <div className="flex items-center justify-between lg:justify-start gap-3 w-full lg:w-auto shrink-0 pt-2 border-t border-white/5 lg:border-t-0 lg:pt-0">
+            <div className="flex items-center justify-between lg:justify-start gap-3 w-full lg:w-auto shrink-0 pt-2 border-t border-rule lg:border-t-0 lg:pt-0">
               <span className="caps opacity-55">Sort By</span>
               <select
                 value={sort}
                 onChange={(e) => setSort(e.target.value as SortValue)}
-                className="px-4 py-2 border border-rule bg-[#111] text-fg text-[12px] tracking-[.12em] uppercase cursor-pointer outline-none focus:border-white/40"
+                className="px-4 py-2 border border-rule bg-transparent text-fg text-[12px] tracking-[.12em] uppercase cursor-pointer outline-none focus:border-fg"
               >
                 <option value="pulse">Pulse Rank</option>
                 <option value="followers">Most followers</option>

@@ -2,7 +2,7 @@
 
 import { Fragment } from 'react';
 import Link from 'next/link';
-import { PageCover } from '@/components/layout/PageCover';
+import { getPhoto } from '@/lib/data';
 import { Footer } from '@/components/layout/Footer';
 import { LoginButton } from './_components';
 
@@ -99,14 +99,41 @@ const PATH_STEPS = [
 // ─── page ────────────────────────────────────────────────────────────────────
 
 export default function Page() {
+  const coverSrc = "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2621&auto=format&fit=crop";
+
   return (
     <div className="page-fade">
-      <PageCover
-        photoId="p015"
-        eyebrow="For Travellers"
-        title={<>Your trip photos<br />are worth more</>}
-        subtitle="ลูกค้า GOGRAPHY ทุกคนได้สถานะ Traveller — Submit ภาพในหมวดพิเศษ Travellers Awards — แข่งกันเฉพาะลูกค้าด้วยกัน รางวัลสูงสุด 50,000 บาท ต่อฤดูกาล"
-      />
+      {/* ── Cinematic Hero Header ── */}
+      <section className="relative overflow-hidden bg-black h-[42vh] min-h-[340px] max-h-[520px]">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={coverSrc}
+          alt="For Travellers"
+          className="w-full h-full object-cover opacity-60"
+          loading="eager"
+        />
+        {/* gradient overlay */}
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,.32)_0%,rgba(0,0,0,.06)_38%,rgba(0,0,0,.74)_100%)]" />
+
+        {/* content overlay */}
+        <div className="absolute inset-0 flex flex-col justify-end">
+          <div className="wrap pb-10 md:pb-16">
+            {/* eyebrow */}
+            <div className="flex items-center gap-3 mb-5">
+              <span className="mono text-[10px] tracking-[.3em] uppercase text-white/75">For Travellers</span>
+              <span className="h-px w-10 bg-white/30" />
+              <span className="mono text-[10px] tracking-[.3em] uppercase text-white/55 tabular-nums">The Programme</span>
+            </div>
+            {/* title */}
+            <h1 className="text-white font-light text-[clamp(48px,9vw,104px)] leading-[.9] tracking-[-.04em] m-0">
+              Your trip photos<br />are worth more
+            </h1>
+            <p className="th text-white/75 text-[15px] leading-[1.6] mt-5 mb-0 max-w-[560px]">
+              ลูกค้า GOGRAPHY ทุกคนได้สถานะ Traveller — Submit ภาพในหมวดพิเศษ Travellers Awards — แข่งกันเฉพาะลูกค้าด้วยกัน รางวัลสูงสุด 50,000 บาท ต่อฤดูกาล
+            </p>
+          </div>
+        </div>
+      </section>
 
       {/* Reward summary */}
       <section className="pt-[40px] pb-[56px]">

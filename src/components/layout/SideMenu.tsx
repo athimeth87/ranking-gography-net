@@ -10,7 +10,7 @@ interface GroupProps { title: string; children: React.ReactNode }
 interface MenuRowProps { label: string; active: boolean; onClick: () => void; gold?: boolean }
 
 const DISCOVER: NavLink[] = [
-  // { to: '/hall-of-fame', labelKey: 'hall_of_fame' },
+  { to: '/hall-of-fame', labelKey: 'hall_of_fame' },
   { to: '/photographers', labelKey: 'photographers' },
   { to: '/ambassadors', labelKey: 'ambassadors' },
 ];

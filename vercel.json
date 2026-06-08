@@ -2,11 +2,11 @@
   "crons": [
     {
       "path": "/api/cron/compute-pulse",
-      "schedule": "*/5 * * * *"
+      "schedule": "0 0 * * *"
     },
     {
       "path": "/api/cron/check-ranks",
-      "schedule": "0 * * * *"
+      "schedule": "0 1 * * *"
     }
   ]
 }
