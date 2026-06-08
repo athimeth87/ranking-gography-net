@@ -1,7 +1,7 @@
 import './globals.css';
 import type { Metadata, Viewport } from 'next';
 import type { Organization, WithContext } from 'schema-dts';
-import { Inter, IBM_Plex_Mono, Noto_Sans_Thai, Playfair_Display } from 'next/font/google';
+import { Inter, IBM_Plex_Mono, Noto_Sans_Thai, Playfair_Display, Cinzel } from 'next/font/google';
 import { AppProvider } from '@/providers/AppProvider';
 import { Nav } from '@/components/layout/Nav';
 import { SideMenu } from '@/components/layout/SideMenu';
@@ -16,12 +16,14 @@ const inter = Inter({ subsets: ['latin'], weight: ['300', '400', '500', '600', '
 const plexMono = IBM_Plex_Mono({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-plex-mono', display: 'swap' });
 const notoThai = Noto_Sans_Thai({ subsets: ['thai'], weight: ['300', '400', '500', '600', '700'], variable: '--font-noto-thai', display: 'swap' });
 const playfair = Playfair_Display({ subsets: ['latin'], weight: ['400', '500', '600', '700', '800', '900'], variable: '--font-playfair', display: 'swap' });
+const cinzel = Cinzel({ subsets: ['latin'], weight: ['400', '500', '600', '700'], variable: '--font-cinzel', display: 'swap' });
 
 export const viewport: Viewport = {
   themeColor: '#0a0a0a',
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://ranking.gography.net'),
   title: {
     default: 'GOGRAPHY Ranking',
     template: '%s | GOGRAPHY Ranking'
@@ -71,7 +73,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const messages = await getMessages();
 
   return (
-    <html lang={locale} data-theme="light" className={cn(inter.variable, plexMono.variable, notoThai.variable, playfair.variable, "font-sans")} suppressHydrationWarning>
+    <html lang={locale} data-theme="light" className={cn(inter.variable, plexMono.variable, notoThai.variable, playfair.variable, cinzel.variable, "font-sans")} suppressHydrationWarning>
       <head>
         <script
           type="application/ld+json"

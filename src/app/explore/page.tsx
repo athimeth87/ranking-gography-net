@@ -208,7 +208,7 @@ export default function ExplorePage() {
       <section className="relative overflow-hidden bg-black h-[42vh] min-h-[340px] max-h-[520px]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={photos.length > 0 ? photos[0].src : 'https://ranking.gography.net/cover-of-the-week.jpg'}
+          src="/explore-cover.jpg"
           alt="Explore"
           className="w-full h-full object-cover opacity-60"
           loading="eager"
@@ -226,7 +226,7 @@ export default function ExplorePage() {
               <span className="mono text-[10px] tracking-[.3em] uppercase text-white/55 tabular-nums">{photos.length} frames</span>
             </div>
             {/* title */}
-            <h1 className="text-white font-light text-[clamp(48px,9vw,104px)] leading-[.9] tracking-[-.04em] m-0">
+            <h1 className="font-display text-white font-light text-[clamp(48px,9vw,104px)] leading-[.9] tracking-[-.04em] m-0">
               Explore
             </h1>
           </div>

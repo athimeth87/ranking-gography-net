@@ -84,7 +84,7 @@ export default async function Page() {
               <span className="mono text-[10px] tracking-[.3em] uppercase text-white/55 tabular-nums">{ambassadors.length} members</span>
             </div>
             {/* title */}
-            <h1 className="text-white font-light text-[clamp(48px,9vw,104px)] leading-[.9] tracking-[-.04em] m-0">
+            <h1 className="font-display text-white font-light text-[clamp(48px,9vw,104px)] leading-[.9] tracking-[-.04em] m-0">
               Ambassadors
             </h1>
             <p className="th text-white/75 text-[15px] leading-[1.6] mt-5 mb-0 max-w-[560px]">

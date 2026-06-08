@@ -30,7 +30,7 @@ import { useRealtimePulse } from '@/hooks/useRealtimePulse';
 // ---------------------------------------------------------------------------
 
 interface SectionHeaderProps {
-  title: string;
+  title?: string;
   eyebrow?: string;
   link?: string;
   linkLabel?: string;
@@ -41,7 +41,7 @@ function SectionHeader({ title, eyebrow, link, linkLabel }: SectionHeaderProps) 
     <div className="section-h">
       <div>
         {eyebrow && <div className="caps opacity-55 mb-3">{eyebrow}</div>}
-        <h2 className="th">{title}</h2>
+        {title && <h2 className="th">{title}</h2>}
       </div>
       {link && linkLabel && (
         <Link href={link} className="mono text-[11px] tracking-[.14em] uppercase opacity-65 border-b border-rule pb-[2px]">
@@ -307,8 +307,6 @@ export function PhotoDetailClient({ id }: { id: string }) {
             <span className="truncate max-w-[120px] md:max-w-[200px]" title={photo.id}>{photo.id}</span>
           </div>
           <div className="flex flex-wrap items-center gap-y-2">
-            <span><span className="opacity-55">{t('rank')}</span> #{String(photo.rank).padStart(3, '0')}</span>
-            <span className="opacity-35 mx-2 md:mx-3">·</span>
             <span><span className="opacity-55">{t('posted')}</span> {new Date(photo.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
           </div>
         </div>
@@ -621,7 +619,6 @@ export function PhotoDetailClient({ id }: { id: string }) {
       <section className="py-10 pb-20 rule-top">
         <div className="wrap">
           <SectionHeader
-            title={t('in_the_same_vein')}
             eyebrow={t('more_cat', { cat: photo.cat })}
             link={`/explore/${catSlug}`}
             linkLabel={t('see_category')}

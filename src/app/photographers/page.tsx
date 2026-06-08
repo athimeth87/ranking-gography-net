@@ -146,7 +146,7 @@ export default function PhotographersPage() {
       <section className="relative overflow-hidden bg-black h-[42vh] min-h-[340px] max-h-[520px]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={allPhotos.length > 0 ? allPhotos[2]?.src || allPhotos[0]?.src : 'https://ranking.gography.net/cover-of-the-week.jpg'}
+          src="/photographers-cover.jpg"
           alt="Directory"
           className="w-full h-full object-cover opacity-60"
           loading="eager"
@@ -164,7 +164,7 @@ export default function PhotographersPage() {
               <span className="mono text-[10px] tracking-[.3em] uppercase text-white/55 tabular-nums">{allPhotographers.length} photographers</span>
             </div>
             {/* title */}
-            <h1 className="text-white font-light text-[clamp(48px,9vw,104px)] leading-[.9] tracking-[-.04em] m-0">
+            <h1 className="font-display text-white font-light text-[clamp(48px,9vw,104px)] leading-[.9] tracking-[-.04em] m-0">
               All Photographers
             </h1>
             <p className="th text-white/75 text-[15px] leading-[1.6] mt-5 mb-0 max-w-[460px]">
