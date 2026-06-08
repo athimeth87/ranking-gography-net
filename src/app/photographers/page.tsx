@@ -12,7 +12,7 @@ import { rankPhotographers } from '@/lib/pulse-engine-v4';
 
 // ===== Photographers directory — /photographers =====
 
-type FilterValue = 'all' | 'photographers' | 'voyageurs' | 'ambassadors';
+type FilterValue = 'all' | 'rankmaster' | 'voyageurs' | 'ambassadors';
 type SortValue = 'pulse' | 'followers' | 'photos' | 'newest';
 
 export default function PhotographersPage() {
@@ -107,9 +107,9 @@ export default function PhotographersPage() {
   if (q) list = list.filter(p =>
     p.name.toLowerCase().includes(q) || p.username.toLowerCase().includes(q)
   );
-  if (filter === 'voyageurs')    list = list.filter(p => p.isCustomer);
-  if (filter === 'ambassadors')  list = list.filter(p => p.isAmbassador);
-  if (filter === 'photographers') list = list.filter(p => !p.isCustomer && !p.isAmbassador);
+  if (filter === 'voyageurs')   list = list.filter(p => p.isCustomer);
+  if (filter === 'ambassadors') list = list.filter(p => p.isAmbassador);
+  if (filter === 'rankmaster')  list = list.filter(p => p.isRankMaster);
 
   // Sort
   if (sort === 'pulse') {
@@ -125,10 +125,10 @@ export default function PhotographersPage() {
   else if (sort === 'newest')    list = [...list].sort((a, b) => new Date(b.joined).getTime() - new Date(a.joined).getTime());
 
   const filterChips: { v: FilterValue; l: string; n: number }[] = [
-    { v: 'all',           l: 'All',           n: allPhotographers.length },
-    { v: 'photographers', l: 'Photographers',  n: allPhotographers.filter(p => !p.isCustomer && !p.isAmbassador).length },
-    { v: 'voyageurs',     l: 'Travellers ◆',   n: allPhotographers.filter(p => p.isCustomer).length },
-    { v: 'ambassadors',   l: 'Ambassadors ★',  n: allPhotographers.filter(p => p.isAmbassador).length },
+    { v: 'all',          l: 'All',            n: allPhotographers.length },
+    { v: 'rankmaster',   l: 'Rank Master ♛',  n: allPhotographers.filter(p => p.isRankMaster).length },
+    { v: 'voyageurs',    l: 'Travellers ◆',   n: allPhotographers.filter(p => p.isCustomer).length },
+    { v: 'ambassadors',  l: 'Ambassadors ★',  n: allPhotographers.filter(p => p.isAmbassador).length },
   ];
 
   const top10 = [...allPhotographers]

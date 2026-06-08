@@ -89,14 +89,17 @@ export function HallOfFameClient() {
         const { data: dbPhotographersRanking } = await supabase.rpc('get_v5_hall_of_fame', { p_season_id: liveSeasonId }).limit(15);
         const rankData = dbPhotographersRanking || [];
 
-        // Fetch Top 50 Photos directly instead of paginating 1500 photos!
-        const { data: dbPhotos } = await supabase
+        // Fetch Top 50 Photos from the live season only (fallback: global if no active season)
+        const basePhotoQuery = supabase
           .from('photos')
           .select('*')
           .eq('is_hidden', false)
           .eq('status', 'published')
           .order('pulse', { ascending: false })
           .limit(50);
+        const { data: dbPhotos } = await (liveSeasonId
+          ? basePhotoQuery.eq('season_id', liveSeasonId)
+          : basePhotoQuery);
         
         const photos = dbPhotos || [];
 

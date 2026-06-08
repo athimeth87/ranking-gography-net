@@ -7,7 +7,8 @@ import { RoleRibbon } from './RoleRibbon';
 import { NotificationsBell } from './NotificationsBell';
 
 const CENTER_LINKS: { to: string; translationKey: string }[] = [
-  { to: '/hall-of-fame', translationKey: 'hall_of_fame' },
+  // { to: '/hall-of-fame', translationKey: 'hall_of_fame' },
+  { to: '/explore', translationKey: 'explore' },
   { to: '/photographers', translationKey: 'photographers' },
   { to: '/for-customers', translationKey: 'for_voyageurs' },
   { to: '/faq', translationKey: 'faq' },

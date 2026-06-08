@@ -174,6 +174,11 @@ export function PhotoDetailClient({ id }: { id: string }) {
       setPhotographerUserId(pData.photographer_id);
 
       if (uData) {
+        const { count: photoCount } = await supabase
+          .from('photos')
+          .select('*', { count: 'exact', head: true })
+          .eq('photographer_id', pData.photographer_id);
+
         setPhotographer({
           username: ownerName,
           name: uData.display_name || ownerName,
@@ -182,7 +187,7 @@ export function PhotoDetailClient({ id }: { id: string }) {
           avatar: uData.avatar_url || '',
           cover: '',
           followers: 0,
-          photos: 0,
+          photos: photoCount || 0,
           isAmbassador: uData.photographer_status === 'approved',
           isCustomer: uData.is_customer,
           joined: uData.created_at,

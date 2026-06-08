@@ -40,6 +40,7 @@ function mapPublicPhoto(p: any, username: string) {
     picks: [],
     date: p.uploaded_at,
     pulse,
+    impressions: p.impressions_count || 0,
     rank: 0,
   };
 }
@@ -280,6 +281,7 @@ export function PhotographerClient({ username }: { username: string }) {
   );
   if (!photographer) return notFound();
 
+  const totalViews = myPhotos.reduce((s: number, p: Photo) => s + (p.impressions ?? 0), 0);
   const avgPulse = myPhotos.length
     ? (myPhotos.reduce((s: number, p: Photo) => s + p.pulse, 0) / myPhotos.length).toFixed(0)
     : '—';
@@ -654,8 +656,9 @@ export function PhotographerClient({ username }: { username: string }) {
         {/* Stat strip + tabs */}
         <section>
           <div className="wrap">
-            <div className="grid grid-cols-3 md:grid-cols-5 gap-6 md:gap-8 py-6 md:py-8 border-b border-rule mono">
+            <div className="grid grid-cols-3 md:grid-cols-6 gap-6 md:gap-8 py-6 md:py-8 border-b border-rule mono">
               <ProfileStat label="Photos" val={myPhotos.length} />
+              <ProfileStat label="Total Views" val={totalViews.toLocaleString()} />
               <ProfileStat label="Followers" val={follow.followersCount.toLocaleString()} onClick={() => setFollowModalTab('followers')} />
               <ProfileStat label="Following" val={(photographer.following ?? 0).toLocaleString()} onClick={() => setFollowModalTab('following')} />
               <ProfileStat label="Pulse avg" val={avgPulse} />

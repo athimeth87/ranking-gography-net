@@ -167,3 +167,143 @@ export async function sendAdminInviteEmail(userEmail: string, role: string) {
   }
 }
 
+export async function sendRankMasterEmail(userEmail: string, userName: string) {
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+
+  const mailOptions = {
+    from: `"GOGRAPHY Ranking" <${process.env.EMAIL_USER}>`,
+    to: userEmail,
+    subject: '👑 Congratulations! You are now a Rank Master',
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #FAFAFA; color: #111111;">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="padding: 40px 20px;">
+          <tr>
+            <td align="center">
+              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #FFFFFF; border: 1px solid #EAEAEA; border-radius: 8px;">
+                <tr>
+                  <td align="center" style="padding: 40px;">
+                    <div style="font-size: 24px; font-weight: 300;">
+                      <span style="font-weight: 600;">GOGRAPHY</span> <span style="color: #666666; font-size: 14px; text-transform: uppercase;">Ranking</span>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 20px 40px 40px 40px;">
+                    <h1 style="font-size: 20px; font-weight: 400; margin: 0 0 24px 0;">👑 You did it, ${userName}!</h1>
+                    <p style="font-size: 15px; line-height: 1.6; color: #444444; margin: 0 0 24px 0;">
+                      Congratulations! Your incredible photography has maintained a Top 3 rank for 3 consecutive weeks. You have officially earned the <strong>Rank Master</strong> badge!
+                    </p>
+                    <p style="font-size: 15px; line-height: 1.6; color: #444444; margin: 0 0 24px 0;">
+                      A silver crown icon will now appear next to your name across the platform, recognizing your consistent excellence.
+                    </p>
+                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td align="center">
+                          <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/about-ranking" target="_blank" style="display: inline-block; background-color: #111111; color: #FFFFFF; text-decoration: none; font-size: 13px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; padding: 16px 32px; border-radius: 2px;">
+                            View the Hall of Fame
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+    `,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    return true;
+  } catch (error) {
+    console.error('Error sending Rank Master email:', error);
+    return false;
+  }
+}
+
+export async function sendTop10Email(userEmail: string, userName: string, rank: number) {
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+
+  const mailOptions = {
+    from: `"GOGRAPHY Ranking" <${process.env.EMAIL_USER}>`,
+    to: userEmail,
+    subject: '📈 You are Trending in the Top 10!',
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #FAFAFA; color: #111111;">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="padding: 40px 20px;">
+          <tr>
+            <td align="center">
+              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #FFFFFF; border: 1px solid #EAEAEA; border-radius: 8px;">
+                <tr>
+                  <td align="center" style="padding: 40px;">
+                    <div style="font-size: 24px; font-weight: 300;">
+                      <span style="font-weight: 600;">GOGRAPHY</span> <span style="color: #666666; font-size: 14px; text-transform: uppercase;">Ranking</span>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 20px 40px 40px 40px;">
+                    <h1 style="font-size: 20px; font-weight: 400; margin: 0 0 24px 0;">Incredible work, ${userName}!</h1>
+                    <p style="font-size: 15px; line-height: 1.6; color: #444444; margin: 0 0 24px 0;">
+                      Your portfolio is gaining serious traction. You are currently ranked <strong>#${rank}</strong> in this week's Trending Photographers!
+                    </p>
+                    <p style="font-size: 15px; line-height: 1.6; color: #444444; margin: 0 0 24px 0;">
+                      Keep uploading amazing photos to maintain your streak and aim for the Rank Master status.
+                    </p>
+                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td align="center">
+                          <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/explore" target="_blank" style="display: inline-block; background-color: #111111; color: #FFFFFF; text-decoration: none; font-size: 13px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; padding: 16px 32px; border-radius: 2px;">
+                            See the Leaderboard
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+    `,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    return true;
+  } catch (error) {
+    console.error('Error sending Top 10 email:', error);
+    return false;
+  }
+}
+
