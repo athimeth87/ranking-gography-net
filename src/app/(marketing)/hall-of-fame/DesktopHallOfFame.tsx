@@ -68,7 +68,7 @@ export function DesktopHallOfFame({
 
   const resolvePhotographer = (username: string) => photographers.find((p) => p.username === username);
   const resolvePhoto = (photoId: string) => allPhotos.find((p) => p.id === photoId) ?? getPhoto(photoId);
-  const coverSrc = getPhoto('p010').src; // Background image
+  const coverSrc = '/hall-of-fame-cover.jpg'; // Background image
 
   // Enhance ranking with cover_url and is_customer from our pre-fetched photographers data
   const rankingEntries = useMemo(() => {

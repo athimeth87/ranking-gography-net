@@ -2,7 +2,6 @@
 
 import { Fragment } from 'react';
 import Link from 'next/link';
-import { getPhoto } from '@/lib/data';
 import { Footer } from '@/components/layout/Footer';
 import { VoyageurMark, RewardIcon } from '@/components/icons';
 import { LoginButton } from './_components';
@@ -130,7 +129,7 @@ const PATH_STEPS = [
 // ─── page ────────────────────────────────────────────────────────────────────
 
 export default function Page() {
-  const coverSrc = "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2621&auto=format&fit=crop";
+  const coverSrc = "/for-travellers-cover.jpg";
 
   return (
     <div className="page-fade">
@@ -204,7 +203,7 @@ export default function Page() {
               <div className="pimg overflow-hidden aspect-[4/5]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={getPhoto('p015')?.src ?? ''}
+                  src="/traveller-pick.jpg"
                   alt="Traveller featured"
                   className="w-full h-full object-cover"
                 />
@@ -317,7 +316,7 @@ export default function Page() {
               [
                 [
                   'ฉันต้องเป็นช่างภาพอาชีพไหม?',
-                  'ไม่ต้องเลย — โครงการนี้สำหรับลูกค้าทุกคน ไม่ว่ามือใหม่หรือมือสมัครเล่น เกณฑ์การคัดเลือกเน้นที่ "เรื่องราว" และ "ความเป็นตัวเอง" ของภาพ ไม่ใช่ technical perfection',
+                  'ไม่ต้องเลย — โครงการนี้สำหรับลูกค้าทุกคน ไม่ว่ามือใหม่หรือมือสมัครเล่น ทุกภาพแข่งขันด้วยระบบนับคะแนนที่โปร่งใส',
                 ],
                 [
                   'ภาพต้องถ่ายจากทริป GOGRAPHY เท่านั้น?',
@@ -325,11 +324,11 @@ export default function Page() {
                 ],
                 [
                   'อัพโหลดได้กี่ภาพต่อวัน?',
-                  'วันละ 1 ภาพต่อบัญชี — เกณฑ์เดียวกับทุกคน (รวมหมวด Travellers Awards และหมวดทั่วไป) ระบบ reset เวลา 00:00 น. ทุกวัน',
+                  'วันละ 1 ภาพต่อบัญชี — เกณฑ์เดียวกับทุกคน (รวมหมวด Travellers Awards และหมวดทั่วไป)',
                 ],
                 [
                   'โหวต (like) ภาพอื่นได้ไม่จำกัดใช่ไหม?',
-                  'ใช่ — โหวตภาพได้ไม่จำกัดจำนวน เพียงภาพละ 1 ครั้ง (toggle ได้ตลอดเวลา) คะแนนของคุณช่วยภาพอื่นไต่อันดับใน Pulse Score',
+                  'ใช่ — โหวตภาพได้ไม่จำกัดจำนวน เพียงภาพละ 1 ครั้ง คะแนนของคุณช่วยภาพอื่นไต่อันดับใน Pulse Score',
                 ],
                 [
                   'Cashback ใช้ได้กับทริปไหนบ้าง?',
@@ -338,10 +337,6 @@ export default function Page() {
                 [
                   'ถ้าฉันไม่เคยใช้ cashback จะหมดอายุไหม?',
                   'อายุ cashback คือ 24 เดือนนับจากวันประกาศผล — สะสมข้ามฤดูกาลได้สูงสุด 30% ต่อทริป',
-                ],
-                [
-                  'ใครเป็นคนตัดสินว่าฉันชนะ?',
-                  'ทีม Editorial ของ GOGRAPHY Ranking — เกณฑ์เปิดเผยที่หน้า Pulse Score (แต่ Travellers Awards เน้นเรื่องราวมากกว่าตัวเลข)',
                 ],
               ] as [string, string][]
             ).map(([q, a], i) => (
