@@ -189,7 +189,7 @@ export default function PhotographersPage() {
       </section>
 
       {/* Filter / Sort bar */}
-      <section className="border-b border-white/5 sticky top-[60px] z-40 bg-[#0a0a0a]/90 backdrop-blur-xl">
+      <section className="border-b border-rule sticky top-[60px] z-40 bg-[var(--bg)]/90 backdrop-blur-xl">
         <div className="w-full max-w-[1920px] mx-auto px-4 md:px-10 2xl:px-16">
           <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center py-4 gap-4 md:gap-6">
             {/* Filter chips */}
@@ -212,12 +212,12 @@ export default function PhotographersPage() {
             </div>
 
             {/* Sort */}
-            <div className="flex items-center justify-between lg:justify-start gap-3 w-full lg:w-auto shrink-0 pt-2 border-t border-white/5 lg:border-t-0 lg:pt-0">
+            <div className="flex items-center justify-between lg:justify-start gap-3 w-full lg:w-auto shrink-0 pt-2 border-t border-rule lg:border-t-0 lg:pt-0">
               <span className="caps opacity-55">Sort By</span>
               <select
                 value={sort}
                 onChange={(e) => setSort(e.target.value as SortValue)}
-                className="px-4 py-2 border border-rule bg-[#111] text-fg text-[12px] tracking-[.12em] uppercase cursor-pointer outline-none focus:border-white/40"
+                className="px-4 py-2 border border-rule bg-transparent text-fg text-[12px] tracking-[.12em] uppercase cursor-pointer outline-none focus:border-fg"
               >
                 <option value="pulse">Pulse Rank</option>
                 <option value="followers">Most followers</option>
