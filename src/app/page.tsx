@@ -75,7 +75,11 @@ export default function LandingPage() {
           picks: [],
           date: p.uploaded_at,
           voyageurOnly: p.voyageur_only,
-          pulse: p.likes_count || 0,
+          pulse: p.pulse != null ? Number(p.pulse) : 0,
+          peakPulse: p.peak_pulse != null ? Number(p.peak_pulse) : null,
+          pickType: p.pick_type ?? 'none',
+          percentile: p.percentile != null ? Number(p.percentile) : null,
+          badge: p.badge || null,
           rank: 0
         };
       });
@@ -97,6 +101,10 @@ export default function LandingPage() {
         cover: u.cover_url || u.avatar_url || 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=800&auto=format&fit=crop',
         followers: follows.filter(f => f.following_id === u.id).length,
         photos: (photosData || []).filter(p => p.photographer_id === u.id).length,
+        socialTwitter: u.social_twitter || '',
+        socialInstagram: u.social_instagram || '',
+        socialFacebook: u.social_facebook || '',
+        website: u.portfolio_url || '',
         isAmbassador: u.is_ambassador || false,
         isCustomer: u.is_customer || false,
         customerTrips: [],
@@ -129,7 +137,7 @@ export default function LandingPage() {
               const likes = typeof next.likes_count === 'number' ? next.likes_count : p.likes;
               const favorites = typeof next.favorites_count === 'number' ? next.favorites_count : p.favorites;
               const comments = typeof next.comments_count === 'number' ? next.comments_count : p.comments;
-              return { ...p, likes, favorites, comments, pulse: likes };
+              return { ...p, likes, favorites, comments };
             }),
           );
         },
@@ -141,14 +149,20 @@ export default function LandingPage() {
   const getMockPhoto = (id: string) => mockAllPhotos.find(p => p.id === id);
   const getMockPhotographer = (by: string) => mockPhotographers.find(p => p.username === by);
 
-  // Hero photo: explicit pick or fallback to rank #1 (index 0, already sorted by pulse)
-  const top = ((heroPhotoId !== 'auto' ? getMockPhoto(heroPhotoId) : undefined) ?? mockAllPhotos[0])!;
-  // Banner photo: explicit pick or fallback to rank #1
-  const banner = (getMockPhoto(bannerPhotoId) ?? getMockPhoto('p010') ?? mockAllPhotos[0])!;
+  const activePhotos = realAllPhotos.length > 0 ? realAllPhotos : mockAllPhotos;
+  const activePhotographers = realPhotographers.length > 0 ? realPhotographers : mockPhotographers;
 
-  const bannerPhotographer = getMockPhotographer(banner.by);
-  const topPhotographer = getMockPhotographer(top.by);
-  const featuredVoyageurPhoto = getMockPhoto('p015');
+  const getActivePhoto = (id: string) => activePhotos.find(p => p.id === id);
+  const getActivePhotographer = (by: string) => activePhotographers.find(p => p.username === by);
+
+  // Hero photo: explicit pick or fallback to rank #1 (already sorted by pulse in activePhotos)
+  const top = ((heroPhotoId !== 'auto' ? getActivePhoto(heroPhotoId) : undefined) ?? activePhotos[0]) || mockAllPhotos[0];
+  // Banner photo: explicit pick or fallback to rank #1
+  const banner = (getActivePhoto(bannerPhotoId) ?? getActivePhoto('p010') ?? activePhotos[0]) || mockAllPhotos[0];
+
+  const bannerPhotographer = getActivePhotographer(banner.by) || getMockPhotographer(banner.by);
+  const topPhotographer = getActivePhotographer(top.by) || getMockPhotographer(top.by);
+  const featuredVoyageurPhoto = getActivePhoto('p015') || getMockPhoto('p015');
 
   return (
     <>

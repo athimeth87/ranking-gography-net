@@ -9,7 +9,7 @@ Disallow: /login
 Disallow: /auth/*
 
 # Host
-Host: https://ranking.gography.net
+Host: http://localhost:3000
 
 # Sitemaps
-Sitemap: https://ranking.gography.net/sitemap.xml
+Sitemap: http://localhost:3000/sitemap.xml

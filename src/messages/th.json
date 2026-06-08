@@ -4,7 +4,9 @@
     "hall_of_fame": "หอเกียรติยศ",
     "photographers": "ช่างภาพ",
     "for_voyageurs": "สำหรับลูกค้า",
-    "about": "เกี่ยวกับเรา"
+    "about": "เกี่ยวกับเรา",
+    "faq": "FAQ",
+    "explore": "ภาพทั้งหมด"
   },
   "HeroSection": {
     "headline": "ภาพถ่าย<br />ที่เล่าเรื่องราว",
@@ -44,7 +46,7 @@
     "description": "ลูกค้าที่เคยเดินทางกับ GOGRAPHY จะได้รับสถานะ <strong>Traveller</strong> — มีสิทธิ์ส่งภาพในหมวดหมู่พิเศษสำหรับลูกค้าเท่านั้น ทุกฤดูกาลผู้ชนะจะได้รับ Voucher มูลค่า 50,000 บาท และ Top 10 จะได้รับ Cashback สำหรับทริปถัดไป",
     "reward1_sub": "ต่อหมวด",
     "program_name": "The Travellers Programme",
-    "exclusive": "สิทธิพิเศษ · เฉพาะ VOYAGEUR",
+    "exclusive": "สิทธิพิเศษ · เฉพาะ TRAVELLER",
     "badge_sub": "PUBLIC BADGE · ตลอดชีพ",
     "how_to_join": "วิธีเข้าร่วม Travellers",
     "past_winners": "ผู้ชนะที่ผ่านมา",
@@ -62,7 +64,7 @@
     "landscape": "ภาพทิวทัศน์",
     "portrait": "บุคคล",
     "bw": "ขาวดำ",
-    "voyageurs": "ลูกค้าทัวร์",
+    "voyageurs": "Travellers",
     "open_full": "เปิดหน้าหมวดหมู่เต็มรูปแบบ"
   },
   "PhotoCard": {
@@ -70,6 +72,12 @@
     "comments": "ความคิดเห็น",
     "voyageur_only": "เฉพาะลูกค้าทัวร์",
     "unknown_camera": "ไม่ระบุกล้อง"
+  },
+  "PhotoStats": {
+    "title": "สถิติ",
+    "likes": "ถูกใจ",
+    "impressions": "การมองเห็น",
+    "pulse": "Pulse"
   },
   "PhotographerCard": {
     "ambassador": "Ambassador",
@@ -89,6 +97,7 @@
     "landscape": "ภาพทิวทัศน์",
     "portrait": "บุคคล",
     "bw": "ขาวดำ",
+    "faq": "FAQ",
     "ranking": "การจัดอันดับ",
     "about": "เกี่ยวกับเรา",
     "for_voyageurs": "สำหรับลูกค้าทัวร์",
@@ -101,7 +110,7 @@
     "discover": "ค้นพบ",
     "categories": "หมวดหมู่",
     "explore": "ภาพทั้งหมด",
-    "voyageurs": "Voyageurs",
+    "voyageurs": "Travellers",
     "theme": "ธีม",
     "light": "สว่าง",
     "dark": "มืด",
@@ -149,6 +158,7 @@
   "Notifications": {
     "title": "การแจ้งเตือน",
     "mark_all_read": "อ่านแล้วทั้งหมด",
+    "view_all": "ดูทั้งหมด",
     "no_notifications": "ยังไม่มีการแจ้งเตือน",
     "liked_your_photo": "ถูกใจรูปภาพของคุณ",
     "favorited_your_photo": "ชื่นชอบรูปภาพของคุณ",
@@ -182,6 +192,7 @@
     "nav_photos": "รูปภาพของฉัน",
     "nav_favorites": "รายการโปรด",
     "nav_stats": "สถิติ",
+    "nav_notifications": "การแจ้งเตือน",
     "nav_settings": "ตั้งค่า",
     "edit_profile": "แก้ไขโปรไฟล์",
     "share": "แชร์",

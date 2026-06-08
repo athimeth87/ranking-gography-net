@@ -9,6 +9,8 @@ interface PhotoGridProps {
   uniform?: boolean;
   pulseLabel?: string;
   showLike?: boolean;
+  deletable?: boolean;
+  onDeleted?: (id: string) => void;
 }
 
 export function PhotoGrid({
@@ -19,6 +21,8 @@ export function PhotoGrid({
   uniform = false,
   pulseLabel = 'Pulse',
   showLike = false,
+  deletable = false,
+  onDeleted,
 }: PhotoGridProps) {
   const leaderTopScore =
     showRankDelta && photos.length > 0 ? Math.max(...photos.map((p) => p.pulse)) : null;
@@ -51,6 +55,8 @@ export function PhotoGrid({
               uniform
               pulseLabel={pulseLabel}
               showLike={showLike}
+              deletable={deletable}
+              onDeleted={onDeleted}
             />
           </div>
         ))}
@@ -75,6 +81,8 @@ export function PhotoGrid({
             leaderTopScore={leaderTopScore}
             pulseLabel={pulseLabel}
             showLike={showLike}
+            deletable={deletable}
+            onDeleted={onDeleted}
           />
         </div>
       ))}

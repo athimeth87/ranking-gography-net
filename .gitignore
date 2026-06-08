@@ -40,3 +40,8 @@ next-env.d.ts
 /.venv/
 /_bmad
 /_bmad-output
+/.vscode
+# Test Data
+public/testpic/
+public/posttest/
+posttest/

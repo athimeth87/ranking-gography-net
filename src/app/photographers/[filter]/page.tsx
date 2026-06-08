@@ -8,6 +8,8 @@ import { PhotographerCard } from '@/components/home/PhotographerCard';
 import { Footer } from '@/components/layout/Footer';
 import { PageCover } from '@/components/layout/PageCover';
 
+import { computeRankMasters } from '@/lib/ranking-system';
+
 // ===== Filtered photographers directory — /photographers/[filter] =====
 // Valid filter values: 'all' | 'voyageurs' | 'ambassadors' | 'general'
 
@@ -25,8 +27,12 @@ export default function PhotographersFilterPage({ params }: { params: { filter: 
   const [filter, setFilter] = useState<FilterValue>(initialFilter);
   const [sort, setSort] = useState<SortValue>('featured');
 
-  const allPhotographers = getPhotographers();
   const allPhotos = getPhotos();
+  const rankMasters = computeRankMasters(allPhotos);
+  const allPhotographers = getPhotographers().map(p => ({
+    ...p,
+    isRankMaster: rankMasters.has(p.username)
+  }));
 
   let list: Photographer[] = allPhotographers.slice();
   if (filter === 'voyageurs') list = list.filter((p: Photographer) => p.isCustomer);

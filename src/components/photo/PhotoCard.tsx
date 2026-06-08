@@ -5,6 +5,8 @@ import type { Photo } from '@/lib/types';
 import { getPhotographer } from '@/lib/data';
 import { PickBadge } from '@/components/icons';
 import { CardLikeButton } from './CardLikeButton';
+import { PhotoCardDeleteButton } from './PhotoCardDeleteButton';
+import { PulseStatusBadge } from './PulseStatusBadge';
 
 interface PhotoCardProps {
   photo: Photo;
@@ -15,6 +17,8 @@ interface PhotoCardProps {
   pulseLabel?: string;
   showLike?: boolean;
   ownerId?: string | null;
+  deletable?: boolean;
+  onDeleted?: (id: string) => void;
 }
 
 export function PhotoCard({
@@ -23,6 +27,8 @@ export function PhotoCard({
   uniform = false,
   showLike = false,
   ownerId,
+  deletable = false,
+  onDeleted,
 }: PhotoCardProps) {
   const router = useRouter();
   const t = useTranslations('PhotoCard');
@@ -54,6 +60,9 @@ export function PhotoCard({
           </div>
         </div>
         {showLike && <CardLikeButton photoId={photo.id} ownerId={ownerId} />}
+        {deletable && onDeleted && (
+          <PhotoCardDeleteButton photoId={photo.id} storageUrl={photo.src} onDeleted={onDeleted} />
+        )}
       </div>
       <div className="pmeta">
         <div className="flex items-baseline gap-3 flex-1 min-w-0">
@@ -67,6 +76,7 @@ export function PhotoCard({
               {photo.title}
             </div>
             <div className="pby">{photographer ? photographer.name : photo.by}</div>
+            <PulseStatusBadge pulse={photo.peakPulse ?? photo.pulse} badge={photo.badge} className="mt-[6px]" />
           </div>
         </div>
         <div className="shrink-0 ml-4 text-right">

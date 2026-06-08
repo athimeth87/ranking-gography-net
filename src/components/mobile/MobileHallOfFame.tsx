@@ -1,213 +1,169 @@
 // @ts-nocheck
 'use client';
-import { PHOTOS, pulseScore } from '@/lib/data';
+import { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
+import { PHOTOS, pulseScore, PHOTOGRAPHERS } from '@/lib/data';
 import { useApp } from '@/providers/AppProvider';
-import { MobileNav, MobileFooter, MobileMarquee, MobileSectionHeader, BottomNav } from './MobileShared';
-import { MasonryTile } from './MobileExplore';
+import { MobileNav, MobileFooter, MobileMarquee } from './MobileShared';
 
-const seasons = [
-  { s: '04', y: '2026', winner: 'Anuwat Phon',       title: 'Mae Hong Son, blue hour', pulse: 1240, seed: 'maehongson-bluehour' },
-  { s: '03', y: '2025', winner: 'Sirintra L.',       title: 'Phang Nga channels',       pulse: 1108, seed: 'phangnga-channels' },
-  { s: '02', y: '2025', winner: 'Nuttachai Kirdsuk', title: 'Doi Inthanon dawn',        pulse: 982,  seed: 'doi-inthanon-dawn-win' },
-  { s: '01', y: '2024', winner: 'Tul Manoonpong',    title: 'Bangkok last light',       pulse: 874,  seed: 'bangkok-last-light' },
-];
+const LB_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-const tiers = [
-  { t: 'Traveller III', p: '฿15,000', l: '8% cashback', tag: 'top tier' },
-  { t: 'Traveller II',  p: '฿8,000',  l: '5% cashback', tag: '' },
-  { t: 'Traveller I',   p: '฿3,000',  l: '3% cashback', tag: '' },
-];
+function formatCloseShort(iso) {
+  if (!iso) return '';
+  const [y, m, d] = iso.split('-').map(Number);
+  if (!y || !m || !d) return iso;
+  return `${d} ${LB_MONTHS[m - 1]} ${y}`;
+}
 
-export function MobileHallOfFame() {
+function useMobileCountdown(endIso) {
+  const [now, setNow] = useState(null);
+  useEffect(() => {
+    setNow(Date.now());
+    const t = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(t);
+  }, []);
+  if (now === null || !endIso) return null;
+  const end = new Date(`${endIso}T23:59:59`).getTime();
+  const diff = Math.max(0, end - now);
+  return {
+    over: diff <= 0,
+    days: Math.floor(diff / 86_400_000),
+    hours: Math.floor((diff % 86_400_000) / 3_600_000),
+    minutes: Math.floor((diff % 3_600_000) / 60_000),
+  };
+}
+
+function Crown({ size = 15, color = "currentColor" }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={color} aria-hidden="true">
+      <path d="M2 8l4.2 3.4L12 4l5.8 7.4L22 8l-1.7 10.4H3.7L2 8z" />
+    </svg>
+  );
+}
+
+function ProBadge() {
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '2px 5px', borderRadius: 3, background: 'var(--fg)', color: 'var(--bg)', fontSize: 9, fontWeight: 700, letterSpacing: '0.05em', lineHeight: 1, marginLeft: 6 }}>
+      PRO
+    </span>
+  );
+}
+
+export function MobileHallOfFame({
+  realSeasons = [],
+  realAllPhotos = [],
+  realPhotographers = [],
+  photographersRanking = []
+}: {
+  realSeasons?: any[];
+  realAllPhotos?: any[];
+  realPhotographers?: any[];
+  photographersRanking?: any[];
+}) {
   const { theme } = useApp();
   const dark = theme === 'dark';
-  const coverPhoto = PHOTOS.find(p => p.id === 'p010') || PHOTOS[0];
-  const winnerPhoto = PHOTOS.find(p => p.id === 'p010') || PHOTOS[0];
+  const inkBg = dark ? '#fff' : '#000';
+  const inkFg = dark ? '#000' : '#fff';
+  const tileBg = 'var(--tile)';
+  const fgColor = 'var(--fg)';
+  const bgRule = 'var(--rule)';
+
+  const coverPhoto = realAllPhotos.find(p => p.id === 'p010') || PHOTOS.find(p => p.id === 'p010') || PHOTOS[0];
+
+  const liveSeason = (realSeasons || []).find(s => s.status === 'live');
+  const lbEndDate = liveSeason?.endDate || '2026-09-30';
+  const countdown = useMobileCountdown(lbEndDate);
+
+  const lookupName = (by) =>
+    (realPhotographers.find(p => p.username === by) || PHOTOGRAPHERS.find(p => p.username === by))?.name || by;
+
+  const resolvePhotographer = (username) => realPhotographers.find(p => p.username === username) || PHOTOGRAPHERS.find(p => p.username === username);
+
+  const rankingEntries = useMemo(() => {
+    return (photographersRanking || []).map(r => {
+      const owner = resolvePhotographer(r.username);
+      return {
+        ...r,
+        cover_url: r.cover_url || owner?.cover || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop',
+        is_customer: owner?.isCustomer ?? false,
+      };
+    });
+  }, [photographersRanking, realPhotographers]);
+
+  const [lbTab, setLbTab] = useState('classic');
+
+  const filteredRanking = useMemo(() => {
+    return lbTab === 'classic'
+      ? rankingEntries.filter(e => !e.is_customer)
+      : rankingEntries.filter(e => e.is_customer);
+  }, [lbTab, rankingEntries]);
+
+  const top3 = filteredRanking.slice(0, 3);
+  const pack = filteredRanking.slice(3, 10);
+
+  const mono = "'IBM Plex Mono', monospace";
+  const thai = "'Noto Sans Thai', sans-serif";
+  const serif = "'Playfair Display', serif";
 
   return (
     <div className="gpa-mobile" style={{
       display: 'flex', flexDirection: 'column', minHeight: '100vh',
-      background: dark ? '#0a0a0a' : '#fff',
-      color: dark ? '#fff' : '#000',
+      background: 'var(--bg)',
+      color: 'var(--fg)',
       fontFamily: "'Inter', system-ui, sans-serif",
     }}>
       <MobileNav />
 
-      {/* Cover */}
-      <div style={{ position: 'relative', width: '100%', height: 420, overflow: 'hidden', color: '#fff' }}>
-        <img src={coverPhoto.src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0) 30%, rgba(0,0,0,0.55) 75%, rgba(0,0,0,0.78) 100%)' }} />
-        <div style={{ position: 'absolute', left: 16, right: 16, bottom: 24, zIndex: 2 }}>
-          <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', opacity: 0.85, marginBottom: 14 }}>— Hall of Fame</div>
-          <div style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: 'clamp(34px, 9vw, 56px)', lineHeight: 1.02, letterSpacing: '-0.02em', maxWidth: '16ch' }}>Four seasons. Four winners.</div>
-          <div style={{ fontSize: 14, lineHeight: 1.5, opacity: 0.82, maxWidth: '32ch', marginTop: 12 }}>
-            Highest pulse across all categories. One frame per season.
+      {/* ── Cinematic Hero Header ── */}
+      <section className="relative overflow-hidden bg-black h-[42vh] min-h-[340px] max-h-[520px]">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={coverPhoto.src}
+          alt="Hall of Fame"
+          className="w-full h-full object-cover opacity-60"
+          loading="eager"
+        />
+        {/* gradient overlay */}
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,.32)_0%,rgba(0,0,0,.06)_38%,rgba(0,0,0,.74)_100%)]" />
+
+        {/* content overlay */}
+        <div className="absolute inset-0 flex flex-col justify-end">
+          <div className="pb-8 px-4">
+            {/* eyebrow */}
+            <div className="flex items-center gap-3 mb-4">
+              <span className="mono text-[10px] tracking-[.3em] uppercase text-white/75">
+                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5 align-middle" />
+                 {liveSeason?.name || 'LIVE SEASON'}
+              </span>
+              <span className="h-px w-8 bg-white/30" />
+              <span className="mono text-[10px] tracking-[.3em] uppercase text-white/55 tabular-nums">
+                {countdown ? countdown.days : '—'} DAYS LEFT
+              </span>
+            </div>
+            {/* title */}
+            <h1 className="text-white font-light text-[40px] leading-[.9] tracking-[-.04em] m-0">
+              Hall of Fame
+            </h1>
+            <p className="th text-white/75 text-[14px] leading-[1.6] mt-4 mb-0 max-w-[460px]">
+              The best photographers. One global stage. <br/>
+              ค้นพบภาพถ่ายและช่างภาพยอดเยี่ยมประจำฤดูกาล
+            </p>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Featured winner */}
-      <section style={{ padding: '40px 16px 0' }}>
-        <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11, letterSpacing: '0.16em', color: 'var(--fg-soft)' }}>
-          Season 01 · Reigning
-        </div>
-        <div style={{ marginTop: 14, aspectRatio: '4 / 5', background: 'var(--tile)', overflow: 'hidden' }}>
-          <img src={winnerPhoto.src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        </div>
-        <h2 style={{
-          margin: '24px 0 8px',
-          fontFamily: "'Playfair Display', serif", fontWeight: 700,
-          fontSize: 30, lineHeight: 1.05, letterSpacing: '-0.01em',
-        }}>"Mae Hong Son, <em style={{ fontStyle: 'italic' }}>blue hour</em>"</h2>
-        <div style={{
-          display: 'inline-flex', alignItems: 'center', gap: 6,
-          fontFamily: "'IBM Plex Mono', monospace", fontSize: 10,
-          letterSpacing: '0.14em', textTransform: 'uppercase', color: '#b08e54',
-        }}>
-          <span style={{ width: 6, height: 6, background: '#b08e54', transform: 'rotate(45deg)' }} />
-          Anuwat Phon · Traveller III
-        </div>
-        <p style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--fg-soft)', marginTop: 16, maxWidth: '40ch' }}>
-          Shot at 5:47am in Pang Mapha district. Three nights of waiting for the fog to break through the valley.
+      {/* ── Coming Soon State ── */}
+      <section style={{ padding: '80px 20px 100px', textAlign: 'center' }}>
+        <div style={{ fontFamily: mono, fontSize: 11, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: fgColor, marginBottom: 16 }}>Season Ranking</div>
+        <h2 style={{ fontSize: 36, fontWeight: 800, marginBottom: 16, lineHeight: 1.2 }}>Coming Soon</h2>
+        <p style={{ fontFamily: thai, fontSize: 14, color: 'var(--fg-soft)', lineHeight: 1.6 }}>
+          การจัดอันดับ Hall of Fame จะแสดงผลและประกาศรางวัลเมื่อสิ้นสุดฤดูกาล<br/>
+          มาร่วมส่งผลงานและสะสม Pulse Score เพื่อก้าวสู่ระดับโลกไปด้วยกัน
         </p>
-
-        <div style={{
-          display: 'grid', gridTemplateColumns: '1fr 1fr',
-          marginTop: 20, border: '1px solid var(--rule-strong)',
-        }}>
-          {[
-            ['1,240', 'Pulse'],
-            ['8,420', 'Likes'],
-            ['142',   'Hours to peak'],
-            ['◆',     'Curator pick'],
-          ].map(([n, l], i) => (
-            <div key={l} style={{
-              padding: '16px 14px',
-              borderRight: i % 2 === 0 ? '1px solid var(--rule)' : 0,
-              borderBottom: i < 2 ? '1px solid var(--rule)' : 0,
-            }}>
-              <span style={{
-                fontFamily: n === '◆' ? "'Inter', sans-serif" : "'IBM Plex Mono', monospace",
-                fontSize: 22, fontWeight: 500,
-                letterSpacing: '-0.02em', lineHeight: 1, display: 'block',
-                color: n === '◆' ? '#b08e54' : undefined,
-              }}>{n}</span>
-              <span style={{
-                fontFamily: "'IBM Plex Mono', monospace", fontSize: 10,
-                letterSpacing: '0.14em', textTransform: 'uppercase',
-                color: 'var(--fg-soft)', marginTop: 6, display: 'block',
-              }}>{l}</span>
-            </div>
-          ))}
-        </div>
       </section>
 
-      {/* Past winners */}
-      <section style={{ padding: '56px 16px 0' }}>
-        <MobileSectionHeader num="01 / Archive" title="Past winners" />
-        <div style={{ marginTop: 18 }}>
-          {seasons.slice(1).map((w, i, a) => (
-            <article key={w.s} style={{
-              padding: '20px 0',
-              borderTop: '1px solid var(--rule)',
-              borderBottom: i === a.length - 1 ? '1px solid var(--rule)' : 0,
-              display: 'grid', gridTemplateColumns: '92px 1fr', gap: 14,
-            }}>
-              <div style={{ aspectRatio: '4 / 5', background: 'var(--tile)', overflow: 'hidden' }}>
-                <img src={`https://picsum.photos/seed/${w.seed}/400/500`} alt={w.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
-              </div>
-              <div>
-                <div style={{
-                  fontFamily: "'IBM Plex Mono', monospace", fontSize: 10,
-                  letterSpacing: '0.16em', color: 'var(--fg-soft)', textTransform: 'uppercase',
-                }}>Season {w.s} · {w.y}</div>
-                <h3 style={{
-                  margin: '4px 0 6px',
-                  fontFamily: "'Playfair Display', serif", fontWeight: 700,
-                  fontSize: 20, letterSpacing: '-0.01em', lineHeight: 1.15,
-                }}>"{w.title}"</h3>
-                <div style={{ fontSize: 13, fontWeight: 500 }}>{w.winner}</div>
-                <div style={{
-                  marginTop: 8, fontSize: 11,
-                  fontFamily: "'IBM Plex Mono', monospace",
-                  display: 'inline-block', padding: '4px 8px',
-                  border: '1px solid var(--rule-strong)',
-                }}>Pulse {w.pulse}</div>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      {/* Tiers */}
-      <section style={{ padding: '20px 0 0', background: dark ? '#131310' : 'var(--cream)' }}>
-        <div style={{ padding: '16px 16px 0' }}>
-          <MobileSectionHeader num="02 / Tiers" title="Traveller cashback" />
-          <p style={{
-            fontFamily: "'Noto Sans Thai', sans-serif",
-            fontSize: 13, lineHeight: 1.55, color: 'var(--fg-soft)',
-            marginTop: 6, maxWidth: '34ch',
-          }}>
-            ผู้เข้าร่วมที่ผ่านการคัดเลือกจะได้รับส่วนแบ่งจากค่าโฆษณาฤดูกาล
-          </p>
-        </div>
-        <div style={{ padding: '12px 16px 32px', display: 'grid', gap: 10 }}>
-          {tiers.map((t, i) => {
-            const isTop = i === 0;
-            return (
-              <div key={t.t} style={{
-                padding: 18,
-                background: isTop ? '#000' : (dark ? '#0a0a0a' : 'var(--bg)'),
-                color: isTop ? '#fff' : (dark ? '#fff' : '#000'),
-                border: isTop ? '1px solid #000' : '1px solid var(--rule-strong)',
-                position: 'relative',
-              }}>
-                <div style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 6,
-                  fontFamily: "'IBM Plex Mono', monospace", fontSize: 10,
-                  letterSpacing: '0.14em', textTransform: 'uppercase', color: '#b08e54',
-                }}>
-                  <span style={{ width: 6, height: 6, background: '#b08e54', transform: 'rotate(45deg)' }} />
-                  {t.t}
-                </div>
-                <div style={{
-                  marginTop: 14, fontFamily: "'IBM Plex Mono', monospace",
-                  fontSize: 28, fontWeight: 500, letterSpacing: '-0.01em',
-                }}>{t.p}</div>
-                <div style={{
-                  fontFamily: "'IBM Plex Mono', monospace", fontSize: 11,
-                  letterSpacing: '0.12em', textTransform: 'uppercase',
-                  marginTop: 4, opacity: isTop ? 0.6 : 0.55,
-                }}>per season · {t.l}</div>
-                {t.tag && (
-                  <div style={{
-                    position: 'absolute', top: 14, right: 14,
-                    fontFamily: "'IBM Plex Mono', monospace", fontSize: 9,
-                    letterSpacing: '0.14em', padding: '3px 6px',
-                    border: '1px solid #b08e54', color: '#b08e54',
-                    textTransform: 'uppercase',
-                  }}>{t.tag}</div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Winners gallery — masonry */}
-      <section style={{ padding: '56px 16px 0' }}>
-        <MobileSectionHeader num="03 / Gallery" title="Winning frames" />
-      </section>
-      <div style={{ padding: '16px 6px 0' }}>
-        <div style={{ columnCount: 3, columnGap: 6 }}>
-          {PHOTOS.slice().sort((a, b) => pulseScore(b) - pulseScore(a)).slice(0, 18).map((p) => (
-            <MasonryTile key={p.id} photo={p} />
-          ))}
-        </div>
-      </div>
-
-      <div style={{ height: 48 }} />
-      <MobileMarquee text="◆ 4 seasons ◆ 4 winners ◆ ฿1.2M cashback paid ◆" />
+      <div style={{ height: 48, background: 'var(--cream)' }} />
+      <MobileMarquee text="◆ Season 1 is live ◆ Be the first legend ◆" />
       <MobileFooter />
     </div>
   );

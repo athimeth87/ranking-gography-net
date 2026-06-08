@@ -1,9 +1,10 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { sendWelcomeEmail } from '@/lib/email';
 
-export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const origin = request.nextUrl.origin;
   const code = searchParams.get('code');
   const next = searchParams.get('next') ?? '/';
 

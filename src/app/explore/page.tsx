@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import type { Photo } from '@/lib/types';
 import type { SortKey } from '@/lib/data';
-import { PhotoGrid } from '@/components/photo/PhotoGrid';
+import { RealtimePhotoGrid } from '@/components/photo/RealtimePhotoGrid';
 import { Footer } from '@/components/layout/Footer';
 import { MobileExplore } from '@/components/mobile/MobileExplore';
 
@@ -29,7 +29,7 @@ const SORT_OPTIONS: { v: SortKey; l: string; short: string }[] = [
 
 const TABS = [
   { id: null, label: 'All', gold: false },
-  { id: 'voyageurs', label: 'Voyageurs', gold: true },
+  { id: 'voyageurs', label: 'Travellers', gold: true },
   { id: 'landscape', label: 'Landscape', gold: false },
   { id: 'portrait', label: 'Portrait', gold: false },
   { id: 'bw', label: 'Black & White', gold: false },
@@ -143,7 +143,7 @@ export default function ExplorePage() {
       const supabase = getSupabaseBrowserClient();
       const { data } = await supabase
         .from('photos')
-        .select('id, title, storage_url, category, likes_count, favorites_count, comments_count, uploaded_at, width, height, description, users:users!photos_photographer_id_fkey(username, is_customer)');
+        .select('id, title, storage_url, category, likes_count, favorites_count, comments_count, uploaded_at, width, height, description, users:users!photos_photographer_id_fkey(username, display_name, avatar_url, is_customer)');
 
       if (data) {
         let mapped = data.map((p: any) => {
@@ -155,6 +155,8 @@ export default function ExplorePage() {
             src: p.storage_url,
             title: p.title,
             by: p.users?.username || 'Unknown',
+            photographerName: p.users?.display_name || p.users?.username || 'Unknown',
+            photographerAvatar: p.users?.avatar_url || '',
             isVoyageur: Boolean(p.users?.is_customer),
             cat: p.category || 'General',
             w: p.width || 4,
@@ -168,7 +170,7 @@ export default function ExplorePage() {
             hours: 1,
             picks: [],
             date: p.uploaded_at,
-            pulse: likes + favorites * 2,
+            pulse: p.pulse != null ? Number(p.pulse) : 0,
             rank: 0,
           };
         });
@@ -370,7 +372,7 @@ export default function ExplorePage() {
           ) : photos.length === 0 ? (
             <EmptyState />
           ) : (
-            <PhotoGrid photos={photos} cols={3} showRank={sort === 'pulse'} showLike />
+            <RealtimePhotoGrid photos={photos} cols={3} showRank={sort === 'pulse'} showLike liveSort={sort === 'pulse'} />
           )}
         </div>
       </section>

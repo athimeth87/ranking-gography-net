@@ -7,12 +7,15 @@ import { useApp } from '@/providers/AppProvider';
 import { useTranslations } from 'next-intl';
 import { MobileFooter } from './MobileShared';
 import { MeSettings } from '../account/MeSettings';
+import { MeNotifications } from '../account/MeNotifications';
 import { ActivityHeatmap } from '../account/ActivityHeatmap';
+import { FollowListModal, type FollowTab } from '../account/FollowListModal';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { getPresignedUploadUrl } from '@/app/actions/r2-upload';
 import { convertToWebP } from '@/lib/imageConvert';
+import { getCashbackPercentage } from '@/lib/ranking-system';
 
-type SectionKey = 'dashboard' | 'photos' | 'favorites' | 'stats' | 'settings';
+type SectionKey = 'dashboard' | 'photos' | 'favorites' | 'stats' | 'notifications' | 'settings';
 
 export function MobileMe({
   section: initialSection = 'dashboard',
@@ -35,6 +38,7 @@ export function MobileMe({
     { id: 'photos',    label: t('nav_photos') },
     { id: 'favorites', label: t('nav_favorites') },
     { id: 'stats',     label: t('nav_stats') },
+    { id: 'notifications', label: t('nav_notifications') || 'Notifications' },
     { id: 'settings',  label: t('nav_settings') },
   ];
   const [activeTab, setActiveTab] = useState<SectionKey>(
@@ -45,6 +49,7 @@ export function MobileMe({
   const [localAvatar, setLocalAvatar] = useState<string | null>(null);
   const [localCover, setLocalCover] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [followModalTab, setFollowModalTab] = useState<FollowTab | null>(null);
 
   const goTab = (id: SectionKey) => {
     setActiveTab(id);
@@ -218,8 +223,8 @@ export function MobileMe({
             <div style={{ marginTop: 18, display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'center', columnGap: 18, rowGap: 9 }}>
               {[
                 [compact(myPhotos.length), t('photos'), () => goTab('photos')],
-                [compact(followers), t('followers'), null],
-                [compact(following), t('following_label'), null],
+                [compact(followers), t('followers'), () => setFollowModalTab('followers')],
+                [compact(following), t('following_label'), () => setFollowModalTab('following')],
                 [compact(totalPulse), t('pulse'), () => goTab('stats')],
               ].map(([n, l, onClick]) => (
                 <button key={l} onClick={onClick || undefined} style={{ display: 'inline-flex', alignItems: 'baseline', gap: 5, padding: 0, cursor: onClick ? 'pointer' : 'default', background: 'transparent', border: 0, color: '#fff' }}>
@@ -264,13 +269,23 @@ export function MobileMe({
                 borderRadius: 18, boxShadow: '0 10px 28px rgba(176,142,84,0.16)',
               }}>
                 <div style={{ position: 'absolute', top: 0, left: 0, width: 4, height: '100%', background: '#b08e54' }} />
-                <div style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 7,
-                  fontFamily: "'IBM Plex Mono', monospace", fontSize: 10,
-                  letterSpacing: '0.16em', textTransform: 'uppercase', color: '#b08e54',
-                }}>
-                  <span style={{ width: 6, height: 6, background: '#b08e54', transform: 'rotate(45deg)' }} />
-                  {t('voyageurs_awards')}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: 16, marginBottom: 16, borderBottom: '1px solid rgba(176,142,84,0.2)' }}>
+                  <div style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 7,
+                    fontFamily: "'IBM Plex Mono', monospace", fontSize: 10,
+                    letterSpacing: '0.16em', textTransform: 'uppercase', color: '#b08e54',
+                  }}>
+                    <span style={{ width: 6, height: 6, background: '#b08e54', transform: 'rotate(45deg)' }} />
+                    {t('voyageurs_awards')}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                    <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 26, fontWeight: 500, letterSpacing: '-0.025em', color: '#b08e54', lineHeight: 1 }}>
+                      {getCashbackPercentage(voyageurRank)}%
+                    </span>
+                    <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 9, opacity: 0.55, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+                      {t('cashback')}
+                    </span>
+                  </div>
                 </div>
                 <div style={{
                   marginTop: 12, fontFamily: "'Inter', sans-serif", fontWeight: 300,
@@ -503,6 +518,12 @@ export function MobileMe({
         </section>
       )}
 
+      {activeTab === 'notifications' && (
+        <section style={{ padding: '0' }}>
+          <MeNotifications mobile />
+        </section>
+      )}
+
       {activeTab === 'settings' && (
         <section style={{ padding: '24px 16px 0' }}>
           <MeSettings
@@ -514,6 +535,9 @@ export function MobileMe({
               loc: profile?.location || 'Not set',
               bio: profile?.bio || '',
               website: profile?.portfolio_url || '',
+              socialTwitter: profile?.social_twitter || '',
+              socialInstagram: profile?.social_instagram || '',
+              socialFacebook: profile?.social_facebook || '',
               isCustomer: profile?.is_customer
             } as any}
             isVoyageur={isVoyageur}
@@ -550,6 +574,18 @@ export function MobileMe({
           {t('link_copied')}
         </div>
       )}
+
+      {profile?.id && (
+        <FollowListModal
+          open={followModalTab !== null}
+          onOpenChange={(o) => { if (!o) setFollowModalTab(null); }}
+          userId={profile.id}
+          username={profile.username}
+          initialTab={followModalTab ?? 'followers'}
+          followersCount={followers}
+          followingCount={following}
+        />
+      )}
     </div>
   );
 }
@@ -568,6 +604,7 @@ function TabIcon({ name }: { name: string }) {
   if (name === 'photos') return (<svg {...c}><rect x="3" y="3" width="7" height="7" rx="1.2" /><rect x="14" y="3" width="7" height="7" rx="1.2" /><rect x="3" y="14" width="7" height="7" rx="1.2" /><rect x="14" y="14" width="7" height="7" rx="1.2" /></svg>);
   if (name === 'favorites') return (<svg {...c}><path d="M12 21s-8-5.2-8-11.4A4.6 4.6 0 0 1 12 7a4.6 4.6 0 0 1 8 2.6C20 15.8 12 21 12 21z" /></svg>);
   if (name === 'stats') return (<svg {...c}><line x1="6" y1="20" x2="6" y2="11" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="18" y1="20" x2="18" y2="14" /></svg>);
+  if (name === 'notifications') return (<svg {...c}><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></svg>);
   return (<svg {...c}><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>);
 }
 

@@ -41,6 +41,11 @@ export interface PhotoSeed {
 export interface Photo extends PhotoSeed {
   pulse: number;
   rank: number;
+  impressions?: number;
+  peakPulse?: number | null;
+  pickType?: 'none' | 'editor' | 'ambassador' | 'both';
+  percentile?: number | null;
+  badge?: string | null;
 }
 
 export interface Photographer {
@@ -53,8 +58,19 @@ export interface Photographer {
   cover: string;
   followers: number;
   photos: number;
+  totalLikes?: number;
+  totalViews?: number;
+  totalSaves?: number;
+  categories?: string[];
+  socialTwitter?: string;
+  socialInstagram?: string;
+  socialFacebook?: string;
+  website?: string;
+  hofScore?: number | null;
+  avgPulse?: number;
   isAmbassador: boolean;
   isCustomer?: boolean;
+  isRankMaster?: boolean;
   customerTrips?: string[];
   joined: string;
   cameras: string[];

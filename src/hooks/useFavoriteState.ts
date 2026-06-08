@@ -8,7 +8,8 @@ export interface UseFavoriteState extends FavoriteState {
   toggle: () => Promise<ToggleResult>;
 }
 
-export function useFavoriteState(photoId: string): UseFavoriteState {
+export function useFavoriteState(photoId: string, opts?: { realtime?: boolean }): UseFavoriteState {
+  const realtime = opts?.realtime ?? true;
   const { authUser } = useApp();
   const [state, setState] = useState<FavoriteState>({ favorited: false, count: 0 });
   const [loading, setLoading] = useState(true);
@@ -27,6 +28,7 @@ export function useFavoriteState(photoId: string): UseFavoriteState {
   }, [photoId, authUser?.id]);
 
   useEffect(() => {
+    if (!realtime) return;
     const supabase = getSupabaseBrowserClient();
     if (!supabase) return;
 
@@ -48,7 +50,7 @@ export function useFavoriteState(photoId: string): UseFavoriteState {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [photoId]);
+  }, [photoId, realtime]);
 
   const toggle = useCallback(async (): Promise<ToggleResult> => {
     const prev = state;

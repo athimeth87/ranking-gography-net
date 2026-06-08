@@ -78,8 +78,10 @@ export function MeSettings({ persona, isVoyageur }: MeSettingsProps) {
   const [displayName, setDisplayName] = useState(persona.name || '');
   const [username, setUsername] = useState(persona.username || '');
   const [bio, setBio] = useState(persona.bio || '');
-  // @ts-ignore: persona may not have website defined in type yet
   const [website, setWebsite] = useState(persona.website || '');
+  const [socialTwitter, setSocialTwitter] = useState(persona.socialTwitter || '');
+  const [socialInstagram, setSocialInstagram] = useState(persona.socialInstagram || '');
+  const [socialFacebook, setSocialFacebook] = useState(persona.socialFacebook || '');
 
   const handleSaveProfile = async () => {
     setIsSaving(true);
@@ -91,7 +93,10 @@ export function MeSettings({ persona, isVoyageur }: MeSettingsProps) {
         display_name: displayName,
         username: username,
         bio: bio,
-        portfolio_url: website
+        portfolio_url: website,
+        social_twitter: socialTwitter,
+        social_instagram: socialInstagram,
+        social_facebook: socialFacebook
       }).eq('id', authUser.id);
       
       if (error) {
@@ -146,6 +151,17 @@ export function MeSettings({ persona, isVoyageur }: MeSettingsProps) {
         <Row2>
           <Field3 label="Website">
             <Input className="input" placeholder="https://..." value={website} onChange={e => setWebsite(e.target.value)} />
+          </Field3>
+          <Field3 label="X (Twitter)">
+            <Input className="input" placeholder="https://x.com/..." value={socialTwitter} onChange={e => setSocialTwitter(e.target.value)} />
+          </Field3>
+        </Row2>
+        <Row2>
+          <Field3 label="Instagram">
+            <Input className="input" placeholder="https://instagram.com/..." value={socialInstagram} onChange={e => setSocialInstagram(e.target.value)} />
+          </Field3>
+          <Field3 label="Facebook">
+            <Input className="input" placeholder="https://facebook.com/..." value={socialFacebook} onChange={e => setSocialFacebook(e.target.value)} />
           </Field3>
         </Row2>
         <button 

@@ -25,5 +25,11 @@
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", "nextjs-mobile-snapshot"]
+  "exclude": [
+    "node_modules",
+    "nextjs-mobile-snapshot",
+    "*.ts",
+    "scripts",
+    "supabase/run_v5_test.ts"
+  ]
 }

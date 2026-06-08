@@ -7,6 +7,9 @@ import { PhotoGrid } from '@/components/photo/PhotoGrid';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { Footer } from '@/components/layout/Footer';
 import { PageCover } from '@/components/layout/PageCover';
+import { CrownIcon } from '@/components/icons';
+
+import { computeRankMasters, getWeekKey } from '@/lib/ranking-system';
 
 // ===== Search page (/search) =====
 // Query input + filtered results across photos and photographers
@@ -32,17 +35,72 @@ function SearchResults() {
     // Fetch trending photographers initially
     const fetchTrending = async () => {
       const supabase = getSupabaseBrowserClient();
-      const { data } = await supabase.from('users').select('*').limit(4);
-      if (data) {
-        setTrendingPhotographers(data.map(p => ({
+      const { data: usersData } = await supabase.from('users').select('*');
+      const users = usersData || [];
+
+      const { data: photosData } = await supabase.from('photos').select('*');
+      const photos = photosData || [];
+
+      const rankMasters = computeRankMasters(photos);
+
+      // Group photos by week key (Monday of the week)
+      const photosByWeek: Record<string, any[]> = {};
+      photos.forEach(p => {
+        const dateStr = p.uploaded_at;
+        if (!dateStr) return;
+        const wk = getWeekKey(dateStr);
+        if (!photosByWeek[wk]) photosByWeek[wk] = [];
+        photosByWeek[wk].push(p);
+      });
+
+      // Compute rankings per week
+      const weekRankings: Record<string, { username: string, totalScore: number }[]> = {};
+      Object.entries(photosByWeek).forEach(([wk, weekPhotos]) => {
+        const scoresByPhotographer: Record<string, number> = {};
+        weekPhotos.forEach(p => {
+          const owner = users.find(u => u.id === p.photographer_id);
+          const username = owner?.username;
+          if (!username) return;
+          const pulseScore = (p.likes_count || 0) + (p.favorites_count || 0) * 2;
+          scoresByPhotographer[username] = (scoresByPhotographer[username] || 0) + pulseScore;
+        });
+        const sorted = Object.entries(scoresByPhotographer)
+          .map(([username, totalScore]) => ({ username, totalScore }))
+          .sort((a, b) => b.totalScore - a.totalScore);
+        weekRankings[wk] = sorted;
+      });
+
+      const sortedWeeks = Object.keys(photosByWeek).sort();
+      const latestWeek = sortedWeeks[sortedWeeks.length - 1];
+      const latestRankings = latestWeek ? (weekRankings[latestWeek] || []) : [];
+
+      let trendingList = [];
+      if (latestRankings.length > 0) {
+        trendingList = latestRankings.slice(0, 4).map((r: { username: string; totalScore: number }) => {
+          const owner = users.find(u => u.username === r.username);
+          return {
+            username: r.username,
+            name: owner?.display_name || r.username,
+            avatar: owner?.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + r.username,
+            loc: owner?.location || '',
+            followers: owner?.followers_count || 0,
+            photos: photos.filter(p => p.photographer_id === owner?.id).length,
+            isRankMaster: rankMasters.has(r.username)
+          };
+        });
+      } else {
+        trendingList = users.slice(0, 4).map(p => ({
           username: p.username,
           name: p.display_name || p.username,
           avatar: p.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + p.username,
           loc: p.location || '',
           followers: p.followers_count || 0,
-          photos: 0
-        })) as unknown as Photographer[]);
+          photos: photos.filter(ph => ph.photographer_id === p.id).length,
+          isRankMaster: rankMasters.has(p.username)
+        }));
       }
+
+      setTrendingPhotographers(trendingList as unknown as Photographer[]);
     };
     fetchTrending();
   }, []);
@@ -100,7 +158,11 @@ function SearchResults() {
             title: p.title,
             by: p.users?.username || 'Unknown',
             cat: p.category,
-            pulse: p.likes_count || 0,
+            pulse: p.pulse != null ? Number(p.pulse) : 0,
+            peakPulse: p.peak_pulse != null ? Number(p.peak_pulse) : null,
+            pickType: p.pick_type || 'none',
+            percentile: p.percentile != null ? Number(p.percentile) : null,
+            badge: p.badge || null,
             camera: p.camera || 'Unknown',
             lens: p.lens || 'Unknown',
             date: p.uploaded_at,
@@ -153,11 +215,26 @@ function SearchResults() {
                   {trendingPhotographers.map((p: Photographer) => (
                     <Link key={p.username} href={`/photographer/${p.username}`}>
                       {/* aspect-ratio 1/1 avatar tile */}
-                      <div className="aspect-square bg-[var(--tile)] overflow-hidden">
+                      <div className="aspect-square bg-[var(--tile)] overflow-hidden relative">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={p.avatar} alt="" loading="lazy" className="w-full h-full object-cover" />
+                        {p.isRankMaster && (
+                          <div
+                            className="absolute top-2 right-2 z-[2] w-6 h-6 rounded-full bg-fg text-bg grid place-items-center shadow-[0_2px_6px_rgba(0,0,0,0.3)]"
+                            title="Rank Master"
+                          >
+                            <CrownIcon />
+                          </div>
+                        )}
                       </div>
-                      <div className="mt-[12px] text-[14px] font-medium">{p.name}</div>
+                      <div className="mt-[12px] text-[14px] font-medium flex items-center gap-1.5">
+                        <span>{p.name}</span>
+                        {p.isRankMaster && (
+                          <span className="opacity-55" title="Rank Master">
+                            <CrownIcon />
+                          </span>
+                        )}
+                      </div>
                       <div className="caps opacity-55 mt-[4px]">@{p.username}</div>
                     </Link>
                   ))}

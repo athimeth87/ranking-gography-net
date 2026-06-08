@@ -7,7 +7,6 @@ import type { SortKey } from '@/lib/data';
 import type { Category, Photo } from '@/lib/types';
 import { PhotoGrid } from '@/components/photo/PhotoGrid';
 import { Footer } from '@/components/layout/Footer';
-import { PageCover } from '@/components/layout/PageCover';
 import { MobileExplore } from '@/components/mobile/MobileExplore';
 
 // ===== Explore [category] page (/explore/landscape, /explore/portrait, /explore/bw) =====
@@ -31,7 +30,7 @@ const SORT_OPTIONS: { v: SortKey; l: string; short: string }[] = [
 
 const TABS = [
   { id: null, label: 'All', gold: false },
-  { id: 'voyageurs', label: 'Voyageurs', gold: true },
+  { id: 'voyageurs', label: 'Travellers', gold: true },
   { id: 'landscape', label: 'Landscape', gold: false },
   { id: 'portrait', label: 'Portrait', gold: false },
   { id: 'bw', label: 'Black & White', gold: false },
@@ -146,7 +145,7 @@ export default function ExploreCategoryPage({
       const supabase = getSupabaseBrowserClient();
       let query = supabase
         .from('photos')
-        .select('id, title, storage_url, category, likes_count, favorites_count, comments_count, uploaded_at, width, height, description, users:users!photos_photographer_id_fkey(username, is_customer)');
+        .select('id, title, storage_url, category, likes_count, favorites_count, comments_count, uploaded_at, width, height, description, users:users!photos_photographer_id_fkey(username, display_name, avatar_url, is_customer)');
 
       if (catKey) {
         query = query.ilike('category', catKey);
@@ -164,6 +163,8 @@ export default function ExploreCategoryPage({
             src: p.storage_url,
             title: p.title,
             by: p.users?.username || 'Unknown',
+            photographerName: p.users?.display_name || p.users?.username || 'Unknown',
+            photographerAvatar: p.users?.avatar_url || '',
             isVoyageur: Boolean(p.users?.is_customer),
             cat: p.category || 'General',
             w: p.width || 4,
@@ -177,7 +178,10 @@ export default function ExploreCategoryPage({
             hours: 1,
             picks: [],
             date: p.uploaded_at,
-            pulse: likes + favorites * 2,
+            pulse: p.pulse != null ? Number(p.pulse) : 0,
+            peakPulse: p.peak_pulse != null ? Number(p.peak_pulse) : null,
+            pickType: p.pick_type || 'none',
+            voyageurOnly: p.voyageur_only,
             rank: 0,
           };
         });
@@ -210,12 +214,10 @@ export default function ExploreCategoryPage({
     fetchPhotos();
   }, [sort, timeRange, showPicksOnly, catKey, isVoyageurFilter]);
 
-  const headingLabel = isVoyageurFilter ? 'Voyageurs' : catKey === 'BW' ? 'Black & White' : catKey;
+  const headingLabel = isVoyageurFilter ? 'Travellers' : catKey === 'BW' ? 'Black & White' : catKey;
 
-  const coverPhotoId = isVoyageurFilter ? 'p007' : catKey === 'Landscape' ? 'p010' : catKey === 'Portrait' ? 'p004' : 'p002';
-  const coverTitle = isVoyageurFilter ? 'Voyageurs' : catKey === 'BW' ? 'Black & White' : catKey;
   const coverSubtitle = isVoyageurFilter
-    ? 'ภาพถ่ายจากลูกค้าทัวร์ (Voyageurs) ของเรา — เรียงตามอันดับ ภาพล่าสุด หรือยอดโหวต'
+    ? 'ภาพถ่ายจากลูกค้าทัวร์ (Travellers) ของเรา — เรียงตามอันดับ ภาพล่าสุด หรือยอดโหวต'
     : `เลือกชมหมวด ${catKey === 'BW' ? 'Black & White' : catKey} — เรียงตามอันดับ ภาพล่าสุด หรือยอดโหวต`;
 
   // Map category to MobileExplore's CAT type
@@ -226,39 +228,51 @@ export default function ExploreCategoryPage({
     : catKey === 'BW' ? 'BW'
     : 'All';
 
+  const coverSrc = photos[0]?.src ?? 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop';
+
   return (
     <>
     <div className="md:hidden">
       <MobileExplore initialCategory={mobileInitial} dbPhotos={photos} />
     </div>
     <div className="page-fade hidden md:block">
-      <PageCover
-        photoId={coverPhotoId}
-        eyebrow={isVoyageurFilter ? 'Collection' : 'Category'}
-        title={coverTitle}
-        subtitle={coverSubtitle}
-      />
-      {/* Header */}
-      <section className="py-8 md:py-12 lg:py-16">
-        <div className="wrap">
-          <div className="flex flex-wrap justify-between items-baseline gap-4 pb-6 md:pb-8">
-            <div>
-              <div className="caps opacity-55 mb-3 md:mb-[14px]">Explore</div>
-              <h1
-                className="display-hero text-[clamp(32px,8vw,72px)] m-0 tracking-[-.025em]"
-              >
-                {headingLabel}
-              </h1>
-            </div>
-            <div className="mono text-[11px] opacity-55 text-right leading-[1.7]">
-              {photos.length * 7} PHOTOS<br />
-              SORTED BY {sort.toUpperCase()}<br />
-              {timeRange.toUpperCase()}
-            </div>
-          </div>
 
-          {/* Category tabs */}
-          <div className="flex gap-5 md:gap-7 overflow-x-auto no-scrollbar border-b border-rule pb-0">
+      {/* ── Cinematic Hero Header ── */}
+      <section className="relative overflow-hidden bg-black h-[42vh] min-h-[340px] max-h-[520px]">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={coverSrc}
+          alt={headingLabel ?? ''}
+          className="w-full h-full object-cover opacity-60"
+          loading="eager"
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,.32)_0%,rgba(0,0,0,.06)_38%,rgba(0,0,0,.74)_100%)]" />
+        <div className="absolute inset-0 flex flex-col justify-end">
+          <div className="wrap pb-10 md:pb-16">
+            <div className="flex items-center gap-3 mb-5">
+              <span className="mono text-[10px] tracking-[.3em] uppercase text-white/75">
+                {isVoyageurFilter ? 'Collection' : 'Category'}
+              </span>
+              <span className="h-px w-10 bg-white/30" />
+              <span className="mono text-[10px] tracking-[.3em] uppercase text-white/55 tabular-nums">
+                {photos.length} frames
+              </span>
+            </div>
+            <h1 className="text-white font-light text-[clamp(48px,9vw,104px)] leading-[.9] tracking-[-.04em] m-0">
+              {headingLabel}
+            </h1>
+            <p className="th text-white/75 text-[15px] leading-[1.6] mt-5 mb-0 max-w-[460px]">
+              {coverSubtitle}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Category Tabs + Filter Bar ── */}
+      <section className="sticky top-0 z-30 bg-[var(--bg)] border-b border-[var(--rule)]">
+        <div className="wrap">
+          {/* Category Tabs */}
+          <div className="flex items-center gap-0 overflow-x-auto no-scrollbar">
             {TABS.map((t) => {
               const active = isVoyageurFilter
                 ? t.id === 'voyageurs'
@@ -269,10 +283,10 @@ export default function ExploreCategoryPage({
                   <button
                     key="voyageurs"
                     onClick={() => router.push('/explore/voyageurs')}
-                    className="group flex items-center self-center cursor-pointer"
-                    aria-label="Voyageurs"
+                    className="group relative py-[18px] px-5 cursor-pointer"
+                    aria-label="Travellers"
                   >
-                    <span className={`inline-flex items-center gap-1.5 bg-gold text-black px-3 py-[6px] text-[11px] tracking-[.16em] uppercase font-semibold transition-[filter,box-shadow] duration-150 group-hover:brightness-[1.06] ${
+                    <span className={`inline-flex items-center gap-1.5 bg-gold text-black px-3 py-[6px] text-[11px] tracking-[.16em] uppercase font-semibold transition-[filter] duration-150 group-hover:brightness-[1.06] ${
                       active ? 'ring-1 ring-fg ring-offset-2 ring-offset-[var(--bg)]' : ''
                     }`}>
                       <VoyageurCrown />
@@ -285,75 +299,74 @@ export default function ExploreCategoryPage({
                 <button
                   key={t.id ?? 'all'}
                   onClick={() => router.push(t.id ? `/explore/${t.id}` : '/explore')}
-                  className={`py-4 text-[13px] tracking-[.14em] uppercase border-b-2 -mb-px cursor-pointer font-medium ${
-                    active
-                      ? 'border-fg opacity-100'
-                      : 'border-transparent opacity-55'
+                  className={`relative py-[18px] px-5 text-[12px] tracking-[.16em] uppercase cursor-pointer font-medium transition-all duration-200 ${
+                    active ? 'opacity-100' : 'opacity-40 hover:opacity-70'
                   }`}
                 >
                   {t.label}
+                  {active && <span className="absolute bottom-0 left-5 right-5 h-[2px] bg-[var(--fg)]" />}
                 </button>
               );
             })}
+            <div className="ml-auto hidden md:flex items-center gap-6">
+              <div className="mono text-[10px] tracking-[.14em] uppercase opacity-40">
+                Sorted by {sort} · {timeRange}
+              </div>
+            </div>
           </div>
 
-          {/* Filter bar */}
-          <div className="flex flex-wrap justify-between items-center gap-x-7 gap-y-3 py-4 md:py-5 border-b border-rule">
-            <div className="flex flex-wrap gap-x-7 gap-y-3 items-center">
-              {/* Sort — segmented control */}
-              <div className="flex items-center gap-3">
-                <span className="mono text-[10px] tracking-[.22em] uppercase opacity-40">Sort</span>
-                <div className="flex items-center border border-[var(--rule)]">
-                  {SORT_OPTIONS.map((o, i) => {
-                    const on = sort === o.v;
-                    return (
-                      <button
-                        key={o.v}
-                        onClick={() => setSort(o.v)}
-                        className={`px-3.5 py-[7px] text-[11px] tracking-[.12em] uppercase transition-colors duration-150 ${
-                          i > 0 ? 'border-l border-[var(--rule)]' : ''
-                        } ${on ? 'bg-fg text-bg' : 'opacity-55 hover:opacity-100'}`}
-                      >
-                        {o.short}
-                      </button>
-                    );
-                  })}
-                </div>
+          {/* Filter Bar */}
+          <div className="flex flex-wrap items-center gap-x-7 gap-y-3 py-[14px] border-t border-[var(--rule)]">
+            <div className="flex items-center gap-3">
+              <span className="mono text-[10px] tracking-[.22em] uppercase opacity-40">Sort</span>
+              <div className="flex items-center border border-[var(--rule)]">
+                {SORT_OPTIONS.map((o, i) => {
+                  const on = sort === o.v;
+                  return (
+                    <button
+                      key={o.v}
+                      onClick={() => setSort(o.v)}
+                      className={`px-3.5 py-[7px] text-[11px] tracking-[.12em] uppercase transition-colors duration-150 ${
+                        i > 0 ? 'border-l border-[var(--rule)]' : ''
+                      } ${on ? 'bg-fg text-bg' : 'opacity-55 hover:opacity-100'}`}
+                    >
+                      {o.short}
+                    </button>
+                  );
+                })}
               </div>
-
-              {/* Time — dropdown pill */}
-              <FilterDropdown
-                label="Time"
-                value={timeRange}
-                options={TIME_OPTIONS as unknown as { v: string; l: string }[]}
-                onChange={(v) => setTimeRange(v as TimeRange)}
-              />
-
-              {/* Picks toggle */}
-              <label
-                className={`flex items-center gap-2 cursor-pointer text-[11px] tracking-[.12em] uppercase px-3.5 py-[7px] border transition-colors duration-150 ${
-                  showPicksOnly
-                    ? 'bg-fg text-bg border-fg'
-                    : 'border-[var(--rule)] opacity-60 hover:opacity-100 hover:border-fg'
-                }`}
-              >
-                <input
-                  type="checkbox"
-                  checked={showPicksOnly}
-                  onChange={(e) => setShowPicksOnly(e.target.checked)}
-                  className="sr-only"
-                />
-                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M2 8.5L6 12.5L14 3.5" />
-                </svg>
-                Picks only
-              </label>
             </div>
-            <div className="mono text-[11px] opacity-55 hidden md:block">
-              Press{' '}
-              <span className="border border-rule px-[6px] py-[2px]">J</span>{' '}
-              <span className="border border-rule px-[6px] py-[2px]">K</span>{' '}
-              to navigate
+
+            <FilterDropdown
+              label="Time"
+              value={timeRange}
+              options={TIME_OPTIONS as unknown as { v: string; l: string }[]}
+              onChange={(v) => setTimeRange(v as TimeRange)}
+            />
+
+            <label
+              className={`flex items-center gap-2 cursor-pointer text-[11px] tracking-[.12em] uppercase px-3.5 py-[7px] border transition-colors duration-150 ${
+                showPicksOnly
+                  ? 'bg-fg text-bg border-fg'
+                  : 'border-[var(--rule)] opacity-60 hover:opacity-100 hover:border-fg'
+              }`}
+            >
+              <input
+                type="checkbox"
+                checked={showPicksOnly}
+                onChange={(e) => setShowPicksOnly(e.target.checked)}
+                className="sr-only"
+              />
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M2 8.5L6 12.5L14 3.5" />
+              </svg>
+              Picks only
+            </label>
+
+            <div className="ml-auto mono text-[10px] opacity-35 hidden md:flex items-center gap-1">
+              <kbd className="border border-[var(--rule)] px-[5px] py-[1px] rounded-sm text-[9px]">J</kbd>
+              <kbd className="border border-[var(--rule)] px-[5px] py-[1px] rounded-sm text-[9px]">K</kbd>
+              <span className="ml-1">navigate</span>
             </div>
           </div>
         </div>

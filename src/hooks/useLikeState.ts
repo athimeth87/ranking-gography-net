@@ -8,7 +8,8 @@ export interface UseLikeState extends LikeState {
   toggle: () => Promise<ToggleResult>;
 }
 
-export function useLikeState(photoId: string): UseLikeState {
+export function useLikeState(photoId: string, opts?: { realtime?: boolean }): UseLikeState {
+  const realtime = opts?.realtime ?? true;
   const { authUser } = useApp();
   const [state, setState] = useState<LikeState>({ liked: false, count: 0 });
   const [loading, setLoading] = useState(true);
@@ -27,6 +28,7 @@ export function useLikeState(photoId: string): UseLikeState {
   }, [photoId, authUser?.id]);
 
   useEffect(() => {
+    if (!realtime) return;
     const supabase = getSupabaseBrowserClient();
     if (!supabase) return;
 
@@ -48,7 +50,7 @@ export function useLikeState(photoId: string): UseLikeState {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [photoId]);
+  }, [photoId, realtime]);
 
   const toggle = useCallback(async (): Promise<ToggleResult> => {
     const prev = state;

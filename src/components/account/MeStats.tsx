@@ -12,6 +12,7 @@ interface MeStatsProps {
 export function MeStats({ myPhotos, favDates = [] }: MeStatsProps) {
   const totalLikes = myPhotos.reduce((s, p) => s + p.likes, 0);
   const totalFav = myPhotos.reduce((s, p) => s + p.favorites, 0);
+  const totalViews = myPhotos.reduce((s, p) => s + (p.impressions ?? 0), 0);
   const avgPulse = myPhotos.length
     ? (myPhotos.reduce((s, p) => s + p.pulse, 0) / myPhotos.length).toFixed(0)
     : 0;
@@ -22,8 +23,9 @@ export function MeStats({ myPhotos, favDates = [] }: MeStatsProps) {
       <div className="caps opacity-55 mb-[14px]">Analytics</div>
       <h1 className="th text-[56px] font-normal tracking-[-0.025em] m-0 leading-none">Stats</h1>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-0 mt-10 border border-rule">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-0 mt-10 border border-rule">
         <DashStat n={myPhotos.length} l="Photos" />
+        <DashStat n={totalViews.toLocaleString()} l="Total Views" border />
         <DashStat n={totalLikes.toLocaleString()} l="Likes (90d)" border />
         <DashStat n={totalFav.toLocaleString()} l="Favorites" border />
         <DashStat n={avgPulse} l="Avg Pulse" border />

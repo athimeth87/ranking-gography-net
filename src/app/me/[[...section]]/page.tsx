@@ -11,6 +11,7 @@ import { MePhotos } from '@/components/account/MePhotos';
 import { MeFavorites } from '@/components/account/MeFavorites';
 import { MeStats } from '@/components/account/MeStats';
 import { MeSettings } from '@/components/account/MeSettings';
+import { MeNotifications } from '@/components/account/MeNotifications';
 import { MobileMe } from '@/components/mobile/MobileMe';
 import { useTranslations } from 'next-intl';
 import type { Photographer } from '@/lib/types';
@@ -51,17 +52,8 @@ function mapPhoto(p: any, username: string, fallbackEmail?: string) {
     hours: 1,
     picks: [],
     date: p.uploaded_at,
-    pulse: computePulse({
-      likes_count: likes,
-      favorites_count: favorites,
-      comments_count: comments,
-      impressions_count: p.impressions_count || 0,
-      uploaded_at: p.uploaded_at,
-      pick_type: (p.pick_type as PickType) ?? 'none',
-      has_title: !!p.title,
-      has_category: !!p.category,
-      has_descriptor: !!(p.location || p.camera || p.lens),
-    }),
+    pulse: p.pulse != null ? Number(p.pulse) : 0,
+    impressions: p.impressions_count || 0,
     rank: 0,
   };
 }
@@ -161,6 +153,10 @@ export default function Page({ params }: PageProps) {
       .order('uploaded_at', { ascending: false });
     setMyPhotos((photos || []).map((p: any) => mapPhoto(p, profileUsername, authUser?.email)));
   };
+
+  const handlePhotoDeleted = useCallback((id: string) => {
+    setMyPhotos((curr) => curr.filter((p) => p.id !== id));
+  }, []);
 
   useEffect(() => {
     if (!authUser?.id) {
@@ -326,14 +322,7 @@ export default function Page({ params }: PageProps) {
               const likes = typeof next.likes_count === 'number' ? next.likes_count : p.likes;
               const favorites = typeof next.favorites_count === 'number' ? next.favorites_count : p.favorites;
               const comments = typeof next.comments_count === 'number' ? next.comments_count : p.comments;
-              const pulse = computePulse({
-                likes_count: likes,
-                favorites_count: favorites,
-                comments_count: comments,
-                impressions_count: 0,
-                uploaded_at: p.date,
-              });
-              return { ...p, likes, favorites, comments, pulse };
+              return { ...p, likes, favorites, comments };
             }),
           );
         },
@@ -374,6 +363,9 @@ export default function Page({ params }: PageProps) {
     photos: myPhotos.length,
     isAmbassador: profile?.is_ambassador || false,
     joined: profile?.created_at || '',
+    socialTwitter: profile?.social_twitter || '',
+    socialInstagram: profile?.social_instagram || '',
+    socialFacebook: profile?.social_facebook || '',
     cameras: [],
   } as Photographer;
 
@@ -382,6 +374,7 @@ export default function Page({ params }: PageProps) {
     { id: 'photos', label: t('nav_photos'), path: '/me/photos', count: myPhotos.length },
     { id: 'favorites', label: t('nav_favorites'), path: '/me/favorites', count: favs.length },
     { id: 'stats', label: t('nav_stats'), path: '/me/stats' },
+    { id: 'notifications', label: t('nav_notifications') || 'Notifications', path: '/me/notifications' },
     { id: 'settings', label: t('nav_settings'), path: '/me/settings' },
   ];
 
@@ -460,9 +453,11 @@ export default function Page({ params }: PageProps) {
                   myPhotos={myPhotos}
                   followers={profile.followers_count ?? 0}
                   following={profile.following_count ?? 0}
+                  userId={profile.id}
                   daysLeft={daysLeft}
                   voyageurRank={voyageurRank}
                   topCategory={topCategory}
+                  onPhotoDeleted={handlePhotoDeleted}
                 />
               )}
               {section === 'photos' && (
@@ -472,6 +467,7 @@ export default function Page({ params }: PageProps) {
                   isPhotographer={isPhotographer || isVoyageur}
                   isVoyageur={isVoyageur}
                   onPhotoUploaded={() => fetchPhotos(profile?.username || '')}
+                  onPhotoDeleted={handlePhotoDeleted}
                 />
               )}
               {section === 'favorites' && (
@@ -485,6 +481,7 @@ export default function Page({ params }: PageProps) {
               {section === 'settings' && (
                 <MeSettings persona={persona} isVoyageur={isVoyageur} />
               )}
+              {section === 'notifications' && <MeNotifications />}
             </main>
           </>
         )}
