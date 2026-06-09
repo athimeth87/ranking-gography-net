@@ -10,6 +10,7 @@ import { MeSettings } from '../account/MeSettings';
 import { MeNotifications } from '../account/MeNotifications';
 import { ActivityHeatmap } from '../account/ActivityHeatmap';
 import { FollowListModal, type FollowTab } from '../account/FollowListModal';
+import { PhotoCardDeleteButton } from '../photo/PhotoCardDeleteButton';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { getPresignedUploadUrl } from '@/app/actions/r2-upload';
 import { convertToWebP } from '@/lib/imageConvert';
@@ -50,6 +51,8 @@ export function MobileMe({
   const [localCover, setLocalCover] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [followModalTab, setFollowModalTab] = useState<FollowTab | null>(null);
+  const [photos, setPhotos] = useState(myPhotos);
+  const removePhoto = (id: string) => setPhotos((prev: any) => prev.filter((p: any) => p.id !== id));
 
   const goTab = (id: SectionKey) => {
     setActiveTab(id);
@@ -142,12 +145,12 @@ export function MobileMe({
     cover: localCover || profile?.cover_url || 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=800&auto=format&fit=crop',
   };
 
-  const totalLikes = myPhotos.reduce((s: any, p: any) => s + (p.likes || 0), 0);
-  const totalFav = myPhotos.reduce((s: any, p: any) => s + (p.favorites || 0), 0);
-  const totalPulse = Math.round(myPhotos.reduce((s: any, p: any) => s + (p.pulse || 0), 0));
+  const totalLikes = photos.reduce((s: any, p: any) => s + (p.likes || 0), 0);
+  const totalFav = photos.reduce((s: any, p: any) => s + (p.favorites || 0), 0);
+  const totalPulse = Math.round(photos.reduce((s: any, p: any) => s + (p.pulse || 0), 0));
   const followers = profile?.followers_count || 0;
   const following = profile?.following_count || 0;
-  const topPhotos = [...myPhotos].sort((a: any, b: any) => (b.pulse || 0) - (a.pulse || 0)).slice(0, 6);
+  const topPhotos = [...photos].sort((a: any, b: any) => (b.pulse || 0) - (a.pulse || 0)).slice(0, 6);
 
   return (
     <div className="gpa-mobile" style={{
@@ -222,7 +225,7 @@ export function MobileMe({
             {/* inline stats — Photos · Followers · Following · Pulse */}
             <div style={{ marginTop: 18, display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', justifyContent: 'center', columnGap: 18, rowGap: 9 }}>
               {[
-                [compact(myPhotos.length), t('photos'), () => goTab('photos')],
+                [compact(photos.length), t('photos'), () => goTab('photos')],
                 [compact(followers), t('followers'), () => setFollowModalTab('followers')],
                 [compact(following), t('following_label'), () => setFollowModalTab('following')],
                 [compact(totalPulse), t('pulse'), () => goTab('stats')],
@@ -244,7 +247,7 @@ export function MobileMe({
       </section>
 
       {/* Sticky icon tab bar */}
-      <div style={{ position: 'sticky', top: 52, zIndex: 20, marginTop: 20, background: dark ? 'rgba(10,10,10,0.86)' : 'rgba(255,255,255,0.86)', backdropFilter: 'saturate(180%) blur(20px)', WebkitBackdropFilter: 'saturate(180%) blur(20px)', borderTop: '1px solid var(--rule)', borderBottom: '1px solid var(--rule)', display: 'flex' }}>
+      <div style={{ position: 'sticky', top: 52, zIndex: 30, marginTop: 20, background: dark ? 'rgba(10,10,10,0.86)' : 'rgba(255,255,255,0.86)', backdropFilter: 'saturate(180%) blur(20px)', WebkitBackdropFilter: 'saturate(180%) blur(20px)', borderTop: '1px solid var(--rule)', borderBottom: '1px solid var(--rule)', display: 'flex' }}>
         {SECTIONS.map(s => {
           const active = activeTab === s.id;
           return (
@@ -338,7 +341,7 @@ export function MobileMe({
           </section>
 
           {/* Recent photos — IG grid */}
-          {myPhotos.length > 0 && (
+          {photos.length > 0 && (
             <section style={{ padding: '34px 0 0' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12, padding: '0 16px' }}>
                 <div style={{
@@ -353,13 +356,14 @@ export function MobileMe({
                 }}>{t('see_all')} →</button>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
-                {myPhotos.slice(0, 6).map(p => (
+                {photos.slice(0, 6).map((p: any) => (
                   <div
                     key={p.id}
                     onClick={() => router.push(`/photo/${p.id}`)}
-                    className="ios-press" style={{ aspectRatio: '1', background: 'var(--tile)', overflow: 'hidden', cursor: 'pointer' }}
+                    className="group ios-press" style={{ position: 'relative', aspectRatio: '1', background: 'var(--tile)', overflow: 'hidden', cursor: 'pointer' }}
                   >
                     <img src={p.src} alt={p.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
+                    <PhotoCardDeleteButton photoId={p.id} storageUrl={p.src} onDeleted={removePhoto} alwaysVisible />
                   </div>
                 ))}
               </div>
@@ -374,21 +378,22 @@ export function MobileMe({
             fontFamily: "'IBM Plex Mono', monospace", fontSize: 11,
             letterSpacing: '0.16em', textTransform: 'uppercase',
             color: 'var(--fg-soft)', marginBottom: 14, padding: '0 16px',
-          }}>{myPhotos.length} {t('photos')}</div>
-          {myPhotos.length === 0 ? (
+          }}>{photos.length} {t('photos')}</div>
+          {photos.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '48px 16px' }}>
               <div style={{ fontSize: 22, fontWeight: 300, letterSpacing: '-0.01em', marginBottom: 6 }}>No photos yet</div>
               <p style={{ fontSize: 13, color: 'var(--fg-soft)', margin: 0 }}>อัปโหลดภาพแรกของคุณเพื่อเริ่มสะสมคะแนน</p>
             </div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
-              {myPhotos.map(p => (
+              {photos.map((p: any) => (
                 <div
                   key={p.id}
                   onClick={() => router.push(`/photo/${p.id}`)}
-                  className="ios-press" style={{ aspectRatio: '1', background: 'var(--tile)', overflow: 'hidden', cursor: 'pointer' }}
+                  className="group ios-press" style={{ position: 'relative', aspectRatio: '1', background: 'var(--tile)', overflow: 'hidden', cursor: 'pointer' }}
                 >
                   <img src={p.src} alt={p.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
+                  <PhotoCardDeleteButton photoId={p.id} storageUrl={p.src} onDeleted={removePhoto} alwaysVisible />
                 </div>
               ))}
             </div>
@@ -443,7 +448,7 @@ export function MobileMe({
           {/* Desktop-style 4 stat cards */}
           <div className="ios-card" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
             {[
-              [String(myPhotos.length), t('photos')],
+              [String(photos.length), t('photos')],
               [followers.toLocaleString(), t('followers')],
               [totalLikes.toLocaleString(), t('likes_received')],
               [String(totalPulse), t('pulse')],
