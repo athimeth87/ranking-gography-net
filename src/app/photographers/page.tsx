@@ -51,7 +51,7 @@ export default function PhotographersPage() {
 
       const mappedPhotographers: Photographer[] = users.map(u => {
         const uPhotos = (photosData || []).filter(p => p.photographer_id === u.id);
-        const hofRes = hofResults.find(r => r.photographer_id === u.id);
+        const hofRes = hofResults.find((r: any) => r.photographer_id === u.id);
         const cats = new Set<string>();
         uPhotos.forEach(p => { if (p.category) cats.add(p.category); });
 

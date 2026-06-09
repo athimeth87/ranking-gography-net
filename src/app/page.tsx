@@ -155,10 +155,12 @@ export default function LandingPage() {
   const getActivePhoto = (id: string) => activePhotos.find(p => p.id === id);
   const getActivePhotographer = (by: string) => activePhotographers.find(p => p.username === by);
 
+  const fallbackPhoto = mockAllPhotos[0];
+  if (!fallbackPhoto) return null;
   // Hero photo: explicit pick or fallback to rank #1 (already sorted by pulse in activePhotos)
-  const top = ((heroPhotoId !== 'auto' ? getActivePhoto(heroPhotoId) : undefined) ?? activePhotos[0]) || mockAllPhotos[0];
+  const top = (heroPhotoId !== 'auto' ? getActivePhoto(heroPhotoId) : undefined) ?? activePhotos[0] ?? fallbackPhoto;
   // Banner photo: explicit pick or fallback to rank #1
-  const banner = (getActivePhoto(bannerPhotoId) ?? getActivePhoto('p010') ?? activePhotos[0]) || mockAllPhotos[0];
+  const banner = getActivePhoto(bannerPhotoId) ?? getActivePhoto('p010') ?? activePhotos[0] ?? fallbackPhoto;
 
   const bannerPhotographer = getActivePhotographer(banner.by) || getMockPhotographer(banner.by);
   const topPhotographer = getActivePhotographer(top.by) || getMockPhotographer(top.by);
