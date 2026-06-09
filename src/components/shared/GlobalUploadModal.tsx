@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -42,7 +42,7 @@ export function GlobalUploadModal() {
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const checkUploadLimit = async () => {
+  const checkUploadLimit = useCallback(async () => {
     if (!authUser?.id) return;
     const supabase = getSupabaseBrowserClient();
     const startOfDay = new Date();
@@ -53,13 +53,13 @@ export function GlobalUploadModal() {
       .eq('photographer_id', authUser.id)
       .gte('uploaded_at', startOfDay.toISOString());
     setUploadedTodayCount(count || 0);
-  };
+  }, [authUser]);
 
   useEffect(() => {
     if (isUploadModalOpen) {
       checkUploadLimit();
     }
-  }, [isUploadModalOpen, authUser]);
+  }, [isUploadModalOpen, checkUploadLimit]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];

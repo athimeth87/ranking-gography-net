@@ -71,17 +71,15 @@ export function MobileHallOfFame({
   const coverPhoto = realAllPhotos.find(p => p.id === 'p010') || PHOTOS.find(p => p.id === 'p010') || PHOTOS[0];
 
   const liveSeason = (realSeasons || []).find(s => s.status === 'live');
-  const lbEndDate = liveSeason?.endDate || '2026-09-30';
+  const lbEndDate = liveSeason?.endDate || '2026-10-08';
   const countdown = useMobileCountdown(lbEndDate);
 
   const lookupName = (by) =>
     (realPhotographers.find(p => p.username === by) || PHOTOGRAPHERS.find(p => p.username === by))?.name || by;
 
-  const resolvePhotographer = (username) => realPhotographers.find(p => p.username === username) || PHOTOGRAPHERS.find(p => p.username === username);
-
   const rankingEntries = useMemo(() => {
     return (photographersRanking || []).map(r => {
-      const owner = resolvePhotographer(r.username);
+      const owner = realPhotographers.find(p => p.username === r.username) || PHOTOGRAPHERS.find(p => p.username === r.username);
       return {
         ...r,
         cover_url: r.cover_url || owner?.cover || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop',

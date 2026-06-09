@@ -131,7 +131,7 @@
     "sign_in": "เข้าสู่ระบบ"
   },
   "MobileHome": {
-    "season_banner": "ฤดูกาล 01 · เหลืออีก 37 วัน",
+    "season_banner": "ฤดูกาล 01 · เหลืออีก {days} วัน",
     "stats_frames": "ภาพถ่าย",
     "stats_photographers": "ช่างภาพ",
     "stats_seasons": "ฤดูกาล",
@@ -185,7 +185,7 @@
     "change": "เปลี่ยนรูป",
     "view_public_profile": "ดูโปรไฟล์สาธารณะ",
     "upload_photo": "อัปโหลดรูปภาพ",
-    "upload_limit_reset": "วันนี้ 0/1 · รีเซ็ต 00:00 น.",
+    "upload_limit_reset": "เครดิตลงรูปต่อวันเหลือ 0/1",
     "apply_photographer": "สมัครเป็นช่างภาพ",
     "sign_out": "ออกจากระบบ",
     "nav_dashboard": "แดชบอร์ด",
