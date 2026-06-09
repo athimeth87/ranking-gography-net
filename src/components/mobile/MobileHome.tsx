@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { PHOTOS, PHOTOGRAPHERS, pulseScore, voyageurUsernames } from '@/lib/data';
+import { PHOTOS, PHOTOGRAPHERS, pulseScore, voyageurUsernames, getSeasons } from '@/lib/data';
 import { useTranslations } from 'next-intl';
 import { useApp } from '@/providers/AppProvider';
 import {
@@ -42,6 +42,23 @@ export function MobileHome({
 
   const pList = realPhotos.length > 0 ? realPhotos : PHOTOS;
   const photogList = realPhotographers.length > 0 ? realPhotographers : PHOTOGRAPHERS;
+
+  // Season countdown — derived from the live season end date (1 season = 4 months)
+  const liveSeason = useMemo(() => getSeasons().find(s => s.status === 'live'), []);
+  const [seasonDaysLeft, setSeasonDaysLeft] = useState(null);
+  useEffect(() => {
+    if (!liveSeason?.endDate) return;
+    const compute = () => {
+      const end = new Date(liveSeason.endDate);
+      const now = new Date();
+      end.setHours(0, 0, 0, 0);
+      now.setHours(0, 0, 0, 0);
+      setSeasonDaysLeft(Math.max(0, Math.ceil((end.getTime() - now.getTime()) / 86_400_000)));
+    };
+    compute();
+    const id = setInterval(compute, 60_000);
+    return () => clearInterval(id);
+  }, [liveSeason]);
 
   // For You — deterministic blend of pulse + recency + variety (TikTok-style FYP)
   const forYouFeed = useMemo(() => {
@@ -174,7 +191,7 @@ export function MobileHome({
           fontFamily: "'IBM Plex Mono', monospace", fontSize: 10,
           letterSpacing: '0.18em', color: 'var(--fg-soft)', textTransform: 'uppercase',
         }}>
-          {t('season_banner')}
+          {t('season_banner', { days: seasonDaysLeft ?? '…' })}
         </div>
       </section>
 

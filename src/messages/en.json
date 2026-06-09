@@ -131,7 +131,7 @@
     "sign_in": "Sign in"
   },
   "MobileHome": {
-    "season_banner": "Season 01 · 37 days left",
+    "season_banner": "Season 01 · {days} days left",
     "stats_frames": "Frames",
     "stats_photographers": "Photographers",
     "stats_seasons": "Seasons",
@@ -185,7 +185,7 @@
     "change": "Change",
     "view_public_profile": "View public profile",
     "upload_photo": "Upload photo",
-    "upload_limit_reset": "TODAY 0/1 · RESETS 00:00 ICT",
+    "upload_limit_reset": "Daily upload credit left 0/1",
     "apply_photographer": "Apply as photographer",
     "sign_out": "Sign out",
     "nav_dashboard": "Dashboard",
