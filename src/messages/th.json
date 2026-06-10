@@ -17,7 +17,9 @@
     "banner_credit": "ภาพปก: \"{title}\" โดย {name}",
     "cover_of_week": "สุดยอดภาพถ่ายประจำสัปดาห์",
     "by": "โดย {name}",
-    "view_photo": "ดูรูปภาพ"
+    "view_photo": "ดูรูปภาพ",
+    "submit_cta": "ส่งภาพเข้า Season 01",
+    "traveller_link": "เคยเดินทางกับ Gography? → Travellers Programme"
   },
   "TrendsNowSection": {
     "title": "Popular",

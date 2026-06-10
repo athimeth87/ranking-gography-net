@@ -17,7 +17,9 @@
     "banner_credit": "Banner: \"{title}\" by {name}",
     "cover_of_week": "Cover of the week",
     "by": "by {name}",
-    "view_photo": "View photo"
+    "view_photo": "View photo",
+    "submit_cta": "Submit to Season 01",
+    "traveller_link": "Travelled with Gography? → Travellers Programme"
   },
   "TrendsNowSection": {
     "title": "Popular",
