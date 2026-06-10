@@ -54,6 +54,7 @@ function mapPhoto(p: any, username: string, fallbackEmail?: string) {
     date: p.uploaded_at,
     pulse: p.pulse != null ? Number(p.pulse) : 0,
     impressions: p.impressions_count || 0,
+    visibility: p.visibility ?? 'public',
     rank: 0,
   };
 }
@@ -449,9 +450,6 @@ export default function Page({ params }: PageProps) {
                   followers={profile.followers_count ?? 0}
                   following={profile.following_count ?? 0}
                   userId={profile.id}
-                  daysLeft={daysLeft}
-                  voyageurRank={voyageurRank}
-                  topCategory={topCategory}
                   onPhotoDeleted={handlePhotoDeleted}
                 />
               )}

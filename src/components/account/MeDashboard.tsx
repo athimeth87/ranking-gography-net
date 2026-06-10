@@ -2,15 +2,14 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { PhotoGrid } from '@/components/photo/PhotoGrid';
-import { VoyageurMark } from '@/components/icons';
 import { DashStat, ActionCard } from './primitives';
+import { TravellersAwardsCard } from './TravellersAwardsCard';
 import { FollowListModal, type FollowTab } from './FollowListModal';
 import { useNotifications } from '@/hooks/useNotifications';
 import { formatNotificationBody } from '@/lib/data/notifications';
 import { useTranslations } from 'next-intl';
 import { TranslatedNotificationBody, TranslatedTimeAgo } from '@/components/layout/NotificationsBell';
 import type { Photographer, Photo } from '@/lib/types';
-import { getCashbackPercentage } from '@/lib/ranking-system';
 
 const ACTIVITY_PAGE = 5;
 
@@ -24,13 +23,10 @@ interface MeDashboardProps {
   followers: number;
   following: number;
   userId?: string;
-  daysLeft?: number | null;
-  voyageurRank?: number | null;
-  topCategory?: string | null;
   onPhotoDeleted?: (id: string) => void;
 }
 
-export function MeDashboard({ persona, isVoyageur, isPhotographer, myPhotos, followers, following, userId, daysLeft, voyageurRank, topCategory, onPhotoDeleted }: MeDashboardProps) {
+export function MeDashboard({ persona, isVoyageur, isPhotographer, myPhotos, followers, following, userId, onPhotoDeleted }: MeDashboardProps) {
   const router = useRouter();
   const t = useTranslations('MePage');
   const { notifications } = useNotifications();
@@ -48,6 +44,13 @@ export function MeDashboard({ persona, isVoyageur, isPhotographer, myPhotos, fol
 
   return (
     <div>
+      {/* Travellers Awards status card — top of dashboard for Travellers */}
+      {isVoyageur && (
+        <div className="mb-8">
+          <TravellersAwardsCard />
+        </div>
+      )}
+
       {/* Stat row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-0 border border-rule">
         <DashStat n={myPhotos.length} l={t('photos')} />
@@ -68,39 +71,6 @@ export function MeDashboard({ persona, isVoyageur, isPhotographer, myPhotos, fol
         )}
         {' · '}{t('favorites')} {totalFav.toLocaleString()}
       </div>
-
-      {/* Traveller eligibility card */}
-      {isVoyageur && (
-        <div className="mt-8 p-6 md:py-7 md:px-8 bg-cream border border-rule">
-          <div className="flex items-center justify-between gap-4 pb-5 mb-5 border-b border-rule">
-            <div className="caps opacity-55 flex items-center gap-2 min-w-0">
-              <VoyageurMark size={9} />
-              <span className="truncate">{t('voyageurs_awards')}</span>
-            </div>
-            <div className="flex items-baseline gap-2 shrink-0">
-              <span className="text-[28px] md:text-[32px] font-medium tracking-[-0.025em] text-gold leading-none">
-                {getCashbackPercentage(voyageurRank ?? null)}%
-              </span>
-              <span className="mono text-[10px] opacity-55 tracking-[.12em]">{t('cashback')}</span>
-            </div>
-          </div>
-          <h3 className="th text-[20px] md:text-[22px] font-normal tracking-[-0.01em] m-0 leading-[1.35]">
-            {voyageurRank != null
-              ? <>คุณอยู่อันดับ <strong className="font-semibold">#{voyageurRank}</strong> ในหมวด {topCategory ?? 'Landscape'}</>
-              : <>ส่งรูปเพื่อเริ่มต้นในหมวด {topCategory ?? 'Landscape'}</>
-            }
-          </h3>
-          <p className="th mt-3 text-[14px] text-fg-soft leading-[1.7] max-w-[480px]">
-            {daysLeft != null ? `เหลือเวลา ${daysLeft} วัน ก่อนปิดประกวด` : 'กำลังโหลด…'}
-          </p>
-          <button
-            onClick={() => router.push('/for-customers')}
-            className="caps mt-5 opacity-65 border-b border-rule pb-[3px] cursor-pointer"
-          >
-            {t('how_to_reach_10')} →
-          </button>
-        </div>
-      )}
 
       {/* Photographer pick alert */}
       {isPhotographer && editorPicks > 0 && (

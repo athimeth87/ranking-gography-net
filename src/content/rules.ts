@@ -64,6 +64,22 @@ export const TRAVELLER_RULES = {
   rewardNote: 'Cashback ใช้เป็นเครดิตเงินคืนสำหรับทริป GOGRAPHY · เงื่อนไขเป็นไปตามที่บริษัทกำหนด',
 } as const;
 
+// Cashback ladder — mirrors getCashbackPercentage() in src/lib/ranking-system.ts (live enforcement).
+export interface CashbackTier {
+  rank: string;
+  percent: number;
+  note?: string;
+}
+
+export const TRAVELLER_CASHBACK_TIERS: readonly CashbackTier[] = [
+  { rank: 'อันดับ 1', percent: 15, note: 'พร้อมรางวัลผู้ชนะฤดูกาล — Cashback 50,000 บาท' },
+  { rank: 'อันดับ 2–5', percent: 10 },
+  { rank: 'อันดับ 6–10', percent: 5 },
+  { rank: 'อันดับ 11–50', percent: 3 },
+] as const;
+
+export const TRAVELLER_MAX_CASHBACK_PERCENT = 15;
+
 // ── Season info — dates derive from the data layer, never hardcoded counts ──
 const THAI_MONTHS = [
   'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',

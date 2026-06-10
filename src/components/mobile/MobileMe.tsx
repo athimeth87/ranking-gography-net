@@ -303,6 +303,12 @@ export function MobileMe({
                   fontFamily: "'Noto Sans Thai', sans-serif",
                   fontSize: 13, color: 'var(--fg-soft)', lineHeight: 1.6, marginTop: 8,
                 }}>{daysLeft != null ? `เหลือเวลา ${daysLeft} วัน` : 'กำลังโหลด…'}</p>
+                <button
+                  onClick={() => router.push('/travellers/how-cashback-works')}
+                  className="th mt-3 block bg-transparent border-0 p-0 cursor-pointer text-[13px] font-medium text-gold"
+                >
+                  ทำอย่างไรถึงได้ 15% →
+                </button>
               </div>
             </section>
           )}
