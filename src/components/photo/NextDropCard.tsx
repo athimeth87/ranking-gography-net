@@ -173,7 +173,7 @@ export function NextDropCard({ photographerId, onReleased, previewDrop }: NextDr
               <button
                 onClick={onSubscribeClick}
                 disabled={busy}
-                className={`th inline-flex items-center gap-2 px-7 py-3 text-[13px] tracking-[.06em] bg-transparent cursor-pointer transition-colors border disabled:opacity-50 ${
+                className={`th inline-flex items-center gap-2 px-7 py-3 text-[13px] tracking-[.06em] bg-transparent cursor-pointer transition-colors border border-solid disabled:opacity-50 ${
                   subscribed
                     ? 'border-gold text-gold'
                     : 'border-fg text-fg hover:bg-gold hover:border-gold hover:text-black'
