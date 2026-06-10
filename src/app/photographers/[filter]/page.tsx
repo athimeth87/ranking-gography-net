@@ -1,8 +1,9 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { notFound } from 'next/navigation';
-import { getPhotographers, getPhotos } from '@/lib/data';
+import { getSupabaseBrowserClient } from '@/lib/supabase/client';
+import { fetchLivePhotoData } from '@/lib/data';
 import type { Photographer } from '@/lib/types';
 import { PhotographerCard } from '@/components/home/PhotographerCard';
 import { Footer } from '@/components/layout/Footer';
@@ -26,13 +27,24 @@ export default function PhotographersFilterPage({ params }: { params: { filter: 
   const router = useRouter();
   const [filter, setFilter] = useState<FilterValue>(initialFilter);
   const [sort, setSort] = useState<SortValue>('featured');
+  const [loading, setLoading] = useState(true);
+  const [allPhotos, setAllPhotos] = useState<{ by: string; src: string }[]>([]);
+  const [allPhotographers, setAllPhotographers] = useState<Photographer[]>([]);
 
-  const allPhotos = getPhotos();
-  const rankMasters = computeRankMasters(allPhotos);
-  const allPhotographers = getPhotographers().map(p => ({
-    ...p,
-    isRankMaster: rankMasters.has(p.username)
-  }));
+  useEffect(() => {
+    const fetchData = async () => {
+      const supabase = getSupabaseBrowserClient();
+      const { photos, photographers } = await fetchLivePhotoData(supabase);
+      const rankMasters = computeRankMasters(photos);
+      setAllPhotos(photos.map((p) => ({ by: p.by, src: p.src })));
+      setAllPhotographers(photographers.map((p) => ({
+        ...p,
+        isRankMaster: rankMasters.has(p.username),
+      })));
+      setLoading(false);
+    };
+    fetchData();
+  }, []);
 
   let list: Photographer[] = allPhotographers.slice();
   if (filter === 'voyageurs') list = list.filter((p: Photographer) => p.isCustomer);
@@ -50,7 +62,6 @@ export default function PhotographersFilterPage({ params }: { params: { filter: 
     { v: 'general', l: 'Photographers', n: allPhotographers.filter((p: Photographer) => !p.isCustomer && !p.isAmbassador).length },
   ];
 
-  const coverPhotoId = filter === 'voyageurs' ? 'p015' : filter === 'ambassadors' ? 'p002' : 'p018';
   const coverTitle = filter === 'voyageurs' ? 'Travellers' : filter === 'ambassadors' ? 'Ambassadors' : 'All photographers';
   const coverSubtitle = filter === 'voyageurs'
     ? 'ลูกค้า GOGRAPHY ที่เคยร่วมทริปและมีภาพอยู่บนเวที'
@@ -61,7 +72,6 @@ export default function PhotographersFilterPage({ params }: { params: { filter: 
   return (
     <div className="page-fade">
       <PageCover
-        photoId={coverPhotoId}
         eyebrow="Directory"
         title={coverTitle}
         subtitle={coverSubtitle}
@@ -112,7 +122,11 @@ export default function PhotographersFilterPage({ params }: { params: { filter: 
       {/* Grid */}
       <section className="py-[56px] pb-[96px]">
         <div className="wrap">
-          {list.length === 0 ? (
+          {loading ? (
+            <div className="py-[120px] text-center opacity-40 mono text-[12px] uppercase tracking-widest">
+              Loading...
+            </div>
+          ) : list.length === 0 ? (
             <div className="py-[120px] text-center text-fg-soft th">ไม่พบช่างภาพในตัวกรองนี้</div>
           ) : (
             <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">

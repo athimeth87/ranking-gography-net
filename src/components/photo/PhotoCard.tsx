@@ -2,7 +2,6 @@
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import type { Photo } from '@/lib/types';
-import { getPhotographer } from '@/lib/data';
 import { PickBadge } from '@/components/icons';
 import { CardLikeButton } from './CardLikeButton';
 import { PhotoCardDeleteButton } from './PhotoCardDeleteButton';
@@ -32,7 +31,6 @@ export function PhotoCard({
 }: PhotoCardProps) {
   const router = useRouter();
   const t = useTranslations('PhotoCard');
-  const photographer = getPhotographer(photo.by);
 
   return (
     <div className="pcard relative group" onClick={() => router.push(`/photo/${photo.id}`)}>
@@ -49,7 +47,7 @@ export function PhotoCard({
             <div className="pimg-overlay-cat">{photo.cat}</div>
             <div className="pimg-overlay-title">{photo.title}</div>
             <div className="pimg-overlay-meta">
-              <span>{photographer ? photographer.name : photo.by}</span>
+              <span>{photo.by}</span>
               <span className="pimg-overlay-sep">·</span>
               <span>{photo.exif?.camera || t('unknown_camera')}</span>
             </div>
@@ -75,7 +73,7 @@ export function PhotoCard({
             <div className="ptitle truncate">
               {photo.title}
             </div>
-            <div className="pby">{photographer ? photographer.name : photo.by}</div>
+            <div className="pby">{photo.by}</div>
             <PulseStatusBadge pulse={photo.peakPulse ?? photo.pulse} badge={photo.badge} className="mt-[6px]" />
           </div>
         </div>

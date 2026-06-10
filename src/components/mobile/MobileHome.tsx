@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { PHOTOS, PHOTOGRAPHERS, pulseScore, voyageurUsernames } from '@/lib/data';
+import { pulseScore } from '@/lib/data';
 import { useTranslations } from 'next-intl';
 import { useApp } from '@/providers/AppProvider';
 import {
@@ -40,8 +40,8 @@ export function MobileHome({
     return next;
   });
 
-  const pList = realPhotos.length > 0 ? realPhotos : PHOTOS;
-  const photogList = realPhotographers.length > 0 ? realPhotographers : PHOTOGRAPHERS;
+  const pList = realPhotos;
+  const photogList = realPhotographers;
 
   // For You — deterministic blend of pulse + recency + variety (TikTok-style FYP)
   const forYouFeed = useMemo(() => {

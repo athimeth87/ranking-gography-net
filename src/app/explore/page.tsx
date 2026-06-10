@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import type { Photo } from '@/lib/types';
-import type { SortKey } from '@/lib/data';
+import type { SortKey } from '@/lib/types';
 import { RealtimePhotoGrid } from '@/components/photo/RealtimePhotoGrid';
 import { Footer } from '@/components/layout/Footer';
 import { MobileExplore } from '@/components/mobile/MobileExplore';

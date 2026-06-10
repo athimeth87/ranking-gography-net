@@ -296,7 +296,6 @@ export default function UploadPage() {
   return (
     <div className="page-fade">
       <PageCover
-        photoId="p019"
         eyebrow="Upload"
         title="Submit a photo"
         subtitle="อัพโหลดได้ไม่จำกัด — JPEG/PNG/WebP สูงสุด 5 MB · แปลงเป็น .webp อัตโนมัติ"

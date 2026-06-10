@@ -382,7 +382,6 @@ export default function Page({ params }: PageProps) {
     <div className="page-fade">
       <div className="hidden md:block relative group">
         <PageCover
-          photoId={profile?.cover_url ? undefined : "p013"}
           src={profile?.cover_url || undefined}
           eyebrow={t('your_account')}
           title="Dashboard"

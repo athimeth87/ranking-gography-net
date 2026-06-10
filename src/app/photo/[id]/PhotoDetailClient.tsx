@@ -1,10 +1,9 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { getPhoto, getPhotographer, getCommentsFor, getPhotos } from '@/lib/data';
-import type { Photo, Comment, Photographer, Category } from '@/lib/types';
+import type { Photo, Photographer, Category } from '@/lib/types';
+import { mapDbPhoto } from '@/lib/data';
 import { PhotoGrid } from '@/components/photo/PhotoGrid';
 import { Footer } from '@/components/layout/Footer';
 import { PickBadge } from '@/components/icons';
@@ -80,9 +79,6 @@ export function PhotoDetailClient({ id }: { id: string }) {
   const params = { id };
   const router = useRouter();
   const t = useTranslations('PhotoDetail');
-  
-  // We will track if this photo came from the DB to enable DB-specific features (likes, comments, realtime)
-  const [isDbPhoto, setIsDbPhoto] = useState(false);
 
   const [photo, setPhoto] = useState<Photo | null>(null);
   const [photographer, setPhotographer] = useState<Photographer | undefined>(undefined);
@@ -93,8 +89,8 @@ export function PhotoDetailClient({ id }: { id: string }) {
   const [error, setError] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
-  // Count one impression per viewer/day for real DB photos.
-  usePhotoImpression(photo?.id ?? null, isDbPhoto);
+  // Count one impression per viewer/day.
+  usePhotoImpression(photo?.id ?? null, photo != null);
   const [copied, setCopied] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [reportDone, setReportDone] = useState(false);
@@ -121,20 +117,10 @@ export function PhotoDetailClient({ id }: { id: string }) {
       const { data: pData } = await supabase.from('photos').select('*').eq(column, params.id).single();
       
       if (!pData) {
-        // Fallback to mock data
-        const p = getPhoto(params.id);
-        if (!p) { setError(true); setLoading(false); return; }
-        setPhoto(p);
-        setPhotographer(getPhotographer(p.by));
-        
-        const allPhotos = getPhotos();
-        setMore(allPhotos.filter((x) => x.by === p.by && x.id !== p.id).slice(0, 4));
-        setSimilar(allPhotos.filter((x) => x.cat === p.cat && x.id !== p.id).slice(0, 6));
+        setError(true);
         setLoading(false);
         return;
       }
-
-      setIsDbPhoto(true);
 
       const { data: uData } = await supabase.from('users').select('*').eq('id', pData.photographer_id).single();
 
@@ -195,34 +181,19 @@ export function PhotoDetailClient({ id }: { id: string }) {
         });
       }
 
-      // We won't strictly fetch related photos from DB to save time, 
-      // but let's just show an empty grid or recent photos
-      const { data: moreData } = await supabase.from('photos').select('*').eq('photographer_id', pData.photographer_id).neq('id', pData.id).limit(4);
-      if (moreData) {
-        const mappedMore = moreData.map(md => ({
-          id: md.id,
-          slug: md.slug || md.id,
-          title: md.title,
-          by: ownerName,
-          cat: (md.category === 'bw' ? 'BW' : md.category.charAt(0).toUpperCase() + md.category.slice(1)) as Category,
-          w: md.width || 4,
-          h: md.height || 3,
-          src: md.storage_url,
-          caption: md.description || '',
-          exif: { camera: md.camera || 'Unknown', lens: md.lens || 'Unknown', iso: 100, shutter: '1/100', aperture: 'f/8', focal: '50mm' },
-          likes: md.likes_count || 0,
-          likes24h: 0,
-          comments: md.comments_count || 0,
-          favorites: md.favorites_count || 0,
-          hours: 24,
-          picks: [],
-          date: md.uploaded_at,
-          voyageurOnly: md.voyageur_only,
-          pulse: md.pulse != null ? Number(md.pulse) : 0,
-          rank: 0
-        }));
-        setMore(mappedMore);
-      }
+      // Related photos: more by this photographer + similar in the same category.
+      const [{ data: moreData }, { data: similarData }] = await Promise.all([
+        supabase.from('photos').select('*').eq('photographer_id', pData.photographer_id).neq('id', pData.id).eq('is_hidden', false).eq('status', 'published').limit(4),
+        supabase.from('photos').select('*').eq('category', rawCat).neq('id', pData.id).eq('is_hidden', false).eq('status', 'published').order('pulse', { ascending: false }).limit(6),
+      ]);
+      const relatedRows = [...(moreData || []), ...(similarData || [])];
+      const ownerIds = Array.from(new Set(relatedRows.map((r) => r.photographer_id)));
+      const { data: ownersData } = ownerIds.length > 0
+        ? await supabase.from('users').select('*').in('id', ownerIds)
+        : { data: [] };
+      const owners = ownersData || [];
+      setMore((moreData || []).map((md) => mapDbPhoto(md, owners)));
+      setSimilar((similarData || []).map((sd) => mapDbPhoto(sd, owners)));
 
       setLoading(false);
     };
@@ -236,16 +207,15 @@ export function PhotoDetailClient({ id }: { id: string }) {
   // hooks on this page) — multiple channels on the same table over the one
   // shared client drop events, which broke live updates on this page.
 
-  const favoriteState = useFavoriteState(isDbPhoto && photo?.id ? photo.id : '', { realtime: false });
+  const favoriteState = useFavoriteState(photo?.id ?? '', { realtime: false });
   const onFavoriteClick = async () => {
-    if (!isDbPhoto) return;
     const res = await favoriteState.toggle();
     if (res.kind === 'unauth') {
       router.push(`/login?next=${encodeURIComponent(pathname ?? '/')}`);
     }
   };
 
-  const likeState = useLikeState(isDbPhoto && photo?.id ? photo.id : '', { realtime: false });
+  const likeState = useLikeState(photo?.id ?? '', { realtime: false });
   const onLikeClick = async () => {
     const res = await likeState.toggle();
     if (res.kind === 'unauth') {
@@ -257,7 +227,6 @@ export function PhotoDetailClient({ id }: { id: string }) {
   const [heartBurst, setHeartBurst] = useState(0);
   const lastTapRef = useRef(0);
   const onImageTap = () => {
-    if (!isDbPhoto) return;
     const now = Date.now();
     if (now - lastTapRef.current < 300) {
       lastTapRef.current = 0;
@@ -284,7 +253,13 @@ export function PhotoDetailClient({ id }: { id: string }) {
   }
 
   if (error || !photo) {
-    return <div className="min-h-screen flex items-center justify-center">404 - Photo not found in database</div>;
+    return (
+      <div className="min-h-[70vh] flex flex-col items-center justify-center gap-5 text-center px-6">
+        <div className="mono text-[11px] tracking-[.22em] uppercase opacity-55">404 — Photo not found</div>
+        <h1 className="th text-[26px] font-normal m-0">ไม่พบภาพนี้ หรือภาพอาจถูกลบออกจากเวทีแล้ว</h1>
+        <Link href="/explore" className="btn btn-sm mt-2">Browse photos →</Link>
+      </div>
+    );
   }
 
   // Prefer realtime values when present, falling back to the loaded photo row.
@@ -373,57 +348,37 @@ export function PhotoDetailClient({ id }: { id: string }) {
 
               {/* Engage strip */}
               <div className="flex gap-3 mt-8 items-center">
-                {isDbPhoto ? (
-                  <button
-                    className="heart"
-                    onClick={onLikeClick}
-                    aria-label={likeState.liked ? 'Unlike' : 'Like'}
-                    aria-pressed={likeState.liked}
+                <button
+                  className="heart"
+                  onClick={onLikeClick}
+                  aria-label={likeState.liked ? 'Unlike' : 'Like'}
+                  aria-pressed={likeState.liked}
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill={likeState.liked ? 'currentColor' : 'none'}
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    width="13"
+                    height="13"
+                    className={likeState.liked ? 'text-[#ff5d75]' : ''}
                   >
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill={likeState.liked ? 'currentColor' : 'none'}
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      width="13"
-                      height="13"
-                      className={likeState.liked ? 'text-[#ff5d75]' : ''}
-                    >
-                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                    </svg>
-                    <span>{(l?.likes ?? likeState.count).toLocaleString()}</span>
-                  </button>
-                ) : (
-                  <span className="heart" aria-label="Likes (read-only seed)">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="13" height="13">
-                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                    </svg>
-                    <span>{liveLikes.toLocaleString()}</span>
-                  </span>
-                )}
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                  </svg>
+                  <span>{(l?.likes ?? likeState.count).toLocaleString()}</span>
+                </button>
 
-                {/* Favorite button — real DB toggle for UUID-keyed photos,
-                    read-only display for seed/mock IDs */}
-                {isDbPhoto ? (
-                  <button
-                    className={`heart${favoriteState.favorited ? ' on' : ''}`}
-                    onClick={onFavoriteClick}
-                    aria-label={favoriteState.favorited ? 'Remove from favorites' : 'Add to favorites'}
-                    aria-pressed={favoriteState.favorited}
-                  >
-                    <svg viewBox="0 0 24 24" fill={favoriteState.favorited ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" width="13" height="13">
-                      <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
-                    </svg>
-                    <span>{l?.favorites ?? favoriteState.count}</span>
-                  </button>
-                ) : (
-                  <span className="heart" aria-label="Favorites (read-only seed)">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="13" height="13">
-                      <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
-                    </svg>
-                    <span>{liveFavorites}</span>
-                  </span>
-                )}
+                <button
+                  className={`heart${favoriteState.favorited ? ' on' : ''}`}
+                  onClick={onFavoriteClick}
+                  aria-label={favoriteState.favorited ? 'Remove from favorites' : 'Add to favorites'}
+                  aria-pressed={favoriteState.favorited}
+                >
+                  <svg viewBox="0 0 24 24" fill={favoriteState.favorited ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" width="13" height="13">
+                    <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
+                  </svg>
+                  <span>{l?.favorites ?? favoriteState.count}</span>
+                </button>
 
                 <button className="heart">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="13" height="13">
@@ -517,30 +472,26 @@ export function PhotoDetailClient({ id }: { id: string }) {
                       </div>
                       <div>
                         <div className="text-[18px] font-medium">
-                          {(isDbPhoto ? follow.followersCount : photographer.followers).toLocaleString()}
+                          {follow.followersCount.toLocaleString()}
                         </div>
                         <div className="text-[10px] tracking-[.16em] uppercase opacity-55 mt-[2px]">{t('followers')}</div>
                       </div>
                     </div>
-                    {isDbPhoto ? (
-                      follow.isSelf ? (
-                        <button className="btn btn-sm w-full mt-6 justify-center" disabled>{t('you')}</button>
-                      ) : (
-                        <button
-                          className={`btn btn-sm w-full mt-6 justify-center ${follow.following ? '' : 'btn-solid'}`}
-                          onClick={async () => {
-                            const res = await follow.toggle();
-                            if (res.kind === 'unauth') {
-                              router.push(`/login?next=${encodeURIComponent(pathname ?? '/')}`);
-                            }
-                          }}
-                          disabled={follow.loading}
-                        >
-                          {follow.following ? t('following') : t('follow')}
-                        </button>
-                      )
+                    {follow.isSelf ? (
+                      <button className="btn btn-sm w-full mt-6 justify-center" disabled>{t('you')}</button>
                     ) : (
-                      <button className="btn btn-sm w-full mt-6 justify-center">{t('follow')}</button>
+                      <button
+                        className={`btn btn-sm w-full mt-6 justify-center ${follow.following ? '' : 'btn-solid'}`}
+                        onClick={async () => {
+                          const res = await follow.toggle();
+                          if (res.kind === 'unauth') {
+                            router.push(`/login?next=${encodeURIComponent(pathname ?? '/')}`);
+                          }
+                        }}
+                        disabled={follow.loading}
+                      >
+                        {follow.following ? t('following') : t('follow')}
+                      </button>
                     )}
                   </>
                 ) : (

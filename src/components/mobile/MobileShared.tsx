@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { useApp } from '@/providers/AppProvider';
 import { useTranslations } from 'next-intl';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
-import { PHOTOGRAPHERS, voyageurUsernames } from '@/lib/data';
 import { Footer } from '@/components/layout/Footer';
 
 const SUPABASE_CONFIGURED = Boolean(
@@ -327,10 +326,9 @@ export function FeedCard({ photo }: { photo: any }) {
   const router = useRouter();
   const { theme, authUser } = useApp();
   const dark = theme === 'dark';
-  const photographer = PHOTOGRAPHERS.find(p => p.username === photo.by);
-  const author = photographer?.name || photo.by;
-  const location = photographer?.loc;
-  const voyageur = voyageurUsernames.has(photo.by);
+  const author = photo.photographerName || photo.by;
+  const location = photo.location || '';
+  const voyageur = photo.isCustomer === true;
   const curator = Array.isArray(photo.picks) && photo.picks.includes('editor');
   const c = dark ? '#fff' : '#000';
   const { liked, toggle } = usePhotoLike(photo.id);
@@ -392,8 +390,8 @@ export function FeedCard({ photo }: { photo: any }) {
             fontFamily: "'IBM Plex Mono', monospace", fontSize: 10, fontWeight: 600,
             color: c, overflow: 'hidden',
           }}>
-            {photographer?.avatar
-              ? <img src={photographer.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            {(photo.avatarUrl || photo.photographerAvatar)
+              ? <img src={photo.avatarUrl || photo.photographerAvatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               : author.split(' ').map((w: string) => w[0]).join('').slice(0, 2)}
           </div>
           <div style={{ minWidth: 0, flex: 1 }}>

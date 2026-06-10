@@ -2,7 +2,6 @@
 import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useApp } from '@/providers/AppProvider';
-import { getPhotographer } from '@/lib/data';
 import { useTranslations } from 'next-intl';
 
 interface NavLink { to: string; labelKey: string; gold?: boolean }

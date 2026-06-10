@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
-import { getPhotographers, getPhotos } from '@/lib/data';
 import type { Photographer } from '@/lib/types';
 import { PhotographerCard } from '@/components/home/PhotographerCard';
 import { Footer } from '@/components/layout/Footer';
@@ -28,12 +27,6 @@ export default function PhotographersPage() {
   useEffect(() => {
     const fetchData = async () => {
       const supabase = getSupabaseBrowserClient();
-      if (!supabase) {
-        setAllPhotographers(getPhotographers());
-        setAllPhotos(getPhotos().map(p => ({ by: p.by, src: p.src })));
-        setLoading(false);
-        return;
-      }
 
       const { data: usersData } = await supabase.from('users').select('*');
       const users = usersData || [];
@@ -51,7 +44,7 @@ export default function PhotographersPage() {
 
       const mappedPhotographers: Photographer[] = users.map(u => {
         const uPhotos = (photosData || []).filter(p => p.photographer_id === u.id);
-        const hofRes = hofResults.find(r => r.photographer_id === u.id);
+        const hofRes = hofResults.find((r: any) => r.photographer_id === u.id);
         const cats = new Set<string>();
         uPhotos.forEach(p => { if (p.category) cats.add(p.category); });
 
@@ -89,13 +82,8 @@ export default function PhotographersPage() {
         return { by: owner?.username || owner?.display_name || 'unknown', src: p.storage_url };
       });
 
-      if (mappedPhotographers.length > 0) {
-        setAllPhotographers(mappedPhotographers);
-        setAllPhotos(mappedPhotos);
-      } else {
-        setAllPhotographers(getPhotographers());
-        setAllPhotos(getPhotos().map(p => ({ by: p.by, src: p.src })));
-      }
+      setAllPhotographers(mappedPhotographers);
+      setAllPhotos(mappedPhotos);
       setLoading(false);
     };
     fetchData();

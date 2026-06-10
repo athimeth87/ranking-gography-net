@@ -47,9 +47,10 @@ function CountCell({ n, label }: { n: number; label: string }) {
 interface NextDropCardProps {
   photographerId: string;
   onReleased?: () => void;
+  previewDrop?: DropRow; // temp: design preview only
 }
 
-export function NextDropCard({ photographerId, onReleased }: NextDropCardProps) {
+export function NextDropCard({ photographerId, onReleased, previewDrop }: NextDropCardProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { authUser } = useApp();
@@ -59,10 +60,11 @@ export function NextDropCard({ photographerId, onReleased }: NextDropCardProps) 
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
+    if (previewDrop) { setDrop(previewDrop); return; }
     let cancelled = false;
     getNextDrop(photographerId).then((d) => { if (!cancelled) setDrop(d); });
     return () => { cancelled = true; };
-  }, [photographerId]);
+  }, [photographerId, previewDrop]);
 
   useEffect(() => {
     if (!drop || !authUser?.id) { setSubscribed(false); return; }

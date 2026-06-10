@@ -149,7 +149,6 @@ export default function FaqPage() {
   return (
     <div className="page-fade">
       <PageCover
-        photoId="p013"
         eyebrow="FAQ"
         title={<>Frequently<br />Asked Questions</>}
         subtitle="ทุกอย่างที่คุณอยากรู้เกี่ยวกับ Gography Photo Ranking"

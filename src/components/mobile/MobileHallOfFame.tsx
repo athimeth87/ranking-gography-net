@@ -2,7 +2,6 @@
 'use client';
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { PHOTOS, pulseScore, PHOTOGRAPHERS } from '@/lib/data';
 import { useApp } from '@/providers/AppProvider';
 import { MobileNav, MobileFooter, MobileMarquee } from './MobileShared';
 
@@ -68,16 +67,13 @@ export function MobileHallOfFame({
   const fgColor = 'var(--fg)';
   const bgRule = 'var(--rule)';
 
-  const coverPhoto = realAllPhotos.find(p => p.id === 'p010') || PHOTOS.find(p => p.id === 'p010') || PHOTOS[0];
+  const coverPhoto = realAllPhotos[0];
 
   const liveSeason = (realSeasons || []).find(s => s.status === 'live');
-  const lbEndDate = liveSeason?.endDate || '2026-09-30';
+  const lbEndDate = liveSeason?.endDate || '2026-10-08';
   const countdown = useMobileCountdown(lbEndDate);
 
-  const lookupName = (by) =>
-    (realPhotographers.find(p => p.username === by) || PHOTOGRAPHERS.find(p => p.username === by))?.name || by;
-
-  const resolvePhotographer = (username) => realPhotographers.find(p => p.username === username) || PHOTOGRAPHERS.find(p => p.username === username);
+  const resolvePhotographer = (username) => realPhotographers.find(p => p.username === username);
 
   const rankingEntries = useMemo(() => {
     return (photographersRanking || []).map(r => {
@@ -118,7 +114,7 @@ export function MobileHallOfFame({
       <section className="relative overflow-hidden bg-black h-[42vh] min-h-[340px] max-h-[520px]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={coverPhoto.src}
+          src={coverPhoto?.src || '/hall-of-fame-cover.jpg'}
           alt="Hall of Fame"
           className="w-full h-full object-cover opacity-60"
           loading="eager"

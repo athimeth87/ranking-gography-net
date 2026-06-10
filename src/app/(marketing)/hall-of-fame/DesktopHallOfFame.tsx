@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { getPhoto } from '@/lib/data';
 import type { Category, Photo, Photographer, Season, SeasonWinner } from '@/lib/types';
 import { Footer } from '@/components/layout/Footer';
 import { cn } from '@/lib/utils';
@@ -67,7 +66,7 @@ export function DesktopHallOfFame({
   const archived = seasons.filter((s) => s.status === 'closed' && s.winners);
 
   const resolvePhotographer = (username: string) => photographers.find((p) => p.username === username);
-  const resolvePhoto = (photoId: string) => allPhotos.find((p) => p.id === photoId) ?? getPhoto(photoId);
+  const resolvePhoto = (photoId: string) => allPhotos.find((p) => p.id === photoId);
   const coverSrc = '/hall-of-fame-cover.jpg'; // Background image
 
   // Enhance ranking with cover_url and is_customer from our pre-fetched photographers data

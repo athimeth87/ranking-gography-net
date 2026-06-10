@@ -3,6 +3,7 @@ export type PickKind = 'editor' | 'ambassador';
 export type UserState = 'guest' | 'user' | 'customer' | 'photographer';
 export type Theme = 'light' | 'dark';
 export type Mode = 'atelier' | 'editorial';
+export type SortKey = 'pulse' | 'recent' | 'likes';
 
 export interface Exif {
   camera: string;

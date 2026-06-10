@@ -22,7 +22,6 @@ function PageShowcase() {
   return (
     <div className="page-fade">
       <PageCover
-        photoId="p018"
         eyebrow="Internal · shadcn/ui"
         title="UI Showcase"
         subtitle="Reference page for shadcn/ui primitives wired into GOGRAPHY Ranking — tuned to the monochrome premium palette (no rounded corners, black/white only)."

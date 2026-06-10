@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { PHOTOS, PHOTOGRAPHERS, pulseScore } from '@/lib/data';
+import { pulseScore } from '@/lib/data';
 import { useApp } from '@/providers/AppProvider';
 import { useLikeState } from '@/hooks/useLikeState';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
@@ -17,8 +17,7 @@ export function MasonryTile({ photo }: { photo: any }) {
   const { authUser } = useApp();
   const aspect = photo.w && photo.h ? `${photo.w} / ${photo.h}` : '4 / 5';
 
-  const photographer = PHOTOGRAPHERS.find(p => p.username === photo.by);
-  const avatarUrl = photo.avatarUrl || photographer?.avatar;
+  const avatarUrl = photo.avatarUrl || photo.photographerAvatar;
 
   const { liked, count, toggle } = useLikeState(photo.id);
 
@@ -139,7 +138,7 @@ export function MobileExplore({ initialCategory = 'All', dbPhotos = [] }: { init
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const dataSource = dbPhotos.length > 0 ? dbPhotos : PHOTOS;
+  const dataSource = dbPhotos;
 
   const filtered = useMemo(() => {
     const base = cat === 'All' ? dataSource
@@ -223,30 +222,26 @@ export function MobileExplore({ initialCategory = 'All', dbPhotos = [] }: { init
     
     // In case there's no latest week or no rankings, fallback to overall top photographers
     if (latestRankings.length === 0) {
-      return PHOTOGRAPHERS
-        .map(p => {
-          const matchedPhotos = dataSource.filter(ph => ph.by === p.username);
-          const totalPulse = matchedPhotos.reduce((s, ph) => s + (ph.pulse && ph.pulse > 0 ? ph.pulse : pulseScore(ph)), 0);
-          return {
-            username: p.username,
-            name: p.name,
-            avatar: p.avatar,
-            pulse: totalPulse,
-            isRankMaster: false
-          };
-        })
+      const byUser: Record<string, { name: string, avatar: string, pulse: number }> = {};
+      dataSource.forEach(ph => {
+        const score = ph.pulse && ph.pulse > 0 ? ph.pulse : pulseScore(ph);
+        const entry = byUser[ph.by] || { name: ph.photographerName || ph.by, avatar: ph.photographerAvatar || ph.avatarUrl || '', pulse: 0 };
+        entry.pulse += score;
+        byUser[ph.by] = entry;
+      });
+      return Object.entries(byUser)
+        .map(([username, e]) => ({ username, ...e, isRankMaster: false }))
         .sort((a, b) => b.pulse - a.pulse)
         .slice(0, 10);
     }
 
     return latestRankings.slice(0, 10).map(r => {
       const matchedPhoto = dataSource.find(ph => ph.by === r.username);
-      const staticPhotographer = PHOTOGRAPHERS.find(p => p.username === r.username);
-      
+
       return {
         username: r.username,
-        name: matchedPhoto?.photographerName || staticPhotographer?.name || r.username,
-        avatar: matchedPhoto?.photographerAvatar || staticPhotographer?.avatar || '',
+        name: matchedPhoto?.photographerName || r.username,
+        avatar: matchedPhoto?.photographerAvatar || matchedPhoto?.avatarUrl || '',
         pulse: r.totalScore,
         isRankMaster: rankMasterUsernames.has(r.username)
       };
