@@ -53,6 +53,8 @@ function mapPhoto(p: any, username: string, fallbackEmail?: string) {
     picks: [],
     date: p.uploaded_at,
     pulse: p.pulse != null ? Number(p.pulse) : 0,
+    peakPulse: p.peak_pulse != null ? Number(p.peak_pulse) : null,
+    badge: p.badge ?? null,
     impressions: p.impressions_count || 0,
     rank: 0,
   };
