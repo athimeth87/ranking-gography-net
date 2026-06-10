@@ -8,6 +8,7 @@ import { PhotoCardDeleteButton } from './PhotoCardDeleteButton';
 import { PhotoCardVisibilityButton } from './PhotoCardVisibilityButton';
 import { PhotoCardCurateButton } from './PhotoCardCurateButton';
 import { PulseStatusBadge } from './PulseStatusBadge';
+import { SHOW_LIKE_COUNTS } from '@/lib/flags';
 
 const VISIBILITY_LABELS: Record<PhotoVisibility, string> = {
   public: 'Competition',
@@ -65,10 +66,12 @@ export function PhotoCard({
               <span className="pimg-overlay-sep">·</span>
               <span>{photo.exif?.camera || t('unknown_camera')}</span>
             </div>
-            <div className="pimg-overlay-pulse">
-              <span className="pimg-overlay-pulse-num">{photo.likes}</span>
-              <span className="pimg-overlay-pulse-lab">{t('likes')}</span>
-            </div>
+            {SHOW_LIKE_COUNTS && (
+              <div className="pimg-overlay-pulse">
+                <span className="pimg-overlay-pulse-num">{photo.likes}</span>
+                <span className="pimg-overlay-pulse-lab">{t('likes')}</span>
+              </div>
+            )}
           </div>
         </div>
         {showLike && <CardLikeButton photoId={photo.id} ownerId={ownerId} />}
@@ -110,16 +113,18 @@ export function PhotoCard({
             <PulseStatusBadge pulse={photo.peakPulse ?? photo.pulse} badge={photo.badge} className="mt-[6px]" />
           </div>
         </div>
-        <div className="shrink-0 ml-4 text-right">
-          <div className="pulse">
-            <span className="big">{photo.likes}</span>
-            <span className="lab">{t('likes')}</span>
+        {SHOW_LIKE_COUNTS && (
+          <div className="shrink-0 ml-4 text-right">
+            <div className="pulse">
+              <span className="big">{photo.likes}</span>
+              <span className="lab">{t('likes')}</span>
+            </div>
+            <div className="mono text-[10px] text-fg-soft mt-1 tracking-[.04em] flex gap-2 justify-end">
+              {photo.favorites > 0 && <span>★ {photo.favorites}</span>}
+              {photo.comments > 0 && <span>· {photo.comments} {t('comments')}</span>}
+            </div>
           </div>
-          <div className="mono text-[10px] text-fg-soft mt-1 tracking-[.04em] flex gap-2 justify-end">
-            {photo.favorites > 0 && <span>★ {photo.favorites}</span>}
-            {photo.comments > 0 && <span>· {photo.comments} {t('comments')}</span>}
-          </div>
-        </div>
+        )}
       </div>
       {(photo.picks?.length || 0) > 0 && (
         <div className="absolute top-3 right-3 flex gap-[6px]">

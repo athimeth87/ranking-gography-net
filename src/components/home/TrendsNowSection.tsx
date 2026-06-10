@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import type { Photo } from '@/lib/types';
 import { TrendsHeart } from './TrendsHeart';
+import { PulseStatusBadge } from '@/components/photo/PulseStatusBadge';
+import { SHOW_LIKE_COUNTS } from '@/lib/flags';
 
 interface TrendsNowSectionProps {
   photos: Photo[];
@@ -60,10 +62,20 @@ export function TrendsNowSection({ photos }: TrendsNowSectionProps) {
                       <span className="mono text-[10px] tracking-[.14em] uppercase opacity-65">
                         {photo.cat}
                       </span>
-                      <span className="opacity-40 text-[10px]">·</span>
-                      <span className="mono text-[11px] tabular-nums opacity-80">
-                        {photo.likes} {t('likes')}
-                      </span>
+                      {SHOW_LIKE_COUNTS ? (
+                        <>
+                          <span className="opacity-40 text-[10px]">·</span>
+                          <span className="mono text-[11px] tabular-nums opacity-80">
+                            {photo.likes} {t('likes')}
+                          </span>
+                        </>
+                      ) : (
+                        <PulseStatusBadge
+                          pulse={photo.peakPulse ?? photo.pulse}
+                          badge={photo.badge}
+                          pickType={photo.pickType}
+                        />
+                      )}
                     </div>
                     <div className="mt-[10px]">
                       <TrendsHeart photoId={photo.id} />

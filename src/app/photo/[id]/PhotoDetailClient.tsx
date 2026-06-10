@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
+import { SHOW_LIKE_COUNTS } from '@/lib/flags';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import type { Photo, Photographer, Category } from '@/lib/types';
@@ -372,7 +373,7 @@ export function PhotoDetailClient({ id }: { id: string }) {
                   >
                     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                   </svg>
-                  <span>{(l?.likes ?? likeState.count).toLocaleString()}</span>
+                  {SHOW_LIKE_COUNTS && <span>{(l?.likes ?? likeState.count).toLocaleString()}</span>}
                 </button>
 
                 <button
@@ -384,14 +385,14 @@ export function PhotoDetailClient({ id }: { id: string }) {
                   <svg viewBox="0 0 24 24" fill={favoriteState.favorited ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" width="13" height="13">
                     <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
                   </svg>
-                  <span>{l?.favorites ?? favoriteState.count}</span>
+                  {SHOW_LIKE_COUNTS && <span>{l?.favorites ?? favoriteState.count}</span>}
                 </button>
 
                 <button className="heart">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="13" height="13">
                     <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" />
                   </svg>
-                  <span>{liveComments}</span>
+                  {SHOW_LIKE_COUNTS && <span>{liveComments}</span>}
                 </button>
 
                 <div className="flex-1" />
@@ -411,6 +412,7 @@ export function PhotoDetailClient({ id }: { id: string }) {
               </div>
 
               {/* Engagement breakdown */}
+              {SHOW_LIKE_COUNTS && (
               <div className="mt-10 md:mt-14 py-6 md:py-8 border-t border-rule border-b border-rule">
                 <div className="grid gap-4 md:gap-8 items-baseline grid-cols-2 md:grid-cols-4">
                   <div>
@@ -427,6 +429,7 @@ export function PhotoDetailClient({ id }: { id: string }) {
                   />
                 </div>
               </div>
+              )}
 
               {/* 500px-style stats — mobile only (sidebar shows the desktop one) */}
               <div className="lg:hidden">

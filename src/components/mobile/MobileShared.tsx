@@ -7,6 +7,7 @@ import { useApp } from '@/providers/AppProvider';
 import { useTranslations } from 'next-intl';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { Footer } from '@/components/layout/Footer';
+import { SHOW_LIKE_COUNTS } from '@/lib/flags';
 
 const SUPABASE_CONFIGURED = Boolean(
   process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
@@ -407,13 +408,13 @@ export function FeedCard({ photo }: { photo: any }) {
             }}>
               {author}{voyageur && <span style={{ marginLeft: 6, color: '#b08e54' }}>◆</span>}
             </div>
-            {(location || photo.likes !== undefined) && (
+            {(location || (SHOW_LIKE_COUNTS && photo.likes !== undefined)) && (
               <div style={{
                 fontFamily: "'IBM Plex Mono', monospace", fontSize: 9,
                 color: 'var(--fg-soft)', letterSpacing: '0.1em',
                 textTransform: 'uppercase', marginTop: 1,
               }}>
-                {location}{photo.likes !== undefined ? ` · ♥ ${photo.likes}` : ''}
+                {location}{SHOW_LIKE_COUNTS && photo.likes !== undefined ? ` · ♥ ${photo.likes}` : ''}
               </div>
             )}
           </div>
