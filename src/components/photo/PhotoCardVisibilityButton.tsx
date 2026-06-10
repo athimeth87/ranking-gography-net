@@ -22,10 +22,11 @@ export interface PhotoCardVisibilityButtonProps {
   photoId: string;
   visibility: PhotoVisibility;
   onChanged: (id: string, visibility: PhotoVisibility) => void;
+  alwaysVisible?: boolean;
 }
 
 // Owner-only action: move a photo between competition / portfolio / drawer.
-export function PhotoCardVisibilityButton({ photoId, visibility, onChanged }: PhotoCardVisibilityButtonProps) {
+export function PhotoCardVisibilityButton({ photoId, visibility, onChanged, alwaysVisible = false }: PhotoCardVisibilityButtonProps) {
   const { authUser } = useApp();
   const [busy, setBusy] = useState(false);
 
@@ -72,7 +73,7 @@ export function PhotoCardVisibilityButton({ photoId, visibility, onChanged }: Ph
         onPointerDown={(e) => e.stopPropagation()}
         onMouseDown={(e) => e.stopPropagation()}
         aria-label="Change photo visibility"
-        className="absolute top-3 right-14 z-20 w-9 h-9 flex items-center justify-center bg-black/40 hover:bg-black/60 text-white backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 data-popup-open:opacity-100"
+        className={`absolute top-3 right-14 z-20 w-9 h-9 flex items-center justify-center bg-black/40 hover:bg-black/60 text-white backdrop-blur-sm transition-all ${alwaysVisible ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 data-popup-open:opacity-100'}`}
       >
         <Eye width={15} height={15} />
       </DropdownMenuTrigger>

@@ -49,6 +49,7 @@ export interface Photo extends PhotoSeed {
   percentile?: number | null;
   badge?: string | null;
   visibility?: PhotoVisibility;
+  isCurated?: boolean;
 }
 
 export interface Photographer {

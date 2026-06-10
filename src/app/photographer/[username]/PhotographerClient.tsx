@@ -10,12 +10,21 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { PageCover } from '@/components/layout/PageCover';
 import { useFollowState } from '@/hooks/useFollowState';
 import { NextDropCard } from '@/components/photo/NextDropCard';
+import { PhotoCardCurateButton } from '@/components/photo/PhotoCardCurateButton';
 import { FollowListModal, type FollowTab } from '@/components/account/FollowListModal';
-import { computePulse, type PickType } from '@/lib/pulse-engine';
+import { useApp } from '@/providers/AppProvider';
+import {
+  CuratedSet,
+  ArchiveDrawer,
+  PrivateDrawer,
+  SectionHead,
+  CURATED_MAX,
+  type ProvenanceRow,
+} from './CollectionSections';
 
 import { computeRankMasters, getCashbackPercentage } from '@/lib/ranking-system';
 
-// ===== Photographer public profile — /photographer/[username] =====
+// ===== Photographer "The Collection" — /photographer/[username] =====
 
 function mapPublicPhoto(p: any, username: string) {
   const likes = p.likes_count || 0;
@@ -32,7 +41,7 @@ function mapPublicPhoto(p: any, username: string) {
     w: p.width || 4,
     h: p.height || 3,
     caption: p.description || '',
-    exif: { camera: 'Unknown', lens: 'Unknown', iso: 100, shutter: '1/100', aperture: 'f/8', focal: '50mm' },
+    exif: { camera: p.camera || 'Unknown', lens: p.lens || 'Unknown', iso: 100, shutter: '1/100', aperture: 'f/8', focal: '50mm' },
     likes,
     likes24h: 0,
     comments,
@@ -43,6 +52,14 @@ function mapPublicPhoto(p: any, username: string) {
     pulse,
     impressions: p.impressions_count || 0,
     rank: 0,
+    visibility: (p.visibility ?? 'public') as 'public' | 'portfolio' | 'private',
+    isCurated: !!p.is_curated,
+    camera: p.camera || null,
+    lens: p.lens || null,
+    place: p.location || null,
+    year: p.uploaded_at ? String(new Date(p.uploaded_at).getFullYear()) : null,
+    peakPulse: p.peak_pulse != null ? Number(p.peak_pulse) : null,
+    badge: p.badge ?? null,
   };
 }
 
@@ -50,7 +67,7 @@ interface ProfileStatProps { label: string; val: string | number; onClick?: () =
 function ProfileStat({ label, val, onClick }: ProfileStatProps) {
   const inner = (
     <>
-      <div className="text-[28px] font-medium tracking-[-0.015em]">{val}</div>
+      <div className="font-serif text-[30px] font-medium tracking-[-0.01em]">{val}</div>
       <div className="text-[10px] tracking-[.16em] uppercase opacity-55 mt-1">{label}</div>
     </>
   );
@@ -108,10 +125,13 @@ const MOBILE_BTN_GHOST = 'flex-1 inline-flex items-center justify-center min-h-[
 export function PhotographerClient({ username }: { username: string }) {
   const router = useRouter();
   const pathname = usePathname();
+  const { authUser } = useApp();
 
   const [photographer, setPhotographer] = useState<any>(null);
   const [myPhotos, setMyPhotos] = useState<any[]>([]);
   const [myFavorites, setMyFavorites] = useState<any[]>([]);
+  const [provenance, setProvenance] = useState<ProvenanceRow[]>([]);
+  const [isOwner, setIsOwner] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [mobileTab, setMobileTab] = useState<'photos' | 'favorites' | 'about'>('photos');
   const [copied, setCopied] = useState(false);
@@ -131,6 +151,11 @@ export function PhotographerClient({ username }: { username: string }) {
         .single();
 
       if (!userData) { setIsLoading(false); return; }
+
+      const { data: sessionData } = await supabase.auth.getSession();
+      const viewerId = sessionData?.session?.user?.id ?? null;
+      const viewerIsOwner = viewerId === userData.id;
+      setIsOwner(viewerIsOwner);
 
       // Fetch all photos to compute Rank Masters dynamically
       const { data: allPhotosData } = await supabase.from('photos').select('*');
@@ -155,23 +180,38 @@ export function PhotographerClient({ username }: { username: string }) {
         followers: userData.followers_count ?? 0,
         following: userData.following_count ?? 0,
         joined: new Date(userData.created_at || Date.now()).getFullYear().toString(),
-        cameras: ['Digital Camera'],
+        cameras: [],
       });
 
-      const { data: photosData } = await supabase
+      // Owner sees all visibilities (own-row RLS); visitors get published public+portfolio explicitly
+      let photosQuery = supabase
         .from('photos')
         .select('*')
         .eq('photographer_id', userData.id)
+        .eq('is_hidden', false)
+        .eq('status', 'published')
         .order('uploaded_at', { ascending: false });
+      if (!viewerIsOwner) {
+        photosQuery = photosQuery.in('visibility', ['public', 'portfolio']);
+      }
+      const { data: photosData } = await photosQuery;
+
+      // Provenance badges (view from 0028) — empty until the migration is applied
+      const { data: provData } = await supabase
+        .from('photo_provenance')
+        .select('*')
+        .eq('photographer_id', userData.id);
+      setProvenance((provData as ProvenanceRow[] | null) ?? []);
 
       if (photosData) {
         setMyPhotos(photosData.map(p => mapPublicPhoto(p, userData.username)));
 
         // Compute voyageur rank if this photographer is a customer
-        if (userData.is_customer && photosData.length > 0) {
+        const competitionData = photosData.filter((p: any) => (p.visibility ?? 'public') === 'public');
+        if (userData.is_customer && competitionData.length > 0) {
           const catCounts: Record<string, number> = {};
           const catBestLikes: Record<string, number> = {};
-          for (const p of photosData) {
+          for (const p of competitionData) {
             if (!p.category) continue;
             catCounts[p.category] = (catCounts[p.category] || 0) + 1;
             catBestLikes[p.category] = Math.max(catBestLikes[p.category] || 0, p.likes_count || 0);
@@ -214,7 +254,7 @@ export function PhotographerClient({ username }: { username: string }) {
     };
 
     fetchProfile();
-  }, [username, reloadKey]);
+  }, [username, reloadKey, authUser?.id]);
 
   // Realtime: patch engagement counts + recompute pulse without refetch
   useEffect(() => {
@@ -283,17 +323,39 @@ export function PhotographerClient({ username }: { username: string }) {
   );
   if (!photographer) return notFound();
 
-  const totalViews = myPhotos.reduce((s: number, p: Photo) => s + (p.impressions ?? 0), 0);
   const avgPulse = myPhotos.length
     ? (myPhotos.reduce((s: number, p: Photo) => s + p.pulse, 0) / myPhotos.length).toFixed(0)
     : '—';
-  const editorPickCount = myPhotos.filter((p: Photo) => p.picks.includes('editor')).length;
   const myCategories = Array.from(new Set(myPhotos.map((p: Photo) => p.cat)));
   const eyebrowParts = [
     photographer.isAmbassador ? 'Ambassador' : null,
     photographer.isCustomer ? 'Traveller' : 'Photographer',
     `@${photographer.username}`,
   ].filter(Boolean).join(' · ');
+
+  // ----- The Collection: derived sets -----
+  const competitionPhotos = myPhotos.filter((p) => (p.visibility ?? 'public') === 'public');
+  const curatedPhotos = myPhotos
+    .filter((p) => p.isCurated && p.visibility !== 'private')
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    .slice(0, CURATED_MAX);
+  const archivePhotos = myPhotos.filter((p) => p.visibility === 'portfolio' && !p.isCurated);
+  const privatePhotos = myPhotos.filter((p) => p.visibility === 'private');
+  const provMap = new Map(provenance.map((r) => [r.photo_id, r] as const));
+  const seasonAwardCount = provenance.filter((r) => r.season_winner).length;
+  const reloadCollection = () => setReloadKey((k) => k + 1);
+
+  // Real gear, derived from this photographer's photos (frequency-sorted)
+  const cameraCounts = new Map<string, number>();
+  for (const p of myPhotos) {
+    if (p.camera) cameraCounts.set(p.camera, (cameraCounts.get(p.camera) ?? 0) + 1);
+  }
+  const camerasList = Array.from(cameraCounts.entries()).sort((a, b) => b[1] - a[1]).map(([c]) => c);
+  const topCamera = camerasList[0] ?? null;
+
+  const nameWords = String(photographer.name ?? '').trim().split(/\s+/).filter(Boolean);
+  const lastName = nameWords.length > 1 ? nameWords[nameWords.length - 1] ?? null : null;
+  const leadName = lastName ? nameWords.slice(0, -1).join(' ') : photographer.name;
 
   return (
     <div className="page-fade">
@@ -449,6 +511,20 @@ export function PhotographerClient({ username }: { username: string }) {
           </div>
         )}
 
+        {/* Collection stat strip */}
+        <div className="mx-4 mt-2 grid grid-cols-3 text-center border border-black/[0.07] dark:border-white/[0.08] divide-x divide-black/[0.07] dark:divide-white/[0.08]">
+          {([
+            ['Curated', curatedPhotos.length],
+            ['In Archive', archivePhotos.length],
+            ['Season Awards', seasonAwardCount],
+          ] as const).map(([l, n]) => (
+            <div key={l} className="py-[10px]">
+              <div className="mono text-[15px] font-semibold">{n}</div>
+              <div className="mono text-[9px] tracking-[.12em] uppercase text-fg-soft mt-[2px]">{l}</div>
+            </div>
+          ))}
+        </div>
+
         {/* Mobile tab bar */}
         <div className="mt-4 border-t border-black/[0.08] dark:border-white/[0.1]">
           <div className="grid grid-cols-3">
@@ -469,31 +545,54 @@ export function PhotographerClient({ username }: { username: string }) {
           </div>
         </div>
 
-        {/* Tab content — Photos */}
+        {/* Tab content — Photos (The Collection) */}
         {mobileTab === 'photos' && (
           <div className="px-4 pt-5">
-            <NextDropCard photographerId={photographer.id} onReleased={() => setReloadKey((k) => k + 1)} />
+            <NextDropCard photographerId={photographer.id} onReleased={reloadCollection} />
+            <CuratedSet
+              photos={curatedPhotos}
+              provenance={provMap}
+              isOwner={isOwner}
+              onCurateChanged={reloadCollection}
+            />
+            <SectionHead num="03" title="In Competition" />
           </div>
         )}
         {mobileTab === 'photos' && (
-          myPhotos.length > 0 ? (
+          competitionPhotos.length > 0 ? (
             <div className="grid grid-cols-3 gap-[2px]">
-              {myPhotos.map(p => (
+              {competitionPhotos.map(p => (
                 <div
                   key={p.id}
                   onClick={() => router.push(`/photo/${p.id}`)}
-                  className="aspect-square bg-[#f0ede7] dark:bg-[#1a1916] cursor-pointer overflow-hidden"
+                  className="relative group aspect-square bg-[#f0ede7] dark:bg-[#1a1916] cursor-pointer overflow-hidden"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={p.src} alt={p.title || ''} className="w-full h-full object-cover block" loading="lazy" />
+                  {isOwner && (
+                    <PhotoCardCurateButton
+                      photoId={p.id}
+                      isCurated={p.isCurated ?? false}
+                      alwaysVisible
+                      onChanged={reloadCollection}
+                    />
+                  )}
                 </div>
               ))}
             </div>
           ) : (
-            <div className="px-4 py-[80px] text-center font-thai text-fg-soft">
-              ยังไม่มีภาพในโปรไฟล์นี้
+            <div className="px-4 py-[40px] text-center font-thai text-fg-soft">
+              ยังไม่มีภาพเข้าประกวด
             </div>
           )
+        )}
+        {mobileTab === 'photos' && (
+          <div className="px-4 pt-6">
+            <ArchiveDrawer photos={archivePhotos} isOwner={isOwner} onCurateChanged={reloadCollection} />
+            {isOwner && (
+              <PrivateDrawer photos={privatePhotos} photographerId={photographer.id} onChanged={reloadCollection} />
+            )}
+          </div>
         )}
 
         {/* Tab content — Favorites */}
@@ -631,15 +730,28 @@ export function PhotographerClient({ username }: { username: string }) {
 
             <div className="grid gap-6 md:gap-[48px] items-end grid-cols-[1fr_auto]">
               <div>
-                <h1 className="th font-light m-0 leading-[.92] text-[clamp(40px,9vw,128px)] tracking-[-0.035em]">
-                  {photographer.name}
+                <div className="caps opacity-55 tracking-[.3em] mb-5">The Private Collection of</div>
+                <h1 className="font-serif font-medium m-0 leading-[1.04] tracking-[.01em] text-[clamp(40px,6.5vw,92px)]">
+                  {leadName}
+                  {lastName && (
+                    <>
+                      <br />
+                      <em>{lastName}</em>
+                    </>
+                  )}
                 </h1>
-                <div className="mt-6 flex gap-[28px] items-center caps">
-                  <span className="opacity-65">{photographer.loc}</span>
-                  <span className="opacity-35">·</span>
-                  <span className="opacity-65">Joined {photographer.joined}</span>
-                  <span className="opacity-35">·</span>
-                  <span className="opacity-65">{photographer.cameras[0]}</span>
+                <div className="mt-7 flex gap-[10px] items-center flex-wrap">
+                  <span className="caps text-[10px] border border-rule text-fg-soft px-[13px] py-[6px]">
+                    {photographer.loc}
+                  </span>
+                  <span className="caps text-[10px] border border-rule text-fg-soft px-[13px] py-[6px]">
+                    Joined {photographer.joined}
+                  </span>
+                  {topCamera && (
+                    <span className="caps text-[10px] border border-rule text-fg-soft px-[13px] py-[6px]">
+                      {topCamera}
+                    </span>
+                  )}
                 </div>
               </div>
               <div className="w-[96px] h-[96px] md:w-[140px] md:h-[140px] rounded-full overflow-hidden bg-tile shrink-0">
@@ -661,18 +773,18 @@ export function PhotographerClient({ username }: { username: string }) {
         <section>
           <div className="wrap">
             <div className="grid grid-cols-3 md:grid-cols-6 gap-6 md:gap-8 py-6 md:py-8 border-b border-rule mono">
-              <ProfileStat label="Photos" val={myPhotos.length} />
-              <ProfileStat label="Total Views" val={totalViews.toLocaleString()} />
+              <ProfileStat label="Curated" val={curatedPhotos.length} />
+              <ProfileStat label="In Archive" val={archivePhotos.length} />
+              <ProfileStat label="Season Awards" val={seasonAwardCount} />
+              <ProfileStat label="In Competition" val={competitionPhotos.length} />
               <ProfileStat label="Followers" val={follow.followersCount.toLocaleString()} onClick={() => setFollowModalTab('followers')} />
               <ProfileStat label="Following" val={(photographer.following ?? 0).toLocaleString()} onClick={() => setFollowModalTab('following')} />
-              <ProfileStat label="Pulse avg" val={avgPulse} />
-              <ProfileStat label="Rank Master" val={editorPickCount} />
             </div>
 
             <Tabs defaultValue="photos" className="w-full">
               <TabsList className="w-full justify-start rounded-none bg-transparent border-b border-rule gap-0 h-auto">
                 <TabsTrigger value="photos" className="px-0 mr-8 py-5 text-[13px] tracking-[.14em] uppercase font-medium">
-                  Photos <span className="opacity-55 ml-[6px]">{myPhotos.length}</span>
+                  Collection <span className="opacity-55 ml-[6px]">{myPhotos.length}</span>
                 </TabsTrigger>
                 <TabsTrigger value="favorites" className="px-0 mr-8 py-5 text-[13px] tracking-[.14em] uppercase font-medium">
                   Favorites <span className="opacity-55 ml-[6px]">{myFavorites.length}</span>
@@ -684,11 +796,24 @@ export function PhotographerClient({ username }: { username: string }) {
 
               <div className="py-[48px] pb-[80px]">
                 <TabsContent value="photos">
-                  <NextDropCard photographerId={photographer.id} onReleased={() => setReloadKey((k) => k + 1)} />
-                  {myPhotos.length > 0
-                    ? <PhotoGrid photos={myPhotos} cols={3} showLike />
-                    : <ProfileEmpty msg="ยังไม่มีภาพในโปรไฟล์นี้" />
-                  }
+                  <NextDropCard photographerId={photographer.id} onReleased={reloadCollection} />
+                  <CuratedSet
+                    photos={curatedPhotos}
+                    provenance={provMap}
+                    isOwner={isOwner}
+                    onCurateChanged={reloadCollection}
+                  />
+                  <section className="mb-10 md:mb-[64px]">
+                    <SectionHead num="03" title="In Competition" note="ภาพที่ส่งเข้าประกวด Season — นับคะแนนจริง" />
+                    {competitionPhotos.length > 0
+                      ? <PhotoGrid photos={competitionPhotos} cols={3} showLike onCurateChanged={isOwner ? reloadCollection : undefined} />
+                      : <ProfileEmpty msg="ยังไม่มีภาพเข้าประกวด" />
+                    }
+                  </section>
+                  <ArchiveDrawer photos={archivePhotos} isOwner={isOwner} onCurateChanged={reloadCollection} />
+                  {isOwner && (
+                    <PrivateDrawer photos={privatePhotos} photographerId={photographer.id} onChanged={reloadCollection} />
+                  )}
                 </TabsContent>
 
                 <TabsContent value="favorites">
@@ -751,12 +876,16 @@ export function PhotographerClient({ username }: { username: string }) {
                       <p className="th text-[15px] leading-[1.75] text-fg-soft">{photographer.bio}</p>
                     </div>
                     <div>
-                      <div className="caps opacity-55 mb-4">Gear</div>
-                      <ul className="list-none p-0 m-0 mono">
-                        {photographer.cameras.map((cam: string) => (
-                          <li key={cam} className="py-3 border-b border-rule text-[13px]">{cam}</li>
-                        ))}
-                      </ul>
+                      {camerasList.length > 0 && (
+                        <>
+                          <div className="caps opacity-55 mb-4">Gear</div>
+                          <ul className="list-none p-0 m-0 mono">
+                            {camerasList.map((cam: string) => (
+                              <li key={cam} className="py-3 border-b border-rule text-[13px]">{cam}</li>
+                            ))}
+                          </ul>
+                        </>
+                      )}
                       <div className="caps opacity-55 mb-4 mt-8">Categories</div>
                       <ul className="list-none p-0 m-0 mono">
                         {myCategories.map((cat: string) => (

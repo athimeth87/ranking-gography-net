@@ -6,6 +6,7 @@ import { PickBadge } from '@/components/icons';
 import { CardLikeButton } from './CardLikeButton';
 import { PhotoCardDeleteButton } from './PhotoCardDeleteButton';
 import { PhotoCardVisibilityButton } from './PhotoCardVisibilityButton';
+import { PhotoCardCurateButton } from './PhotoCardCurateButton';
 import { PulseStatusBadge } from './PulseStatusBadge';
 
 const VISIBILITY_LABELS: Record<PhotoVisibility, string> = {
@@ -27,6 +28,7 @@ interface PhotoCardProps {
   onDeleted?: (id: string) => void;
   showVisibility?: boolean;
   onVisibilityChanged?: (id: string, visibility: PhotoVisibility) => void;
+  onCurateChanged?: (id: string, isCurated: boolean) => void;
 }
 
 export function PhotoCard({
@@ -39,6 +41,7 @@ export function PhotoCard({
   onDeleted,
   showVisibility = false,
   onVisibilityChanged,
+  onCurateChanged,
 }: PhotoCardProps) {
   const router = useRouter();
   const t = useTranslations('PhotoCard');
@@ -77,6 +80,13 @@ export function PhotoCard({
             photoId={photo.id}
             visibility={photo.visibility ?? 'public'}
             onChanged={onVisibilityChanged}
+          />
+        )}
+        {onCurateChanged && (
+          <PhotoCardCurateButton
+            photoId={photo.id}
+            isCurated={photo.isCurated ?? false}
+            onChanged={onCurateChanged}
           />
         )}
       </div>
