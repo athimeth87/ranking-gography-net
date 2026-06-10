@@ -3,6 +3,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { PageCover } from '@/components/layout/PageCover';
 import { Footer } from '@/components/layout/Footer';
+import { SCORING_RULES, TRAVELLER_RULES } from '@/content/rules';
 
 interface FaqItem {
   question: string;
@@ -61,7 +62,7 @@ const FAQ_ITEMS: FaqItem[] = [
           [
             { name: 'User', desc: 'นักเดินทางและช่างภาพทั่วไป ส่งภาพแข่งในหมวด Classic ได้' },
             { name: 'Traveller', desc: 'ลูกค้าที่เคยร่วมทริปกับ Gography เข้าถึงได้ทั้งหมวด Classic และ Traveller พร้อมสิทธิ์ลุ้นรางวัลพิเศษ' },
-            { name: 'Rank Master', desc: 'ช่างภาพที่รักษาอันดับ 1 ถึง 3 ได้ต่อเนื่อง 4 สัปดาห์ จะได้รับตรา Rank Master พร้อมสิทธิ์เข้าร่วม Tournament ประจำเดือน Season และประจำปี โดยสถานะนี้อยู่กับคุณตลอดทั้ง Season' },
+            { name: 'Rank Master', desc: 'ช่างภาพที่รักษาอันดับ 1 ถึง 3 ได้ต่อเนื่อง 3 สัปดาห์ จะได้รับตรา Rank Master พร้อมสิทธิ์เข้าร่วม Tournament ประจำเดือน Season และประจำปี โดยสถานะนี้อยู่กับคุณตลอดทั้ง Season' },
             { name: 'Ambassador', desc: 'ช่างภาพที่ทีมงาน Gography คัดเลือกด้วยตัวเองจากฝีมือที่เป็นที่ประจักษ์ โดยไม่ต้องผ่านการจัดอันดับ สถานะนี้อยู่ตลอดทั้ง Season เช่นกัน' },
           ] as { name: string; desc: string }[]
         ).map((m, i, arr) => (
@@ -95,7 +96,7 @@ const FAQ_ITEMS: FaqItem[] = [
     answer: (
       <div className="space-y-[20px]">
         <p className="th text-[16px] leading-[1.85] text-fg-soft m-0">
-          Badge พิเศษสำหรับช่างภาพที่สามารถติดอันดับ Top 1–3 ติดต่อกันเป็นเวลา 4 สัปดาห์
+          Badge พิเศษสำหรับช่างภาพที่สามารถติดอันดับ Top 1–3 ติดต่อกันเป็นเวลา 3 สัปดาห์
         </p>
         <p className="th text-[16px] leading-[1.85] text-fg-soft m-0">
           Badge นี้สะท้อนถึงความสามารถ ความสม่ำเสมอ และคุณภาพของผลงานที่ได้รับการยอมรับจากระบบ Ranking อย่างต่อเนื่อง
@@ -130,12 +131,42 @@ const FAQ_ITEMS: FaqItem[] = [
     answer: (
       <div className="space-y-[20px]">
         <p className="th text-[16px] leading-[1.85] text-fg-soft m-0">
-          สำหรับ Traveller ทุก 4 เดือนเราคัดเลือกภาพที่ดีที่สุดแห่งฤดูกาล
-          มอบ Voucher มูลค่า 50,000 บาท และจารึกไว้ใน Hall of Fame ตลอดไป
+          {TRAVELLER_RULES.label} — {SCORING_RULES.winnerRule}{' '}
+          {TRAVELLER_RULES.rewards.map((r) => `${r.rank} รับ ${r.reward}`).join(' และ ')}{' '}
+          รางวัลทั้งหมดเป็น{TRAVELLER_RULES.rewardType} และผู้ชนะจะถูกจารึกไว้ใน Hall of Fame ตลอดไป
+        </p>
+        <p className="th text-[15px] leading-[1.85] text-fg-soft m-0 opacity-70">
+          {TRAVELLER_RULES.rewardNote}
         </p>
         <div className="mt-[8px]">
           <Link href="/upload" className="btn btn-solid">เริ่มส่งภาพ</Link>
         </div>
+      </div>
+    ),
+  },
+  {
+    question: 'คะแนน GoScore คิดอย่างไร?',
+    answer: (
+      <div className="space-y-[20px]">
+        <p className="th text-[16px] leading-[1.85] text-fg-soft m-0">
+          {SCORING_RULES.summary} {SCORING_RULES.transparency}
+        </p>
+        <p className="th text-[16px] leading-[1.85] text-fg-soft m-0">
+          อ่านรายละเอียดว่าอะไรถูกนับ และทำไมระบบถึงแฟร์ ได้ที่หน้า{' '}
+          <Link href="/how-ranking-works" className="underline underline-offset-4">How Ranking Works</Link>
+        </p>
+      </div>
+    ),
+  },
+  {
+    question: 'ลิขสิทธิ์ภาพเป็นของใคร?',
+    answer: (
+      <div className="space-y-[20px]">
+        <p className="th text-[16px] leading-[1.85] text-fg-soft m-0">
+          ภาพเป็นของช่างภาพ 100% — การอัปโหลดเข้าประกวดไม่ได้โอนลิขสิทธิ์ให้แพลตฟอร์ม
+          ดูรายละเอียดสิทธิ์การใช้งานและการให้เครดิตได้ที่หน้า{' '}
+          <Link href="/photo-rights" className="underline underline-offset-4">Photo Rights</Link>
+        </p>
       </div>
     ),
   },
