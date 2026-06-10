@@ -4,6 +4,7 @@ export type UserState = 'guest' | 'user' | 'customer' | 'photographer';
 export type Theme = 'light' | 'dark';
 export type Mode = 'atelier' | 'editorial';
 export type SortKey = 'pulse' | 'recent' | 'likes';
+export type PhotoVisibility = 'public' | 'portfolio' | 'private';
 
 export interface Exif {
   camera: string;
@@ -47,6 +48,7 @@ export interface Photo extends PhotoSeed {
   pickType?: 'none' | 'editor' | 'ambassador' | 'both';
   percentile?: number | null;
   badge?: string | null;
+  visibility?: PhotoVisibility;
 }
 
 export interface Photographer {

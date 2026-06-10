@@ -43,6 +43,7 @@ type DbPhoto = {
   pick_type?: 'none' | 'editor' | 'ambassador' | 'both' | null;
   percentile?: number | string | null;
   badge?: string | null;
+  visibility?: 'public' | 'portfolio' | 'private' | null;
 };
 
 type DbFollow = { follower_id: string; following_id: string };
@@ -80,6 +81,7 @@ export function mapDbPhoto(p: DbPhoto, users: DbUser[]): Photo {
     pickType: p.pick_type ?? 'none',
     percentile: p.percentile != null ? Number(p.percentile) : null,
     badge: p.badge || null,
+    visibility: p.visibility ?? 'public',
     rank: 0,
   };
 }
@@ -118,7 +120,15 @@ export interface LivePhotoData {
 export async function fetchLivePhotoData(supabase: SupabaseClient): Promise<LivePhotoData> {
   const [{ data: usersData }, { data: photosData, error }, { data: followsData }] = await Promise.all([
     supabase.from('users').select('*'),
-    supabase.from('photos').select('*').order('uploaded_at', { ascending: false }),
+    // Competition-only, even though RLS also lets owners read their own
+    // drafts/portfolio/private rows — feeds and leaderboards must never show them.
+    supabase
+      .from('photos')
+      .select('*')
+      .eq('status', 'published')
+      .eq('is_hidden', false)
+      .eq('visibility', 'public')
+      .order('uploaded_at', { ascending: false }),
     supabase.from('follows').select('*'),
   ]);
   const users = (usersData || []) as DbUser[];

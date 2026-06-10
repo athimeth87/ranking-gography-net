@@ -1,11 +1,18 @@
 'use client';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import type { Photo } from '@/lib/types';
+import type { Photo, PhotoVisibility } from '@/lib/types';
 import { PickBadge } from '@/components/icons';
 import { CardLikeButton } from './CardLikeButton';
 import { PhotoCardDeleteButton } from './PhotoCardDeleteButton';
+import { PhotoCardVisibilityButton } from './PhotoCardVisibilityButton';
 import { PulseStatusBadge } from './PulseStatusBadge';
+
+const VISIBILITY_LABELS: Record<PhotoVisibility, string> = {
+  public: 'Competition',
+  portfolio: 'Portfolio',
+  private: 'Private',
+};
 
 interface PhotoCardProps {
   photo: Photo;
@@ -18,6 +25,8 @@ interface PhotoCardProps {
   ownerId?: string | null;
   deletable?: boolean;
   onDeleted?: (id: string) => void;
+  showVisibility?: boolean;
+  onVisibilityChanged?: (id: string, visibility: PhotoVisibility) => void;
 }
 
 export function PhotoCard({
@@ -28,6 +37,8 @@ export function PhotoCard({
   ownerId,
   deletable = false,
   onDeleted,
+  showVisibility = false,
+  onVisibilityChanged,
 }: PhotoCardProps) {
   const router = useRouter();
   const t = useTranslations('PhotoCard');
@@ -61,6 +72,13 @@ export function PhotoCard({
         {deletable && onDeleted && (
           <PhotoCardDeleteButton photoId={photo.id} storageUrl={photo.src} onDeleted={onDeleted} />
         )}
+        {onVisibilityChanged && (
+          <PhotoCardVisibilityButton
+            photoId={photo.id}
+            visibility={photo.visibility ?? 'public'}
+            onChanged={onVisibilityChanged}
+          />
+        )}
       </div>
       <div className="pmeta">
         <div className="flex items-baseline gap-3 flex-1 min-w-0">
@@ -74,6 +92,11 @@ export function PhotoCard({
               {photo.title}
             </div>
             <div className="pby">{photo.by}</div>
+            {showVisibility && (
+              <div className="caps text-[9px] opacity-55 mt-1">
+                {VISIBILITY_LABELS[photo.visibility ?? 'public']}
+              </div>
+            )}
             <PulseStatusBadge pulse={photo.peakPulse ?? photo.pulse} badge={photo.badge} className="mt-[6px]" />
           </div>
         </div>
