@@ -1,5 +1,6 @@
 import { pulseStatus, type PickType } from '@/lib/pulse-engine';
 import { statusFromBadge, type Badge } from '@/lib/pulse-engine-v4';
+import { GlossaryTerm } from '@/components/editorial/GlossaryTerm';
 
 const LABEL: Record<string, string> = {
   rising: 'Rising',
@@ -33,13 +34,18 @@ export function PulseStatusBadge({
   if (!status || status === 'undiscovered') return null;
 
   const solid = SOLID.has(status);
+  const label = LABEL[status] ?? status;
   return (
     <span
       className={`inline-flex items-center mono uppercase text-[9px] tracking-[.14em] leading-none px-2 py-[3px] ${
         solid ? 'bg-fg text-bg' : 'border border-rule text-fg-soft'
       } ${className}`}
     >
-      {LABEL[status] ?? status}
+      {status === 'popular' || status === 'rising' ? (
+        <GlossaryTerm term={status}>{label}</GlossaryTerm>
+      ) : (
+        label
+      )}
     </span>
   );
 }

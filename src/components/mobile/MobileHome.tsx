@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { pulseScore } from '@/lib/data';
+import { pulseScore, getSeasons } from '@/lib/data';
 import { useTranslations } from 'next-intl';
 import { useApp } from '@/providers/AppProvider';
 import {
@@ -24,6 +24,14 @@ export function MobileHome({
   const t = useTranslations('MobileHome');
   const dark = theme === 'dark';
   const [tab, setTab] = useState('foryou');
+
+  // Live days-left from the live season's endDate (computed client-side to avoid hydration drift)
+  const [daysLeft, setDaysLeft] = useState(null);
+  useEffect(() => {
+    const live = getSeasons().find(s => s.status === 'live');
+    const end = new Date(`${live?.endDate ?? '2026-10-08'}T23:59:59`).getTime();
+    setDaysLeft(Math.max(0, Math.ceil((end - Date.now()) / 86_400_000)));
+  }, []);
 
   // Local follow set (TikTok-style) — persisted in localStorage
   const [following, setFollowing] = useState(() => new Set());
@@ -187,7 +195,7 @@ export function MobileHome({
           [String(pList.length).padStart(2, '0'), t('stats_frames')],
           [String(photogList.length).padStart(2, '0'), t('stats_photographers')],
           ['04', t('stats_seasons')],
-          ['37', t('stats_days_left')],
+          [daysLeft === null ? '—' : String(daysLeft).padStart(2, '0'), t('stats_days_left')],
         ].map(([n, l], i) => (
           <div key={l} style={{
             padding: '20px 16px',
@@ -212,7 +220,7 @@ export function MobileHome({
         <MobileSectionHeader num={`01 / ${t('how_it_works_num')}`} title={t('how_it_works_title')} />
         <div style={{ marginTop: 20 }}>
           {[
-            { n: '01', t: t('step1_title'), b: t('step1_desc') },
+            { n: '01', t: t('step1_title'), b: t('step1_desc'), href: '/upload' },
             { n: '02', t: t('step2_title'), b: t('step2_desc') },
             { n: '03', t: t('step3_title'), b: t('step3_desc') },
           ].map((s, i, a) => (
@@ -228,7 +236,11 @@ export function MobileHome({
                 margin: '8px 0 6px',
                 fontFamily: "'Playfair Display', serif", fontWeight: 700,
                 fontSize: 22, letterSpacing: '-0.01em',
-              }}>{s.t}</h3>
+              }}>
+                {s.href
+                  ? <Link href={s.href} style={{ color: 'inherit', textDecoration: 'none', borderBottom: '1px solid var(--rule)' }}>{s.t} →</Link>
+                  : s.t}
+              </h3>
               <p style={{
                 margin: 0, fontSize: 13, lineHeight: 1.55,
                 color: 'var(--fg-soft)', maxWidth: '36ch',
@@ -244,7 +256,7 @@ export function MobileHome({
         background: dark ? '#131310' : 'var(--cream)',
       }}>
         <div style={{ padding: '32px 16px 0' }}>
-          <MobileSectionHeader num={`02 / ${t('voyageurs_num')}`} title={t('voyageurs_title')} link={t('all')} href="/photographers/voyageurs" />
+          <MobileSectionHeader num={`02 / ${t('voyageurs_num')}`} title={t('voyageurs_title')} link={t('all')} href="/photographers/travellers" />
           <p className="th" style={{
             marginTop: 14, maxWidth: 480,
             fontSize: 13.5, lineHeight: 1.7, color: 'var(--fg-soft)',
@@ -330,7 +342,10 @@ export function MobileHome({
       </section>
 
       <div style={{ marginTop: 40 }}>
-        <MobileMarquee text="★ Season 01 ★ 37 days left ★ Submit your frame ★" />
+        <MobileMarquee
+          text={`★ Season 01 ★ ${daysLeft === null ? '—' : daysLeft} days left ★ Submit your frame ★`}
+          href="/upload"
+        />
       </div>
       <MobileFooter />
     </div>

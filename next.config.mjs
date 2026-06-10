@@ -9,6 +9,15 @@ const nextConfig = {
     // Track separately; do not let it block production builds.
     ignoreBuildErrors: true,
   },
+  async redirects() {
+    return [
+      {
+        source: '/photographers/voyageurs',
+        destination: '/photographers/travellers',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default withNextIntl(nextConfig);

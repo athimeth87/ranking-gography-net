@@ -123,7 +123,7 @@ export function VoyageursSection({ featuredPhoto }: VoyageursSectionProps) {
             <div className="relative">
               <div
                 className="pimg overflow-hidden cursor-pointer aspect-[4/5]"
-                onClick={() => router.push('/photographers/voyageurs')}
+                onClick={() => router.push('/photographers/travellers')}
               >
                 {(content.image_url || featuredPhoto) && (
                   // eslint-disable-next-line @next/next/no-img-element

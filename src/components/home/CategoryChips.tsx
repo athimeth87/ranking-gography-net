@@ -53,7 +53,7 @@ export function CategoryChips({ value, onChange, showVoyageurs = false }: Catego
                   onClick={() =>
                     router.push(
                       c.v === 'Travellers'
-                        ? '/photographers/voyageurs'
+                        ? '/photographers/travellers'
                         : `/explore/${c.v.toLowerCase()}`,
                     )
                   }

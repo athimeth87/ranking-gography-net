@@ -7,6 +7,7 @@ import { mapDbPhoto } from '@/lib/data';
 import { PhotoGrid } from '@/components/photo/PhotoGrid';
 import { Footer } from '@/components/layout/Footer';
 import { PickBadge } from '@/components/icons';
+import { GlossaryTerm } from '@/components/editorial/GlossaryTerm';
 import { Lightbox } from '@/components/photo/Lightbox';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { useLikeState } from '@/hooks/useLikeState';
@@ -335,11 +336,17 @@ export function PhotoDetailClient({ id }: { id: string }) {
                 {photo.picks.length > 0 && (
                   <div className="flex gap-2 shrink-0">
                     {photo.picks.includes('editor') && photo.picks.includes('ambassador') ? (
-                      <PickBadge kind="both" />
+                      <GlossaryTerm term="ambassadors-pick" underline={false}>
+                        <PickBadge kind="both" />
+                      </GlossaryTerm>
                     ) : (
                       <>
                         {photo.picks.includes('editor') && <PickBadge kind="editor" />}
-                        {photo.picks.includes('ambassador') && <PickBadge kind="ambassador" />}
+                        {photo.picks.includes('ambassador') && (
+                          <GlossaryTerm term="ambassadors-pick" underline={false}>
+                            <PickBadge kind="ambassador" />
+                          </GlossaryTerm>
+                        )}
                       </>
                     )}
                   </div>

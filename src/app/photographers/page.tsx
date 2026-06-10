@@ -8,6 +8,7 @@ import { Footer } from '@/components/layout/Footer';
 import { PageCover } from '@/components/layout/PageCover';
 import { computeRankMasters } from '@/lib/ranking-system';
 import { rankPhotographers } from '@/lib/pulse-engine-v4';
+import { GlossaryTerm, type GlossaryKey } from '@/components/editorial/GlossaryTerm';
 
 // ===== Photographers directory — /photographers =====
 
@@ -112,10 +113,10 @@ export default function PhotographersPage() {
   else if (sort === 'photos')    list = [...list].sort((a, b) => b.photos - a.photos);
   else if (sort === 'newest')    list = [...list].sort((a, b) => new Date(b.joined).getTime() - new Date(a.joined).getTime());
 
-  const filterChips: { v: FilterValue; l: string; n: number }[] = [
+  const filterChips: { v: FilterValue; l: string; n: number; term?: GlossaryKey }[] = [
     { v: 'all',          l: 'All',            n: allPhotographers.length },
-    { v: 'rankmaster',   l: 'Rank Master ♛',  n: allPhotographers.filter(p => p.isRankMaster).length },
-    { v: 'voyageurs',    l: 'Travellers ◆',   n: allPhotographers.filter(p => p.isCustomer).length },
+    { v: 'rankmaster',   l: 'Rank Master ♛',  n: allPhotographers.filter(p => p.isRankMaster).length, term: 'rank-master' },
+    { v: 'voyageurs',    l: 'Travellers ◆',   n: allPhotographers.filter(p => p.isCustomer).length, term: 'traveller' },
     { v: 'ambassadors',  l: 'Ambassadors ★',  n: allPhotographers.filter(p => p.isAmbassador).length },
   ];
 
@@ -192,7 +193,7 @@ export default function PhotographersPage() {
                       active ? 'border-fg bg-fg text-bg' : 'border-rule bg-transparent text-fg'
                     }`}
                   >
-                    <span>{f.l}</span>
+                    <span>{f.term ? <GlossaryTerm term={f.term}>{f.l}</GlossaryTerm> : f.l}</span>
                     <span className="opacity-55 mono">{f.n}</span>
                   </button>
                 );

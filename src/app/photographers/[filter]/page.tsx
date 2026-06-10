@@ -12,12 +12,13 @@ import { PageCover } from '@/components/layout/PageCover';
 import { computeRankMasters } from '@/lib/ranking-system';
 
 // ===== Filtered photographers directory — /photographers/[filter] =====
-// Valid filter values: 'all' | 'voyageurs' | 'ambassadors' | 'general'
+// Valid filter values: 'all' | 'travellers' | 'ambassadors' | 'general'
+// (/photographers/voyageurs 308-redirects here via next.config.mjs)
 
-type FilterValue = 'all' | 'voyageurs' | 'ambassadors' | 'general';
+type FilterValue = 'all' | 'travellers' | 'ambassadors' | 'general';
 type SortValue = 'featured' | 'followers' | 'photos' | 'newest';
 
-const VALID_FILTERS: FilterValue[] = ['all', 'voyageurs', 'ambassadors', 'general'];
+const VALID_FILTERS: FilterValue[] = ['all', 'travellers', 'ambassadors', 'general'];
 
 export default function PhotographersFilterPage({ params }: { params: { filter: string } }) {
   const initialFilter: FilterValue = VALID_FILTERS.includes(params.filter as FilterValue)
@@ -47,7 +48,7 @@ export default function PhotographersFilterPage({ params }: { params: { filter: 
   }, []);
 
   let list: Photographer[] = allPhotographers.slice();
-  if (filter === 'voyageurs') list = list.filter((p: Photographer) => p.isCustomer);
+  if (filter === 'travellers') list = list.filter((p: Photographer) => p.isCustomer);
   if (filter === 'ambassadors') list = list.filter((p: Photographer) => p.isAmbassador);
   if (filter === 'general') list = list.filter((p: Photographer) => !p.isCustomer && !p.isAmbassador);
 
@@ -57,13 +58,13 @@ export default function PhotographersFilterPage({ params }: { params: { filter: 
 
   const filterChips: { v: FilterValue; l: string; n: number }[] = [
     { v: 'all', l: 'All', n: allPhotographers.length },
-    { v: 'voyageurs', l: 'Travellers ◆', n: allPhotographers.filter((p: Photographer) => p.isCustomer).length },
+    { v: 'travellers', l: 'Travellers ◆', n: allPhotographers.filter((p: Photographer) => p.isCustomer).length },
     { v: 'ambassadors', l: 'Ambassadors ★', n: allPhotographers.filter((p: Photographer) => p.isAmbassador).length },
     { v: 'general', l: 'Photographers', n: allPhotographers.filter((p: Photographer) => !p.isCustomer && !p.isAmbassador).length },
   ];
 
-  const coverTitle = filter === 'voyageurs' ? 'Travellers' : filter === 'ambassadors' ? 'Ambassadors' : 'All photographers';
-  const coverSubtitle = filter === 'voyageurs'
+  const coverTitle = filter === 'travellers' ? 'Travellers' : filter === 'ambassadors' ? 'Ambassadors' : 'All photographers';
+  const coverSubtitle = filter === 'travellers'
     ? 'ลูกค้า GOGRAPHY ที่เคยร่วมทริปและมีภาพอยู่บนเวที'
     : filter === 'ambassadors'
     ? 'ช่างภาพรับเชิญที่ GOGRAPHY ไว้วางใจให้คัดเลือกภาพ'

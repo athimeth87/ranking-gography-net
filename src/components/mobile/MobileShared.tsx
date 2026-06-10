@@ -29,10 +29,10 @@ export function MobileFooter() {
   return <Footer />;
 }
 
-export function MobileMarquee({ text = '★ Pulse rising ★ Season 01 ★ Submissions open until 12.31 ★' }) {
+export function MobileMarquee({ text = '★ Pulse rising ★ Season 01 ★ Submissions open until 12.31 ★' , href }: { text?: string; href?: string }) {
   const { theme } = useApp();
   const dark = theme === 'dark';
-  return (
+  const band = (
     <div style={{
       overflow: 'hidden', whiteSpace: 'nowrap',
       borderTop: `1px solid ${dark ? 'rgba(255,255,255,0.12)' : 'var(--rule)'}`,
@@ -46,6 +46,12 @@ export function MobileMarquee({ text = '★ Pulse rising ★ Season 01 ★ Submi
         <span>{Array(2).fill(text).join('   ') + '   '}</span>
       </div>
     </div>
+  );
+  if (!href) return band;
+  return (
+    <Link href={href} aria-label={text} style={{ display: 'block', color: 'inherit', textDecoration: 'none' }}>
+      {band}
+    </Link>
   );
 }
 

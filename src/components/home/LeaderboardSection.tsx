@@ -38,7 +38,7 @@ export function LeaderboardSection({ allPhotos, voyageurUsernames }: Leaderboard
             onClick={() =>
               router.push(
                 leaderCat === 'Travellers'
-                  ? '/photographers/voyageurs'
+                  ? '/photographers/travellers'
                   : leaderCat === 'All'
                     ? '/explore'
                     : `/explore/${leaderCat.toLowerCase()}`,
