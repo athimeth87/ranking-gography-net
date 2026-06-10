@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -21,6 +22,8 @@ export function GlobalUploadModal() {
   
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedTodayCount, setUploadedTodayCount] = useState(0);
+  const [showRightsAck, setShowRightsAck] = useState(false);
+  const [rightsAcked, setRightsAcked] = useState(false);
   const [draft, setDraft] = useState<{
     file: File | null;
     previewUrl: string;
@@ -58,8 +61,22 @@ export function GlobalUploadModal() {
   useEffect(() => {
     if (isUploadModalOpen) {
       checkUploadLimit();
+      // First-upload photo-rights acknowledgement (persisted in localStorage)
+      try {
+        if (localStorage.getItem('gpa-photo-rights-ack')) setRightsAcked(true);
+        else setShowRightsAck(true);
+      } catch {
+        setRightsAcked(true);
+      }
     }
   }, [isUploadModalOpen, authUser]);
+
+  const handleRightsAck = (checked: boolean) => {
+    setRightsAcked(checked);
+    if (checked) {
+      try { localStorage.setItem('gpa-photo-rights-ack', '1'); } catch {}
+    }
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -73,7 +90,7 @@ export function GlobalUploadModal() {
 
   const handleUploadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!draft.file || !draft.title || !authUser?.id) return;
+    if (!draft.file || !draft.title || !authUser?.id || !rightsAcked) return;
 
     setIsUploading(true);
     const supabase = getSupabaseBrowserClient();
@@ -265,12 +282,29 @@ export function GlobalUploadModal() {
                   onChange={(e) => setDraft(d => ({ ...d, caption: e.target.value }))}
                 />
               </div>
+
+              {showRightsAck && (
+                <label className="flex items-start gap-2.5 border border-white/10 rounded-lg p-3 bg-white/5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="mt-[2px] accent-white cursor-pointer"
+                    checked={rightsAcked}
+                    onChange={(e) => handleRightsAck(e.target.checked)}
+                  />
+                  <span className="th text-[11px] text-white/60 leading-[1.6]">
+                    ภาพเป็นของคุณ 100% · เราแสดงเฉพาะในบริบทของ Ranking ·{' '}
+                    <Link href="/photo-rights" target="_blank" className="text-white/80 underline underline-offset-2">
+                      อ่านฉบับเต็ม
+                    </Link>
+                  </span>
+                </label>
+              )}
             </div>
             <DialogFooter className="pt-4 border-t border-white/10 mt-2 sm:justify-between items-center flex-row shrink-0">
               <button type="button" className="text-white/50 hover:text-white text-sm px-2 transition-colors" onClick={() => setUploadModalOpen(false)} disabled={isUploading}>
                 Cancel
               </button>
-              <button type="submit" className="bg-white text-black hover:bg-white/90 text-sm font-medium px-6 py-2 rounded-full transition-colors disabled:opacity-50" disabled={!draft.file || !draft.title || isUploading}>
+              <button type="submit" className="bg-white text-black hover:bg-white/90 text-sm font-medium px-6 py-2 rounded-full transition-colors disabled:opacity-50" disabled={!draft.file || !draft.title || isUploading || !rightsAcked}>
                 {isUploading ? 'Uploading...' : 'Upload'}
               </button>
             </DialogFooter>

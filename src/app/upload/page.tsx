@@ -194,6 +194,25 @@ export default function UploadPage() {
   const [dragOver, setDragOver] = useState(false);
   const [countdown, setCountdown] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+  const [showRightsAck, setShowRightsAck] = useState(false);
+  const [rightsAcked, setRightsAcked] = useState(false);
+
+  // First-upload photo-rights acknowledgement (persisted in localStorage)
+  useEffect(() => {
+    try {
+      if (localStorage.getItem('gpa-photo-rights-ack')) setRightsAcked(true);
+      else setShowRightsAck(true);
+    } catch {
+      setRightsAcked(true);
+    }
+  }, []);
+
+  const handleRightsAck = (checked: boolean) => {
+    setRightsAcked(checked);
+    if (checked) {
+      try { localStorage.setItem('gpa-photo-rights-ack', '1'); } catch {}
+    }
+  };
 
   const limitReached = false; // unlimited uploads
 
@@ -219,7 +238,7 @@ export default function UploadPage() {
   const { authUser } = useApp();
 
   const handleSubmit = async () => {
-    if (limitReached || !draft.file || !draft.actualFile || !authUser?.id) return;
+    if (limitReached || !draft.file || !draft.actualFile || !authUser?.id || !rightsAcked) return;
     setIsUploading(true);
 
     const supabase = getSupabaseBrowserClient();
@@ -481,13 +500,31 @@ export default function UploadPage() {
                     </Field2>
                   </div>
 
+                  {showRightsAck && (
+                    <label className="flex items-start gap-3 py-[14px] px-4 bg-cream border border-rule cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="mt-[3px] accent-current cursor-pointer"
+                        checked={rightsAcked}
+                        onChange={(e) => handleRightsAck(e.target.checked)}
+                      />
+                      <span className="th text-[13px] leading-[1.7]">
+                        <span className="caps block opacity-55 mb-1">Photo Rights</span>
+                        ภาพเป็นของคุณ 100% · เราแสดงเฉพาะในบริบทของ Ranking ·{' '}
+                        <Link href="/photo-rights" target="_blank" className="border-b border-rule pb-[1px]">
+                          อ่านฉบับเต็ม →
+                        </Link>
+                      </span>
+                    </label>
+                  )}
+
                   <button
-                    className={`btn ${!draft.file || !draft.title || isUploading ? 'btn-ghost' : 'btn-solid'} mt-3 justify-center`}
-                    disabled={!draft.file || !draft.title || isUploading}
+                    className={`btn ${!draft.file || !draft.title || isUploading || !rightsAcked ? 'btn-ghost' : 'btn-solid'} mt-3 justify-center`}
+                    disabled={!draft.file || !draft.title || isUploading || !rightsAcked}
                     onClick={handleSubmit}
-                    style={{ opacity: !draft.file || !draft.title || isUploading ? 0.35 : 1 }} // runtime: form validity state
+                    style={{ opacity: !draft.file || !draft.title || isUploading || !rightsAcked ? 0.35 : 1 }} // runtime: form validity state
                   >
-                    {!draft.file ? 'เลือกภาพก่อน' : !draft.title ? 'ใส่ชื่อภาพ' : isUploading ? 'Uploading...' : 'Submit a photo'}
+                    {!draft.file ? 'เลือกภาพก่อน' : !draft.title ? 'ใส่ชื่อภาพ' : !rightsAcked ? 'ยืนยันเรื่องลิขสิทธิ์ภาพก่อน' : isUploading ? 'Uploading...' : 'Submit a photo'}
                   </button>
                   <p className="mono text-[11px] opacity-55 text-center leading-[1.7]">
                     หลังจากส่งแล้ว ภาพจะปรากฏใน Explore ทันที — และคุณจะกลับมาอัพภาพถัดไปได้พรุ่งนี้
