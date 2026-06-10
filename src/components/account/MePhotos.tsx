@@ -11,6 +11,7 @@ import { useApp } from '@/providers/AppProvider';
 import type { Photographer, Photo, Category } from '@/lib/types';
 import { MAX_UPLOAD_BYTES, formatBytes, convertToWebP } from '@/lib/imageConvert';
 import { getPresignedUploadUrl } from '@/app/actions/r2-upload';
+import { CreateDropDialog } from '@/components/account/CreateDropDialog';
 import { toast } from 'sonner';
 
 interface MePhotosProps {
@@ -27,6 +28,7 @@ export function MePhotos({ myPhotos, isPhotographer, isVoyageur, onPhotoUploaded
   const { authUser, userState } = useApp();
   const [tab, setTab] = useState<'all' | 'public' | 'hidden'>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDropOpen, setIsDropOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedTodayCount, setUploadedTodayCount] = useState(0);
   const [draft, setDraft] = useState<{
@@ -171,12 +173,22 @@ export function MePhotos({ myPhotos, isPhotographer, isVoyageur, onPhotoUploaded
         <h1 className="th text-[56px] font-normal tracking-[-0.025em] m-0 leading-none">
           My photos
         </h1>
-        <button 
-          className="btn btn-solid btn-sm" 
-          onClick={() => setIsModalOpen(true)}
-        >
-          Upload photo
-        </button>
+        <div className="flex gap-[10px]">
+          {isPhotographer && (
+            <button
+              className="btn btn-sm th"
+              onClick={() => setIsDropOpen(true)}
+            >
+              ตั้งเป็น Drop
+            </button>
+          )}
+          <button
+            className="btn btn-solid btn-sm"
+            onClick={() => setIsModalOpen(true)}
+          >
+            Upload photo
+          </button>
+        </div>
       </div>
 
       <Tabs
@@ -224,6 +236,14 @@ export function MePhotos({ myPhotos, isPhotographer, isVoyageur, onPhotoUploaded
           </div>
         </TabsContent>
       </Tabs>
+      {isPhotographer && authUser?.id && (
+        <CreateDropDialog
+          open={isDropOpen}
+          onOpenChange={setIsDropOpen}
+          photographerId={authUser.id}
+          onCreated={onPhotoUploaded}
+        />
+      )}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="sm:max-w-[400px] p-6 bg-[#1a1a1a]/80 backdrop-blur-2xl border-white/10 shadow-[0_0_40px_rgba(0,0,0,0.5)] text-white !rounded-2xl outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 border">
           {limitReached ? (

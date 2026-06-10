@@ -9,6 +9,7 @@ import { VoyageurMark, CrownIcon } from '@/components/icons';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { PageCover } from '@/components/layout/PageCover';
 import { useFollowState } from '@/hooks/useFollowState';
+import { NextDropCard } from '@/components/photo/NextDropCard';
 import { FollowListModal, type FollowTab } from '@/components/account/FollowListModal';
 import { computePulse, type PickType } from '@/lib/pulse-engine';
 
@@ -117,6 +118,7 @@ export function PhotographerClient({ username }: { username: string }) {
   const [voyageurRank, setVoyageurRank] = useState<number | null>(null);
   const [topCategory, setTopCategory] = useState<string | null>(null);
   const [followModalTab, setFollowModalTab] = useState<FollowTab | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -212,7 +214,7 @@ export function PhotographerClient({ username }: { username: string }) {
     };
 
     fetchProfile();
-  }, [username]);
+  }, [username, reloadKey]);
 
   // Realtime: patch engagement counts + recompute pulse without refetch
   useEffect(() => {
@@ -469,6 +471,11 @@ export function PhotographerClient({ username }: { username: string }) {
 
         {/* Tab content — Photos */}
         {mobileTab === 'photos' && (
+          <div className="px-4 pt-5">
+            <NextDropCard photographerId={photographer.id} onReleased={() => setReloadKey((k) => k + 1)} />
+          </div>
+        )}
+        {mobileTab === 'photos' && (
           myPhotos.length > 0 ? (
             <div className="grid grid-cols-3 gap-[2px]">
               {myPhotos.map(p => (
@@ -677,6 +684,7 @@ export function PhotographerClient({ username }: { username: string }) {
 
               <div className="py-[48px] pb-[80px]">
                 <TabsContent value="photos">
+                  <NextDropCard photographerId={photographer.id} onReleased={() => setReloadKey((k) => k + 1)} />
                   {myPhotos.length > 0
                     ? <PhotoGrid photos={myPhotos} cols={3} showLike />
                     : <ProfileEmpty msg="ยังไม่มีภาพในโปรไฟล์นี้" />
