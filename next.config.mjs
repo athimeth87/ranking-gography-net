@@ -14,7 +14,7 @@ const nextConfig = {
       {
         source: '/photographers/voyageurs',
         destination: '/photographers/travellers',
-        permanent: true,
+        permanent: false,
       },
     ];
   },
