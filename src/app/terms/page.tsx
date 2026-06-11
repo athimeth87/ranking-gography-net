@@ -43,9 +43,9 @@ export default function TermsPage() {
       />
       
       {/* Date Banner */}
-      <div className="bg-neutral-50/50 border-b border-neutral-100">
+      <div className="bg-cream border-b border-rule">
         <div className="wrap py-6">
-          <p className="font-mono text-[11px] uppercase tracking-widest text-neutral-400">
+          <p className="font-mono text-[11px] uppercase tracking-widest text-fg-faint">
             Last Updated: January 1, 2026
           </p>
         </div>
@@ -56,15 +56,15 @@ export default function TermsPage() {
           
           {/* Sticky Sidebar Navigation */}
           <aside className="hidden lg:block sticky top-32">
-            <h4 className="font-mono text-xs uppercase tracking-widest text-neutral-400 mb-8">Table of Contents</h4>
+            <h4 className="font-mono text-xs uppercase tracking-widest text-fg-faint mb-8">Table of Contents</h4>
             <nav className="flex flex-col gap-6">
               {sections.map((s, idx) => (
                 <a 
                   key={s.id} 
                   href={`#${s.id}`}
-                  className="text-[15px] text-neutral-500 hover:text-black transition-colors font-medium flex items-center gap-4 group"
+                  className="text-[15px] text-fg-soft hover:text-fg transition-colors font-medium flex items-center gap-4 group"
                 >
-                  <span className="font-mono text-[10px] text-neutral-300 group-hover:text-neutral-900 transition-colors">0{idx + 1}</span>
+                  <span className="font-mono text-[10px] text-fg-faint group-hover:text-fg transition-colors">0{idx + 1}</span>
                   <span className="th">{s.title}</span>
                 </a>
               ))}
@@ -80,22 +80,22 @@ export default function TermsPage() {
                 className="mb-24 last:mb-0 scroll-mt-32"
               >
                 <div className="flex flex-col sm:flex-row sm:items-baseline gap-4 sm:gap-6 mb-8">
-                  <span className="font-mono text-6xl font-light text-neutral-200 select-none hidden sm:block">
+                  <span className="font-mono text-6xl font-light text-fg-faint select-none hidden sm:block">
                     0{index + 1}
                   </span>
-                  <span className="font-mono text-4xl font-light text-neutral-300 select-none sm:hidden">
+                  <span className="font-mono text-4xl font-light text-fg-faint select-none sm:hidden">
                     0{index + 1}
                   </span>
-                  <h2 className="th text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-neutral-900 leading-tight">
+                  <h2 className="th text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-fg leading-tight">
                     {section.title}
                   </h2>
                 </div>
                 
-                <div className="th text-[16px] sm:text-[18px] leading-[1.8] text-neutral-600 sm:pl-[5.5rem]">
+                <div className="th text-[16px] sm:text-[18px] leading-[1.8] text-fg-soft sm:pl-[5.5rem]">
                   {section.content.split('\n').map((line, i) => (
                     <p 
                       key={i} 
-                      className={line.startsWith('•') ? 'pl-6 mb-3 relative before:content-[""] before:absolute before:left-0 before:top-[12px] before:w-1.5 before:h-1.5 before:bg-neutral-300 before:rounded-full' : 'mb-6'}
+                      className={line.startsWith('•') ? 'pl-6 mb-3 relative before:content-[""] before:absolute before:left-0 before:top-[12px] before:w-1.5 before:h-1.5 before:bg-fg-faint before:rounded-full' : 'mb-6'}
                     >
                       {line.replace('• ', '')}
                     </p>
