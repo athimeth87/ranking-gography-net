@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { RealtimePhotoGrid } from '@/components/photo/RealtimePhotoGrid';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -54,7 +54,7 @@ export function MePhotos({ myPhotos, isPhotographer, isVoyageur, onPhotoUploaded
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const checkUploadLimit = async () => {
+  const checkUploadLimit = useCallback(async () => {
     if (!authUser?.id) return;
     const supabase = getSupabaseBrowserClient();
     const startOfDay = new Date();
@@ -66,11 +66,11 @@ export function MePhotos({ myPhotos, isPhotographer, isVoyageur, onPhotoUploaded
       .eq('visibility', 'public')
       .gte('uploaded_at', startOfDay.toISOString());
     setUploadedTodayCount(count || 0);
-  };
+  }, [authUser]);
 
   useEffect(() => {
     checkUploadLimit();
-  }, [authUser]);
+  }, [checkUploadLimit]);
 
   // Competition quota: 1 public (เข้าประกวด) upload per day per account
   const PUBLIC_DAILY_QUOTA = 1;

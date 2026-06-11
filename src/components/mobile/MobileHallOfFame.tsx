@@ -73,11 +73,9 @@ export function MobileHallOfFame({
   const lbEndDate = liveSeason?.endDate || '2026-10-08';
   const countdown = useMobileCountdown(lbEndDate);
 
-  const resolvePhotographer = (username) => realPhotographers.find(p => p.username === username);
-
   const rankingEntries = useMemo(() => {
     return (photographersRanking || []).map(r => {
-      const owner = resolvePhotographer(r.username);
+      const owner = realPhotographers.find(p => p.username === r.username);
       return {
         ...r,
         cover_url: r.cover_url || owner?.cover || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop',

@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -47,7 +47,7 @@ export function GlobalUploadModal() {
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const checkUploadLimit = async () => {
+  const checkUploadLimit = useCallback(async () => {
     if (!authUser?.id) return;
     const supabase = getSupabaseBrowserClient();
     const startOfDay = new Date();
@@ -59,7 +59,7 @@ export function GlobalUploadModal() {
       .eq('visibility', 'public')
       .gte('uploaded_at', startOfDay.toISOString());
     setUploadedTodayCount(count || 0);
-  };
+  }, [authUser]);
 
   useEffect(() => {
     if (isUploadModalOpen) {
@@ -72,7 +72,7 @@ export function GlobalUploadModal() {
         setRightsAcked(true);
       }
     }
-  }, [isUploadModalOpen, authUser]);
+  }, [isUploadModalOpen, checkUploadLimit]);
 
   const handleRightsAck = (checked: boolean) => {
     setRightsAcked(checked);

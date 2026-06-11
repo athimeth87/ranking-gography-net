@@ -66,14 +66,13 @@ export function DesktopHallOfFame({
   const liveSeason = seasons.find((s) => s.status === 'live');
   const archived = seasons.filter((s) => s.status === 'closed' && s.winners);
 
-  const resolvePhotographer = (username: string) => photographers.find((p) => p.username === username);
   const resolvePhoto = (photoId: string) => allPhotos.find((p) => p.id === photoId);
   const coverSrc = '/hall-of-fame-cover.jpg'; // Background image
 
   // Enhance ranking with cover_url and is_customer from our pre-fetched photographers data
   const rankingEntries = useMemo(() => {
     return (photographersRanking || []).map(r => {
-      const owner = resolvePhotographer(r.username);
+      const owner = photographers.find((p) => p.username === r.username);
       return {
         ...r,
         cover_url: r.cover_url || owner?.cover || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop',
