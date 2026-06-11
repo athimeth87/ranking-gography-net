@@ -10,7 +10,12 @@ export default function DropPreviewPage() {
   const theme = params?.get('theme') === 'dark' ? 'dark' : 'light';
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
+    // AppProvider re-applies its own theme after mount — keep enforcing ours
+    const apply = () => document.documentElement.setAttribute('data-theme', theme);
+    apply();
+    const t = setInterval(apply, 150);
+    const stop = setTimeout(() => clearInterval(t), 4000);
+    return () => { clearInterval(t); clearTimeout(stop); };
   }, [theme]);
 
   const mock: DropRow = useMemo(() => ({
