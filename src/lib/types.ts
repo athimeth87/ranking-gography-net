@@ -60,6 +60,8 @@ export interface Photographer {
   bio: string;
   avatar: string;
   cover: string;
+  /** CSS object-position for the cover banner, e.g. "50% 30%". */
+  coverPosition?: string;
   followers: number;
   photos: number;
   totalLikes?: number;

@@ -170,6 +170,7 @@ export function PhotographerClient({ username }: { username: string }) {
         loc: userData.location || 'EARTH',
         avatar: userData.avatar_url,
         cover: userData.cover_url || 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=2938&auto=format&fit=crop',
+        coverPosition: userData.cover_position || undefined,
         socialTwitter: userData.social_twitter || '',
         socialInstagram: userData.social_instagram || '',
         socialFacebook: userData.social_facebook || '',
@@ -405,7 +406,12 @@ export function PhotographerClient({ username }: { username: string }) {
         <div className="relative w-full h-[160px] overflow-hidden bg-[#f0ede7] dark:bg-[#1a1916]">
           {photographer.cover && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={photographer.cover} alt="" className="w-full h-full object-cover block" />
+            <img
+              src={photographer.cover}
+              alt=""
+              className="w-full h-full object-cover block"
+              style={photographer.coverPosition ? { objectPosition: photographer.coverPosition } : undefined}
+            />
           )}
           <div className="absolute inset-0 bg-gradient-to-b from-transparent from-[40%] to-black/45" />
 
@@ -682,6 +688,7 @@ export function PhotographerClient({ username }: { username: string }) {
       <div className="hidden md:block">
         <PageCover
           src={photographer.cover}
+          objectPosition={photographer.coverPosition}
           eyebrow={eyebrowParts}
           title={photographer.name}
           subtitle={photographer.bio}

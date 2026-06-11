@@ -25,6 +25,8 @@ interface PageCoverProps {
   minHeight?: number;
   maxHeight?: number;
   align?: 'left' | 'center';
+  /** CSS object-position for the cover image, e.g. "50% 30%". Defaults to centre. */
+  objectPosition?: string;
 }
 
 export function PageCover({
@@ -38,6 +40,7 @@ export function PageCover({
   minHeight = 340,
   maxHeight = 520,
   align = 'left',
+  objectPosition,
 }: PageCoverProps) {
   // Uniform cover image across the site unless caller passes an explicit src.
   const imgSrc = src ?? DEFAULT_COVER_SRC;
@@ -55,7 +58,9 @@ export function PageCover({
           src={imgSrc}
           alt={typeof title === 'string' ? title : ''}
           className="w-full h-full object-cover"
+          style={objectPosition ? { objectPosition } : undefined}
           loading="lazy"
+          draggable={false}
         />
 
         {/* gradient overlay top→bottom for legibility */}
