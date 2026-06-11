@@ -20,7 +20,7 @@ export function MobileHome({
   realPhotographers?: any[];
 }) {
   const router = useRouter();
-  const { theme } = useApp();
+  const { theme, authUser } = useApp();
   const t = useTranslations('MobileHome');
   const dark = theme === 'dark';
   const [tab, setTab] = useState('foryou');
@@ -109,6 +109,17 @@ export function MobileHome({
       };
     });
 
+  const handleSubmit = async () => {
+    if (authUser) { router.push('/upload'); return; }
+    const { getSupabaseBrowserClient } = await import('@/lib/supabase/client');
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) { router.push('/login?next=/upload'); return; }
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}/auth/callback?next=/upload`, queryParams: { prompt: 'select_account' } },
+    });
+  };
+
   return (
     <div className="gpa-mobile" style={{
       display: 'flex', flexDirection: 'column', minHeight: '100vh',
@@ -118,6 +129,32 @@ export function MobileHome({
       paddingBottom: 64,
     }}>
       <MobileNav />
+
+      {/* Primary CTA band — submit to Season 01 (feed-first, compact) */}
+      <section style={{
+        padding: '14px 16px',
+        borderBottom: `1px solid ${dark ? 'rgba(255,255,255,0.08)' : 'var(--rule)'}`,
+        display: 'flex', flexDirection: 'column', gap: 8,
+      }}>
+        <button
+          onClick={handleSubmit}
+          className="th"
+          style={{
+            width: '100%', minHeight: 48, cursor: 'pointer', border: 0,
+            background: dark ? '#fff' : '#000', color: dark ? '#000' : '#fff',
+            fontSize: 15, fontWeight: 600, letterSpacing: '0.01em',
+          }}
+        >ส่งภาพเข้า Season 01</button>
+        <button
+          onClick={() => router.push('/for-customers')}
+          className="th"
+          style={{
+            background: 'transparent', border: 0, cursor: 'pointer', padding: 2,
+            color: 'var(--fg-soft)', fontSize: 12, textAlign: 'center',
+          }}
+        >เคยเดินทางกับ Gography? →</button>
+      </section>
+
       <FeedTabs active={tab} onChange={setTab} />
 
       {/* FEED — For You / Following */}
