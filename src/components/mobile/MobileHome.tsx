@@ -153,6 +153,14 @@ export function MobileHome({
             color: 'var(--fg-soft)', fontSize: 12, textAlign: 'center',
           }}
         >เคยเดินทางกับ Gography? →</button>
+        <button
+          onClick={() => router.push('/how-ranking-works')}
+          className="th"
+          style={{
+            background: 'transparent', border: 0, cursor: 'pointer', padding: 2,
+            color: 'var(--fg-soft)', fontSize: 12, textAlign: 'center',
+          }}
+        >การจัดอันดับทำงานอย่างไร →</button>
       </section>
 
       <FeedTabs active={tab} onChange={setTab} />

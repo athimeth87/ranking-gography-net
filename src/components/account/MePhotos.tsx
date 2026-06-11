@@ -188,9 +188,8 @@ export function MePhotos({ myPhotos, isPhotographer, isVoyageur, onPhotoUploaded
     }
   };
 
-  // Demo: last photo is "hidden"
-  const visible = myPhotos.slice(0, Math.max(myPhotos.length - 1, 0));
-  const hidden = myPhotos.slice(-1);
+  const visible = myPhotos.filter((p) => (p.visibility ?? 'public') === 'public');
+  const hidden = myPhotos.filter((p) => (p.visibility ?? 'public') !== 'public');
   const display = tab === 'all' ? myPhotos : tab === 'public' ? visible : hidden;
 
   return (

@@ -26,7 +26,7 @@ export function MasonryTile({ photo }: { photo: any }) {
     e.stopPropagation();
     const result = await toggle();
     if (result.kind === 'unauth') {
-      router.push('/login');
+      router.push(`/login?next=${encodeURIComponent(window.location.pathname)}`);
     }
   };
 
