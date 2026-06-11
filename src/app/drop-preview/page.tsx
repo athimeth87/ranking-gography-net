@@ -2,21 +2,20 @@
 // Temp design-preview route — delete before merging.
 import { useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useApp } from '@/providers/AppProvider';
 import { NextDropCard } from '@/components/photo/NextDropCard';
 import type { DropRow } from '@/lib/data/drops';
 
 export default function DropPreviewPage() {
   const params = useSearchParams();
-  const theme = params?.get('theme') === 'dark' ? 'dark' : 'light';
+  const { setTheme } = useApp();
+  const urlTheme = params?.get('theme');
 
+  // ?theme= seeds the shared theme state once; the normal toggle works after
   useEffect(() => {
-    // AppProvider re-applies its own theme after mount — keep enforcing ours
-    const apply = () => document.documentElement.setAttribute('data-theme', theme);
-    apply();
-    const t = setInterval(apply, 150);
-    const stop = setTimeout(() => clearInterval(t), 4000);
-    return () => { clearInterval(t); clearTimeout(stop); };
-  }, [theme]);
+    if (urlTheme === 'dark' || urlTheme === 'light') setTheme(urlTheme);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlTheme]);
 
   const mock: DropRow = useMemo(() => ({
     id: 'preview',
