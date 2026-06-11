@@ -52,7 +52,7 @@ export function PulseStatusBadge({
         solid ? 'bg-fg text-bg' : 'border border-rule text-fg-soft'
       } ${className}`}
     >
-      {status === 'popular' || status === 'rising' ? (
+      {status === 'popular' || status === 'rising' || status === 'trending' ? (
         <GlossaryTerm term={status}>{label}</GlossaryTerm>
       ) : (
         label

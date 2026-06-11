@@ -2,6 +2,7 @@
 import { DashStat } from './primitives';
 import type { Photographer, Photo } from '@/lib/types';
 import { ActivityHeatmap } from './ActivityHeatmap';
+import { formatScore } from '@/lib/pulse';
 
 interface MeStatsProps {
   persona: Photographer;
@@ -14,8 +15,8 @@ export function MeStats({ myPhotos, favDates = [] }: MeStatsProps) {
   const totalFav = myPhotos.reduce((s, p) => s + p.favorites, 0);
   const totalViews = myPhotos.reduce((s, p) => s + (p.impressions ?? 0), 0);
   const avgPulse = myPhotos.length
-    ? (myPhotos.reduce((s, p) => s + p.pulse, 0) / myPhotos.length).toFixed(0)
-    : 0;
+    ? formatScore(myPhotos.reduce((s, p) => s + p.pulse, 0) / myPhotos.length)
+    : '0.0';
   const topPhotos = [...myPhotos].sort((a, b) => b.pulse - a.pulse).slice(0, 6);
 
   return (
@@ -64,7 +65,7 @@ export function MeStats({ myPhotos, favDates = [] }: MeStatsProps) {
                 </div>
               </div>
               <div className="text-right shrink-0">
-                <div className="mono text-[24px] font-medium leading-none">{p.pulse.toFixed(0)}</div>
+                <div className="mono text-[24px] font-medium leading-none">{formatScore(p.pulse)}</div>
                 <div className="caps text-[9px] opacity-45 mt-1.5">Pulse</div>
               </div>
             </div>

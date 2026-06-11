@@ -2,6 +2,7 @@
 import { useTranslations } from 'next-intl';
 import { pulseStatus, type PickType } from '@/lib/pulse-engine';
 import { statusFromBadge, type Badge } from '@/lib/pulse-engine-v4';
+import { formatScore } from '@/lib/pulse';
 import { SHOW_LIKE_COUNTS } from '@/lib/flags';
 
 function formatCompact(n: number): string {
@@ -85,7 +86,7 @@ export function PhotoStatsPanel({ likes, impressions, pulse, pickType = 'none', 
         </li>
         <li className="flex items-center gap-3">
           <PulseIcon />
-          <span className="mono text-[15px] font-medium tracking-[-.01em]">{pulse.toFixed(1)}</span>
+          <span className="mono text-[15px] font-medium tracking-[-.01em]">{formatScore(pulse)}</span>
           <span className="caps opacity-55 text-[10px]">{t('pulse')}</span>
         </li>
         <li className="flex items-center gap-3">

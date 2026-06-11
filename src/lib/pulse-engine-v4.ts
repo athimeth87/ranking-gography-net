@@ -1,68 +1,128 @@
-// Pulse Scoring — FINAL v4 (locked 2026-06-06). Implements SCORING-LOGIC-FINAL.md.
+// Pulse Scoring — Season Engine v5 (no-decay, locked 2026-06-12).
 //
-// Role-weighted votes accumulate into photo.engagement AT VOTE TIME (snapshot),
-// then a 5-min job ranks the 0–24h active pool by engagement and maps rank →
-// percentile×100, with a viral-compression tail above the 97.8th percentile.
+// Every vote counts full weight for the whole 4-month season (no age decay).
+// A photo's raw engagement E accumulates role × type weights, dampened by a
+// daily vote budget and an anti-collusion factor:
 //
-//   vote_value   = SCORE_MATRIX[role][type] × quality_score × voteAgeWeight(photo_age)
-//   photo.engagement += vote_value                    (accumulated at vote time)
-//   score        = pct·100               if pct ≤ 0.978
-//                = 97.8 + compression     if pct > 0.978   (viral tail → 99.99)
+//   E      = Σ (SCORE_MATRIX[role][type] × budgetWeight(nth vote that day) × collusionFactor)
+//   x      = E / B                     B = community baseline (p60 of the pool, EMA-clamped)
+//   score  = 25 + 74.9 · x/(x+1)       → round to 1 dp → cap 99.9   (100.0 can never appear)
+//
+// This TS engine MUST match the DB functions in 0032_season_engine_v5.sql
+// character-for-character — the on-page number has to equal the real ranking.
+// (The photographer Hall of Fame at the bottom is unchanged — v5 §6: do not touch.)
 
 export type Role = 'ambassador' | 'rankmaster' | 'regular';
 export type VoteType = 'like' | 'favorite' | 'share';
-export type PhotoStatus = 'active' | 'grace' | 'locked';
 export type Badge =
-  | 'legendary' | 'popular' | 'trending' | 'hidden_gem' | 'daily_winner' | 'hall_of_fame' | null;
+  | 'legendary' | 'popular' | 'trending' | 'hidden_gem' | 'hall_of_fame' | null;
 
-// §2 — base weight by who votes × what they do.
+// §2 — base weight by who votes × what they do. DB tiers map as:
+// approved photographer → ambassador, customer → rankmaster, else → regular.
 export const SCORE_MATRIX: Record<Role, Record<VoteType, number>> = {
   ambassador: { like: 5, favorite: 10, share: 20 },
   rankmaster: { like: 3, favorite: 6, share: 12 },
   regular:    { like: 1, favorite: 2, share: 4 },
 };
 
-export const PULSE_V4 = {
-  ACTIVE_HOURS: 24,
-  GRACE_HOURS: 30,
-  GRACE_SPAN: 0.9,        // 1.0 → 0.1 across hours 24..30
-  LOCKED_WEIGHT: 0.1,
-  REF_PERCENTILE: 0.978,  // top 2.2% gets the compression tail
-  COMP_A: 2.2,            // bonus = A·(1 − exp(−K·(ratio − 1)))
-  COMP_K: 0.4,
-  LINEAR_CAP: 97.8,
-  MAX_SCORE: 99.99,
+// ── Season Engine v5 constants (tunable; mirror the literals in migration 0032) ─
+export const PULSE_V5 = {
+  FLOOR: 25,                  // display floor (E = 0 → 25.0, "undiscovered")
+  HILL_RANGE: 74.9,           // 25 + 74.9 → asymptote 99.9
+  DISPLAY_CAP: 99.9,          // applied AFTER rounding, so 100.0 never appears
+  DAILY_VOTE_BUDGET: 20,      // first 20 votes/user/day count full weight
+  COLLUSION_FACTOR: 0.3,      // reciprocal-voting packs are dampened ×0.3
+  COLLUSION_THRESHOLD: 5,     // ≥5 mutual votes in 7 days flags the pair
+  BASELINE_PERCENTILE: 0.60,  // B = p60 of the season pool
+  BASELINE_EMA: 0.10,         // B moves at most ±10% per cron round
+  BASELINE_PRIOR_FLOOR: 10,   // season 1 prior; later seasons inherit prior B
 } as const;
 
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 const round1 = (v: number) => Math.round(v * 10) / 10;
 
-// §3 — per-vote age weight from the photo's age (hours) at the moment of the vote.
-export function voteAgeWeight(photoAgeHours: number): number {
-  if (photoAgeHours <= PULSE_V4.ACTIVE_HOURS) return 1.0;
-  if (photoAgeHours <= PULSE_V4.GRACE_HOURS) {
-    return 1.0 - PULSE_V4.GRACE_SPAN * (photoAgeHours - PULSE_V4.ACTIVE_HOURS) / 6;
-  }
-  return PULSE_V4.LOCKED_WEIGHT;
+// ── Layer 3 — display score from raw E and baseline B (the locked formula) ──────
+// MUST equal: least(round(25 + 74.9 * (x/(x+1)), 1), 99.9) with x = E/B in the DB.
+export function seasonDisplayScore(E: number, B: number): number {
+  const b = B > 0 ? B : PULSE_V5.BASELINE_PRIOR_FLOOR;
+  const x = E / b;
+  const raw = PULSE_V5.FLOOR + PULSE_V5.HILL_RANGE * (x / (x + 1));
+  return Math.min(round1(raw), PULSE_V5.DISPLAY_CAP);
 }
 
-// §4 step 1 — value a single vote contributes (computed + stored at vote time).
-export function voteValue(o: { role: Role; type: VoteType; qualityScore: number; photoAgeHours: number }): number {
-  return SCORE_MATRIX[o.role][o.type] * clamp(o.qualityScore, 0, 1) * voteAgeWeight(o.photoAgeHours);
+// §2.5 — daily vote budget. `voteIndex` is 1-based (the n-th vote that user cast
+// today). First 20 full; vote 40 worth half. Matches the DB budget weight.
+export function budgetWeight(voteIndex: number): number {
+  return voteIndex <= PULSE_V5.DAILY_VOTE_BUDGET ? 1.0 : PULSE_V5.DAILY_VOTE_BUDGET / voteIndex;
 }
 
-// §5 — lifecycle by age.
-export function photoStatus(ageHours: number): PhotoStatus {
-  if (ageHours <= PULSE_V4.ACTIVE_HOURS) return 'active';
-  if (ageHours <= PULSE_V4.GRACE_HOURS) return 'grace';
-  return 'locked';
+// §2.6 — anti-collusion factor (ported from pulse-engine v1).
+export function collusionFactor(flagged: boolean): number {
+  return flagged ? PULSE_V5.COLLUSION_FACTOR : 1.0;
 }
 
-// §6 — viral-compression score for the top tail (engagement relative to the 97.8th ref).
-export function compressionScore(engagement: number, ref97_8: number): number {
-  const ratio = ref97_8 > 0 ? engagement / ref97_8 : 1;
-  const bonus = PULSE_V4.COMP_A * (1 - Math.exp(-PULSE_V4.COMP_K * (ratio - 1)));
-  return Math.min(PULSE_V4.MAX_SCORE, PULSE_V4.LINEAR_CAP + bonus);
+// Postgres percentile_cont(p): linear interpolation over the sorted pool.
+function percentileCont(sortedAsc: number[], p: number): number {
+  const n = sortedAsc.length;
+  if (n === 0) return 0;
+  if (n === 1) return sortedAsc[0]!;
+  const rank = p * (n - 1);
+  const lo = Math.floor(rank);
+  const frac = rank - lo;
+  const a = sortedAsc[lo]!;
+  const b = sortedAsc[Math.min(lo + 1, n - 1)]!;
+  return a + frac * (b - a);
+}
+
+// §2.3 — community baseline B: p60 of E>0, clamped to ±10% of the old B, then a
+// prior floor. Matches the B update inside recompute_pulse_active.
+export function communityBaseline(
+  engagements: number[],
+  bOld: number,
+  bPrior: number = PULSE_V5.BASELINE_PRIOR_FLOOR,
+): number {
+  const old = bOld > 0 ? bOld : PULSE_V5.BASELINE_PRIOR_FLOOR;
+  const prior = Math.max(PULSE_V5.BASELINE_PRIOR_FLOOR, bPrior);
+  const positive = engagements.filter((e) => e > 0).sort((a, b) => a - b);
+  if (positive.length === 0) return Math.max(old, prior);
+  const raw = percentileCont(positive, PULSE_V5.BASELINE_PERCENTILE);
+  const clamped = clamp(raw, old * (1 - PULSE_V5.BASELINE_EMA), old * (1 + PULSE_V5.BASELINE_EMA));
+  return Math.max(clamped, prior);
+}
+
+// ── Badge → UI status tier ──────────────────────────────────────────────────
+export type PulseStatus = Badge | 'editors_choice' | 'undiscovered';
+export type PickType = 'none' | 'editor' | 'ambassador';
+
+export function statusFromBadge(badge: Badge, pickType: PickType = 'none'): PulseStatus {
+  if (pickType !== 'none') return 'editors_choice';
+  return badge ?? 'undiscovered';
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Photographer Hall of Fame (seasonal aggregate) — v5 §6: DO NOT TOUCH.
+// Unchanged from v4: ranks photographers on the AVERAGE of all their in-window
+// photo scores (rewards consistency). Kept here because the app imports it.
+// ══════════════════════════════════════════════════════════════════════════════
+
+const HOF_REF_PERCENTILE = 0.978;  // top 2.2% gets the compression tail
+const HOF_COMP_A = 2.2;
+const HOF_COMP_K = 0.4;
+const HOF_LINEAR_CAP = 97.8;
+const HOF_MAX_SCORE = 99.99;
+
+export const PULSE_V5_HOF = {
+  WINDOW_DAYS: 120,     // 4 months = 1 season
+  MIN_PHOTOS: 22,       // must have ≥ 22 in-window photos to qualify
+  PUBLIC_TOP: 10,       // only the top 10 are shown publicly
+  RISING_MAX_DAYS: 90,  // Rising Talent eligibility
+} as const;
+
+// viral-compression score for the HoF top tail (avg relative to the 97.8th ref).
+function hofCompression(avg: number, ref: number): number {
+  const ratio = ref > 0 ? avg / ref : 1;
+  const bonus = HOF_COMP_A * (1 - Math.exp(-HOF_COMP_K * (ratio - 1)));
+  return Math.min(HOF_MAX_SCORE, HOF_LINEAR_CAP + bonus);
 }
 
 // nearest-rank percentile value on an ascending array.
@@ -72,66 +132,11 @@ function percentileValue(sortedAsc: number[], p: number): number {
   return sortedAsc[idx] ?? 0;
 }
 
-export interface ScoredPhoto<T> {
-  item: T;
-  engagement: number;
-  rank: number;       // 1-based, ascending (rank N = highest engagement)
-  percentile: number; // rank / N
-  score: number;      // 0..99.99, 1 decimal
-}
-
-// §4 steps 2–3 — rank the active pool (age ≤ 24h) and assign scores.
-export function assignScores<T extends { id: string; engagement: number }>(activePool: T[]): ScoredPhoto<T>[] {
-  const N = activePool.length;
-  if (N === 0) return [];
-  const sortedAsc = [...activePool].sort((a, b) => a.engagement - b.engagement);
-  const ref = percentileValue(sortedAsc.map((p) => p.engagement), PULSE_V4.REF_PERCENTILE);
-  const rankById = new Map<string, number>();
-  sortedAsc.forEach((p, i) => rankById.set(p.id, i + 1));
-
-  return activePool.map((item) => {
-    const rank = rankById.get(item.id) ?? 1;
-    const pct = rank / N;
-    const score = pct <= PULSE_V4.REF_PERCENTILE
-      ? pct * 100
-      : compressionScore(item.engagement, ref);
-    return { item, engagement: item.engagement, rank, percentile: pct, score: round1(score) };
-  });
-}
-
-// §7 — badge from score + view-based eligibility.
-export function assignBadge(o: { score: number; views: number; active: boolean }): Badge {
-  if (o.score >= 99.5 && o.views >= 100) return 'legendary';
-  if (o.score >= PULSE_V4.LINEAR_CAP && o.views >= 100) return 'popular';
-  if (o.score >= 95 && o.active && o.views >= 50) return 'trending';
-  if (o.score >= 90 && o.views < 200) return 'hidden_gem';
-  return null;
-}
-
-export type PulseStatus = Badge | 'editors_choice' | 'undiscovered';
-export type PickType = 'none' | 'editor' | 'ambassador';
-
-export function statusFromBadge(badge: Badge, pickType: PickType = 'none'): PulseStatus {
-  if (pickType !== 'none') return 'editors_choice';
-  return badge ?? 'undiscovered';
-}
-
-// ── §10 (v5) — Photographer Hall of Fame (seasonal aggregate) ────────────────
-// Same percentile + compression as photos, but ranked on the AVERAGE score of
-// ALL a photographer's in-window photos — rewards consistency, not lucky shots.
-
-export const PULSE_V5_HOF = {
-  WINDOW_DAYS: 120,     // 4 months = 1 season
-  MIN_PHOTOS: 22,       // must have ≥ 22 in-window photos to qualify
-  PUBLIC_TOP: 10,       // only the top 10 are shown publicly
-  RISING_MAX_DAYS: 90,  // Rising Talent eligibility
-} as const;
-
 export type PhotographerBadge = 'season_legend' | 'season_top' | 'rising_talent' | 'hall_of_fame' | null;
 
 export interface PhotographerInput {
   id: string;
-  photoScores: number[];   // v4 scores of ALL photos uploaded within the window
+  photoScores: number[];   // scores of ALL photos uploaded within the window
   accountAgeDays?: number; // for Rising Talent
 }
 
@@ -139,11 +144,11 @@ export interface HofResult<T> {
   item: T;
   qualified: boolean;
   photoCount: number;
-  avgScore: number;        // all_avg (0 if none)
-  rank: number | null;     // 1-based ascending among QUALIFIED (rank M = best)
+  avgScore: number;
+  rank: number | null;
   percentile: number | null;
-  hofScore: number | null; // 0..99.99
-  isTop10: boolean;        // public Hall of Fame slot
+  hofScore: number | null;
+  isTop10: boolean;
 }
 
 const mean = (xs: number[]) => (xs.length ? xs.reduce((s, x) => s + x, 0) / xs.length : 0);
@@ -155,7 +160,7 @@ export function rankPhotographers<T extends PhotographerInput>(photographers: T[
   qualified.forEach((p) => avgById.set(p.id, mean(p.photoScores)));
 
   const sortedAvg = qualified.map((p) => avgById.get(p.id) ?? 0).sort((a, b) => a - b);
-  const ref = percentileValue(sortedAvg, PULSE_V4.REF_PERCENTILE);
+  const ref = percentileValue(sortedAvg, HOF_REF_PERCENTILE);
   const ordered = [...qualified].sort((a, b) => (avgById.get(a.id) ?? 0) - (avgById.get(b.id) ?? 0));
   const rankById = new Map<string, number>();
   ordered.forEach((p, i) => rankById.set(p.id, i + 1));
@@ -168,16 +173,15 @@ export function rankPhotographers<T extends PhotographerInput>(photographers: T[
     const avgScore = avgById.get(item.id) ?? 0;
     const rank = rankById.get(item.id) ?? 1;
     const pct = rank / M;
-    const hof = pct <= PULSE_V4.REF_PERCENTILE ? pct * 100 : compressionScore(avgScore, ref);
+    const hof = pct <= HOF_REF_PERCENTILE ? pct * 100 : hofCompression(avgScore, ref);
     return { item, qualified: true, photoCount, avgScore, rank, percentile: pct, hofScore: round1(hof), isTop10: rank > M - PULSE_V5_HOF.PUBLIC_TOP };
   });
 }
 
-// Score-tier badge. The Hall-of-Fame (top-10) badge is the `isTop10` flag above.
 export function photographerBadge(o: { hofScore: number | null; accountAgeDays?: number }): PhotographerBadge {
   if (o.hofScore == null) return null;
   if (o.hofScore >= 99.5) return 'season_legend';
-  if (o.hofScore >= PULSE_V4.LINEAR_CAP) return 'season_top';
+  if (o.hofScore >= HOF_LINEAR_CAP) return 'season_top';
   if (o.hofScore >= 95 && (o.accountAgeDays ?? Infinity) <= PULSE_V5_HOF.RISING_MAX_DAYS) return 'rising_talent';
   return null;
 }

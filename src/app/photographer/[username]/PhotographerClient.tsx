@@ -23,6 +23,7 @@ import {
 } from './CollectionSections';
 
 import { computeRankMasters, getCashbackPercentage } from '@/lib/ranking-system';
+import { formatScore } from '@/lib/pulse';
 
 // ===== Photographer "The Collection" — /photographer/[username] =====
 
@@ -325,7 +326,7 @@ export function PhotographerClient({ username }: { username: string }) {
   if (!photographer) return notFound();
 
   const avgPulse = myPhotos.length
-    ? (myPhotos.reduce((s: number, p: Photo) => s + p.pulse, 0) / myPhotos.length).toFixed(0)
+    ? formatScore(myPhotos.reduce((s: number, p: Photo) => s + p.pulse, 0) / myPhotos.length)
     : '—';
   const myCategories = Array.from(new Set(myPhotos.map((p: Photo) => p.cat)));
   const eyebrowParts = [

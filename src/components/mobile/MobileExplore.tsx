@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { pulseScore } from '@/lib/data';
+import { formatScore } from '@/lib/pulse';
 import { useApp } from '@/providers/AppProvider';
 import { useLikeState } from '@/hooks/useLikeState';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
@@ -413,7 +414,7 @@ export function MobileExplore({ initialCategory = 'All', dbPhotos = [] }: { init
                       fontFamily: "'IBM Plex Mono', monospace", fontSize: 10,
                       letterSpacing: '0.08em', color: 'var(--fg-soft)',
                       marginTop: 2, textTransform: 'uppercase',
-                    }}>Pulse {typeof p.pulse === 'number' ? p.pulse.toFixed(1) : p.pulse}</div>
+                    }}>Pulse {typeof p.pulse === 'number' ? formatScore(p.pulse) : p.pulse}</div>
                   </div>
                 ))}
               </div>
