@@ -47,10 +47,9 @@ function CountCell({ n, label }: { n: number; label: string }) {
 interface NextDropCardProps {
   photographerId: string;
   onReleased?: () => void;
-  previewDrop?: DropRow; // temp: design preview only
 }
 
-export function NextDropCard({ photographerId, onReleased, previewDrop }: NextDropCardProps) {
+export function NextDropCard({ photographerId, onReleased }: NextDropCardProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { authUser } = useApp();
@@ -60,11 +59,10 @@ export function NextDropCard({ photographerId, onReleased, previewDrop }: NextDr
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (previewDrop) { setDrop(previewDrop); return; }
     let cancelled = false;
     getNextDrop(photographerId).then((d) => { if (!cancelled) setDrop(d); });
     return () => { cancelled = true; };
-  }, [photographerId, previewDrop]);
+  }, [photographerId]);
 
   useEffect(() => {
     if (!drop || !authUser?.id) { setSubscribed(false); return; }
@@ -146,7 +144,7 @@ export function NextDropCard({ photographerId, onReleased, previewDrop }: NextDr
         {/* right — details + countdown */}
         <div className="p-7 md:p-[48px] flex flex-col justify-center">
           {drop.series_label && (
-            <div className="text-gold text-[11px] uppercase tracking-widest font-medium mb-4">
+            <div className="text-fg-soft text-[11px] uppercase tracking-widest font-medium mb-4">
               {drop.series_label}
             </div>
           )}
@@ -175,8 +173,8 @@ export function NextDropCard({ photographerId, onReleased, previewDrop }: NextDr
                 disabled={busy}
                 className={`th inline-flex items-center gap-2 px-7 py-3 text-[13px] tracking-[.06em] bg-transparent cursor-pointer transition-colors border border-solid disabled:opacity-50 ${
                   subscribed
-                    ? 'border-gold text-gold'
-                    : 'border-fg text-fg hover:bg-gold hover:border-gold hover:text-black'
+                    ? 'bg-fg text-bg border-fg'
+                    : 'border-fg text-fg hover:bg-fg hover:border-fg hover:text-bg'
                 }`}
               >
                 {subscribed ? '✓ จะแจ้งเตือนเมื่อปล่อย' : 'แจ้งเตือนเมื่อปล่อย'}

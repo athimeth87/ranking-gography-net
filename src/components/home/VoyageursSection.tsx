@@ -62,9 +62,9 @@ export function VoyageursSection({ featuredPhoto }: VoyageursSectionProps) {
     reward1_amount: '50,000 THB',
     reward1_label: 'CASHBACK',
     reward1_sub: 'RANK 1',
-    reward2_amount: '10–20%',
-    reward2_label: 'ส่วนลดทริป',
-    reward2_sub: 'RANK 2–3',
+    reward2_amount: '3–15%',
+    reward2_label: 'CASHBACK',
+    reward2_sub: 'TOP 10',
     image_url: '/traveller-pick.jpg'
   });
 

@@ -8,7 +8,7 @@ import { useTranslations } from 'next-intl';
 import { useApp } from '@/providers/AppProvider';
 import {
   MobileNav, MobileFooter, MobileMarquee, MobileSectionHeader,
-  FeedTabs, BottomNav, FeedCard,
+  FeedTabs, BottomNav,
 } from './MobileShared';
 import { MasonryTile } from './MobileExplore';
 
