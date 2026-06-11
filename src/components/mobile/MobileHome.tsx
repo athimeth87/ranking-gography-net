@@ -219,7 +219,7 @@ export function MobileHome({
           fontFamily: "'IBM Plex Mono', monospace", fontSize: 10,
           letterSpacing: '0.18em', color: 'var(--fg-soft)', textTransform: 'uppercase',
         }}>
-          {t('season_banner')}
+          {t('season_banner', { days: daysLeft ?? '—' })}
         </div>
       </section>
 

@@ -133,7 +133,7 @@
     "sign_in": "Sign in"
   },
   "MobileHome": {
-    "season_banner": "Season 01 · 37 days left",
+    "season_banner": "Season 01 · {days} days left",
     "stats_frames": "Frames",
     "stats_photographers": "Photographers",
     "stats_seasons": "Seasons",

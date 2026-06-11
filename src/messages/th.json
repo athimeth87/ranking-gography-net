@@ -133,7 +133,7 @@
     "sign_in": "เข้าสู่ระบบ"
   },
   "MobileHome": {
-    "season_banner": "ฤดูกาล 01 · เหลืออีก 37 วัน",
+    "season_banner": "ฤดูกาล 01 · เหลืออีก {days} วัน",
     "stats_frames": "ภาพถ่าย",
     "stats_photographers": "ช่างภาพ",
     "stats_seasons": "ฤดูกาล",
