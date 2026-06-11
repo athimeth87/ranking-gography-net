@@ -8,7 +8,7 @@ import { VoyageurMark, RewardIcon } from '@/components/icons';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 
 interface RewardBadgeProps {
-  icon: 'voucher' | 'cashback' | 'star';
+  icon: 'cashback' | 'star';
   label: string;
   sub: string;
 }

@@ -84,7 +84,7 @@ export type SeasonStatus = 'live' | 'closed';
 
 export interface SeasonWinner {
   photoId: string;
-  voucher: string;
+  cashback: string;
 }
 
 export interface Season {

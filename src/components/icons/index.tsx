@@ -24,14 +24,7 @@ export function EditorIcon() {
   );
 }
 
-export function RewardIcon({ kind = 'voucher', size = 18 }: { kind?: 'voucher' | 'cashback' | 'star'; size?: number }) {
-  if (kind === 'voucher') return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4">
-      <path d="M3 8 V16 H21 V8 Z" />
-      <path d="M3 12 H21" strokeDasharray="2 2" />
-      <circle cx="8" cy="12" r="1.5" fill="currentColor" />
-    </svg>
-  );
+export function RewardIcon({ kind = 'cashback', size = 18 }: { kind?: 'cashback' | 'star'; size?: number }) {
   if (kind === 'cashback') return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4">
       <circle cx="12" cy="12" r="9" />

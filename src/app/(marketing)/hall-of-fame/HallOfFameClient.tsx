@@ -32,7 +32,7 @@ function computeWinners(
     const top = pool.reduce((best, p) =>
       (p.pulse || 0) > (best.pulse || 0) ? p : best,
     );
-    result[mappedCat] = { photoId: top.id, voucher: '50,000 THB CASHBACK' };
+    result[mappedCat] = { photoId: top.id, cashback: '50,000 THB CASHBACK' };
   }
   return Object.keys(result).length > 0 ? (result as Record<Category, SeasonWinner>) : null;
 }

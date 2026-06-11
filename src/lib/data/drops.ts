@@ -100,6 +100,10 @@ export async function createDrop(input: CreateDropInput): Promise<{ ok: boolean;
     .in('id', input.photoIds)
     .eq('photographer_id', input.photographerId);
 
-  if (photoError) return { ok: false, error: photoError.message };
+  if (photoError) {
+    // Roll back the just-created drop so a failed photo update can't leave an empty drop.
+    await supabase.from('drops').delete().eq('id', drop.id);
+    return { ok: false, error: photoError.message };
+  }
   return { ok: true };
 }

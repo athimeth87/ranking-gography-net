@@ -415,7 +415,7 @@ export function PhotographerClient({ username }: { username: string }) {
             </div>
           )}
           {photographer.isAmbassador && (
-            <div className="absolute right-[14px] top-3 z-[2] inline-flex items-center gap-[5px] bg-gold text-white px-2 py-[3px] mono text-[9px] tracking-[.14em] uppercase font-semibold">
+            <div className="absolute right-[14px] top-3 z-[2] inline-flex items-center gap-[5px] bg-gold text-black px-2 py-[3px] mono text-[9px] tracking-[.14em] uppercase font-semibold">
               Ambassador
             </div>
           )}
@@ -699,7 +699,7 @@ export function PhotographerClient({ username }: { username: string }) {
                   </span>
                 )}
                 {photographer.isAmbassador && (
-                  <span className="inline-flex items-center gap-[6px] px-[11px] py-[5px] bg-gold text-white text-[10.5px] tracking-[.16em] uppercase font-medium">
+                  <span className="inline-flex items-center gap-[6px] px-[11px] py-[5px] bg-gold text-black text-[10.5px] tracking-[.16em] uppercase font-medium">
                     <CrownIcon /> Ambassador
                   </span>
                 )}

@@ -23,7 +23,7 @@ function RewardBadge({
   label,
   sub,
 }: {
-  icon: 'voucher' | 'cashback' | 'star';
+  icon: 'cashback' | 'star';
   label: string;
   sub: string;
 }) {
