@@ -185,7 +185,7 @@ export default function Page() {
               </p>
 
               <div className="flex gap-4 mb-12 flex-wrap">
-                <RewardBadge icon="voucher" label="50,000 THB" sub="CASHBACK · RANK 1" />
+                <RewardBadge icon="cashback" label="50,000 THB" sub="CASHBACK · RANK 1" />
                 <RewardBadge icon="cashback" label="3–15%" sub="CASHBACK · TOP 10" />
                 <RewardBadge icon="star" label="Traveller" sub="PUBLIC BADGE · LIFETIME" />
               </div>

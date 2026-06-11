@@ -104,7 +104,7 @@ export function VoyageursSection({ featuredPhoto }: VoyageursSectionProps) {
             <p className="th text-[17px] leading-[1.65] text-[var(--fg-soft)] max-w-[520px] mb-8" dangerouslySetInnerHTML={{ __html: content.description }}></p>
           
             <div className="flex gap-4 mb-12">
-              <RewardBadge icon="voucher" label={content.reward1_amount} sub={`${content.reward1_label} · ${content.reward1_sub}`} />
+              <RewardBadge icon="cashback" label={content.reward1_amount} sub={`${content.reward1_label} · ${content.reward1_sub}`} />
               <RewardBadge icon="cashback" label={content.reward2_amount} sub={`${content.reward2_label} · ${content.reward2_sub}`} />
               <RewardBadge icon="star" label="Traveller" sub={t('badge_sub')} />
             </div>
