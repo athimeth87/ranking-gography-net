@@ -23,18 +23,16 @@ export function useRealtimePulse(photoIds: string[]): Record<string, LivePulse> 
           const row = payload.new as Record<string, unknown>;
           const id = row.id as string;
           if (!ids.has(id)) return;
-          setLive((prev) => ({
-            ...prev,
-            [id]: {
-              pulse: row.pulse != null ? Number(row.pulse) : 0,
-              peakPulse: row.peak_pulse != null ? Number(row.peak_pulse) : null,
-              percentile: row.percentile != null ? Number(row.percentile) : null,
-              badge: (row.badge as string) || null,
-              likes: Number(row.likes_count ?? 0),
-              favorites: Number(row.favorites_count ?? 0),
-              comments: Number(row.comments_count ?? 0),
-            },
-          }));
+          // Patch only the columns this UPDATE carried; absent counts must not reset to 0.
+          const patch: LivePulse = {};
+          if (row.pulse != null) patch.pulse = Number(row.pulse);
+          if ('peak_pulse' in row) patch.peakPulse = row.peak_pulse != null ? Number(row.peak_pulse) : null;
+          if ('percentile' in row) patch.percentile = row.percentile != null ? Number(row.percentile) : null;
+          if ('badge' in row) patch.badge = (row.badge as string) || null;
+          if (row.likes_count != null) patch.likes = Number(row.likes_count);
+          if (row.favorites_count != null) patch.favorites = Number(row.favorites_count);
+          if (row.comments_count != null) patch.comments = Number(row.comments_count);
+          setLive((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }));
         },
       )
       .subscribe();
