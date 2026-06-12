@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   SCORE_MATRIX, PULSE_V5,
-  seasonDisplayScore, budgetWeight, collusionFactor, communityBaseline,
+  seasonDisplayScore, budgetWeight, collusionFactor, communityBaseline, voteAspectWeight,
   rankPhotographers, photographerBadge,
 } from '@/lib/pulse-engine-v4';
 
@@ -54,6 +54,34 @@ describe('v5 §2.6 — anti-collusion factor', () => {
     expect(collusionFactor(true)).toBe(0.3);
     expect(collusionFactor(false)).toBe(1.0);
     expect(PULSE_V5.COLLUSION_FACTOR).toBe(0.3);
+  });
+});
+
+describe('Vote Aspect — multi-aspect weight (mirrors migration 0033)', () => {
+  // Independent re-implementation of vote_aspect_weight() in SQL.
+  const sqlWeight = (c: boolean, co: boolean, l: boolean, legacy: boolean) =>
+    legacy ? 1.0 : (Number(c) + Number(co) + Number(l) >= 2 ? 1.25 : 1.0);
+
+  it('one side = 1.0, ≥2 sides = 1.25, legacy = 1.0', () => {
+    expect(voteAspectWeight({ aspectColor: true, aspectComposition: false, aspectLight: false })).toBe(1.0);
+    expect(voteAspectWeight({ aspectColor: true, aspectComposition: true, aspectLight: false })).toBe(1.25);
+    expect(voteAspectWeight({ aspectColor: true, aspectComposition: true, aspectLight: true })).toBe(1.25);
+    expect(voteAspectWeight({ aspectColor: false, aspectComposition: false, aspectLight: false, isLegacy: true })).toBe(1.0);
+    expect(PULSE_V5.MULTI_VOTE_WEIGHT).toBe(1.25);
+  });
+
+  it('throws if no aspect is selected (an aspect-less vote cannot be weighted)', () => {
+    expect(() => voteAspectWeight({ aspectColor: false, aspectComposition: false, aspectLight: false })).toThrow();
+  });
+
+  it('TS ↔ DB parity across all 8 aspect combinations (+ legacy)', () => {
+    for (const c of [false, true]) for (const co of [false, true]) for (const l of [false, true]) {
+      if (!c && !co && !l) continue; // invalid for a non-legacy vote
+      expect(voteAspectWeight({ aspectColor: c, aspectComposition: co, aspectLight: l }))
+        .toBe(sqlWeight(c, co, l, false));
+    }
+    expect(voteAspectWeight({ aspectColor: false, aspectComposition: false, aspectLight: false, isLegacy: true }))
+      .toBe(sqlWeight(false, false, false, true));
   });
 });
 
