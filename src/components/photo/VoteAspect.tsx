@@ -1,7 +1,10 @@
 'use client';
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useVoteAspect } from '@/hooks/useVoteAspect';
 import { PULSE_V5 } from '@/lib/pulse-engine-v4';
+import { ColorIcon, CompositionIcon, LightIcon } from './aspectIcons';
 import type { AspectKey, AspectTally } from '@/lib/data/likes';
 import { cn } from '@/lib/utils';
 
@@ -10,21 +13,7 @@ import { cn } from '@/lib/utils';
 // viewer has voted; the owner always sees it. Monochrome: three tone weights
 // (fg / fg-soft / fg-faint), never hue — and text labels always, for legibility.
 
-const ColorIcon = ({ size = 14 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-    <path d="M12 2.5s6.5 6.8 6.5 11A6.5 6.5 0 0 1 5.5 13.5C5.5 9.3 12 2.5 12 2.5z" />
-  </svg>
-);
-const CompositionIcon = ({ size = 14 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
-    <rect x="3" y="3" width="18" height="18" /><path d="M9 3v18M15 3v18M3 9h18M3 15h18" />
-  </svg>
-);
-const LightIcon = ({ size = 14 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden>
-    <circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
-  </svg>
-);
+const TIP_KEY = 'gpa-vote-aspect-tip';
 
 const ASPECTS: { key: AspectKey; label: string; Icon: (p: { size?: number }) => JSX.Element }[] = [
   { key: 'color', label: 'สี', Icon: ColorIcon },
@@ -70,7 +59,19 @@ export function VoteAspect({ photoId, ownerId, variant = 'full', className = '' 
   const pathname = usePathname();
   const v = useVoteAspect(photoId, { ownerId });
 
+  // First-vote coaching tip — shown once per user (full variant only).
+  const [showTip, setShowTip] = useState(false);
+  useEffect(() => {
+    if (variant !== 'full') return;
+    try { setShowTip(!localStorage.getItem(TIP_KEY)); } catch {}
+  }, [variant]);
+  const dismissTip = () => {
+    setShowTip(false);
+    try { localStorage.setItem(TIP_KEY, '1'); } catch {}
+  };
+
   const onToggle = async (key: AspectKey) => {
+    if (showTip) dismissTip();
     const r = await v.toggleAspect(key);
     if (r.kind === 'unauth') router.push(`/login?next=${encodeURIComponent(pathname ?? '/')}`);
   };
@@ -135,6 +136,12 @@ export function VoteAspect({ photoId, ownerId, variant = 'full', className = '' 
   );
   return (
     <div className={cn('w-full', className)}>
+      {showTip && !v.hasVoted && (
+        <div className="mb-2 flex items-start gap-2 border border-rule px-3 py-2 th text-[12px] leading-[1.5] text-fg-soft">
+          <span className="flex-1">เลือกด้านที่ภาพนี้เด่นในสายตาคุณ — เลือกได้มากกว่าหนึ่ง · <Link href="/how-ranking-works" className="underline decoration-dotted underline-offset-2 hover:text-fg">กติกา</Link></span>
+          <button type="button" onClick={dismissTip} aria-label="ปิด" className="mono text-[11px] text-fg-faint hover:text-fg leading-none shrink-0">✕</button>
+        </div>
+      )}
       <div className="flex gap-2">
         {ASPECTS.map((a) => (
           <button key={a.key} type="button" aria-pressed={v.selection[a.key]} onClick={() => onToggle(a.key)} className={fullBtn(v.selection[a.key])}>
