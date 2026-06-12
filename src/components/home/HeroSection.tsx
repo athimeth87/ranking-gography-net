@@ -1,30 +1,33 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import type { Photo, Photographer } from '@/lib/types';
 import { ViewfinderFrame } from '@/components/photo/ViewfinderFrame';
 import { PulseCountUp } from '@/components/editorial/PulseCountUp';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { useRealtimePulse } from '@/hooks/useRealtimePulse';
+import { SHOW_LIKE_COUNTS } from '@/lib/flags';
 
 import { useTranslations } from 'next-intl';
 
 interface HeroSectionProps {
-  banner: Photo;
-  top: Photo;
-  bannerPhotographer: Photographer | undefined;
-  topPhotographer: Photographer | undefined;
+  banner?: Photo;
+  top?: Photo;
+  bannerPhotographer?: Photographer;
+  topPhotographer?: Photographer;
 }
 
 export function HeroSection({ banner, top, topPhotographer }: HeroSectionProps) {
   const router = useRouter();
   const t = useTranslations('HeroSection');
   const live = useRealtimePulse([top?.id, banner?.id].filter(Boolean) as string[]);
-  const topLikes = (top && live[top.id]?.likes) ?? top?.likes;
+  const topLikes = (top && live[top.id]?.likes) ?? top?.likes ?? 0;
   const [content, setContent] = useState({
     headline: t('headline'),
     description: t('description')
   });
+  const [loggedIn, setLoggedIn] = useState(false);
 
   useEffect(() => {
     const fetchContent = async () => {
@@ -33,9 +36,23 @@ export function HeroSection({ banner, top, topPhotographer }: HeroSectionProps) 
       if (data?.value) {
         setContent(prev => ({ ...prev, ...data.value }));
       }
+      const { data: { user } } = await supabase.auth.getUser();
+      setLoggedIn(!!user);
     };
     fetchContent();
   }, []);
+
+  const submitToSeason = async () => {
+    if (loggedIn) {
+      router.push('/upload');
+      return;
+    }
+    const supabase = getSupabaseBrowserClient();
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}/auth/callback?next=/upload` },
+    });
+  };
 
   return (
     <section className="relative">
@@ -58,25 +75,41 @@ export function HeroSection({ banner, top, topPhotographer }: HeroSectionProps) 
             {t('season_live', { season: 'Season 01' })}
           </div>
         </div>
-        {/* Bottom copy */}
+        {/* Bottom copy — value proposition + primary CTA, all above the fold */}
         <div className="absolute left-4 right-4 md:left-10 md:right-10 bottom-6 md:bottom-12 text-white">
           <div className="wrap !p-0 !max-w-none">
             <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-6 md:gap-10">
-              <p className="th text-[14px] md:text-[16px] leading-[1.55] max-w-[460px] text-white/85 m-0" dangerouslySetInnerHTML={{ __html: content.description }}>
-              </p>
-              <div className="flex flex-col sm:flex-row gap-[10px] w-full md:w-auto shrink-0">
-                <button
-                  onClick={() => router.push('/explore')}
-                  className="px-[22px] py-3 bg-white text-black text-[11px] tracking-[.14em] uppercase font-medium cursor-pointer border-0"
+              <div className="max-w-[460px]">
+                <p className="th text-[14px] md:text-[16px] leading-[1.55] text-white/85 m-0" dangerouslySetInnerHTML={{ __html: content.description }}>
+                </p>
+                <Link
+                  href="/how-ranking-works"
+                  className="th inline-block mt-3 text-[12px] text-white/70 border-b border-white/40 pb-[2px] hover:text-white"
                 >
-                  {t('explore')}
-                </button>
-                <button
-                  onClick={() => router.push('/faq')}
-                  className="px-[22px] py-3 text-[11px] tracking-[.14em] uppercase font-medium cursor-pointer bg-[rgba(255,255,255,.08)] text-white border border-[rgba(255,255,255,.45)] w-full sm:w-auto"
+                  {t('how_ranking_works')} →
+                </Link>
+              </div>
+              <div className="flex flex-col gap-[10px] w-full md:w-auto shrink-0 md:items-end">
+                <div className="flex flex-col sm:flex-row gap-[10px] w-full md:w-auto">
+                  <button
+                    onClick={submitToSeason}
+                    className="th px-[22px] py-3 bg-white text-black text-[13px] tracking-[.06em] font-medium cursor-pointer border-0"
+                  >
+                    {t('submit_cta')}
+                  </button>
+                  <button
+                    onClick={() => router.push('/explore')}
+                    className="px-[22px] py-3 text-[11px] tracking-[.14em] uppercase font-medium cursor-pointer bg-[rgba(255,255,255,.08)] text-white border border-[rgba(255,255,255,.45)] w-full sm:w-auto"
+                  >
+                    {t('explore')}
+                  </button>
+                </div>
+                <Link
+                  href="/for-customers"
+                  className="th text-[12px] text-white/70 hover:text-white border-b border-transparent hover:border-white/40 pb-[2px] self-start md:self-end"
                 >
-                  {t('how_ranking_works')}
-                </button>
+                  {t('traveller_link')}
+                </Link>
               </div>
             </div>
           </div>
@@ -84,12 +117,17 @@ export function HeroSection({ banner, top, topPhotographer }: HeroSectionProps) 
       </div>
 
       {/* Cover of the week — viewfinder treatment on black */}
+      {top && (
       <div className="bg-black text-white py-20">
         {/* Viewfinder top strip — frame/aperture/shutter metadata */}
         <div className="wrap flex justify-between items-baseline pb-6 text-white/65">
           <div className="caps opacity-85">{t('cover_of_week')}</div>
           <div className="mono text-[11px] tracking-[.18em] uppercase">
-            ★ #1 · <PulseCountUp value={topLikes} decimals={0} suffix=" LIKES" />
+            {SHOW_LIKE_COUNTS ? (
+              <>★ #1 · <PulseCountUp value={topLikes} decimals={0} suffix=" LIKES" /></>
+            ) : (
+              <>★ #1</>
+            )}
           </div>
         </div>
 
@@ -128,6 +166,7 @@ export function HeroSection({ banner, top, topPhotographer }: HeroSectionProps) 
           </div>
         </div>
       </div>
+      )}
     </section>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 import { useRouter } from 'next/navigation';
 import type { Photographer } from '@/lib/types';
+import { SHOW_LIKE_COUNTS } from '@/lib/flags';
 
 interface PhotoMini { by: string; src: string; }
 
@@ -125,14 +126,18 @@ export function PhotographerCard({
             <span className="font-bold text-[#e8e6e3] text-[13px]">{photographer.followers}</span>
             <span className="text-white/40">Followers</span>
           </div>
-          <div className="flex flex-col">
-            <span className="font-bold text-[#e8e6e3] text-[13px]">{photographer.totalLikes || 0}</span>
-            <span className="text-white/40">Likes</span>
-          </div>
-          <div className="flex flex-col">
-            <span className="font-bold text-[#e8e6e3] text-[13px]">{photographer.totalSaves || 0}</span>
-            <span className="text-white/40">Saves</span>
-          </div>
+          {SHOW_LIKE_COUNTS && (
+            <div className="flex flex-col">
+              <span className="font-bold text-[#e8e6e3] text-[13px]">{photographer.totalLikes || 0}</span>
+              <span className="text-white/40">Likes</span>
+            </div>
+          )}
+          {SHOW_LIKE_COUNTS && (
+            <div className="flex flex-col">
+              <span className="font-bold text-[#e8e6e3] text-[13px]">{photographer.totalSaves || 0}</span>
+              <span className="text-white/40">Saves</span>
+            </div>
+          )}
         </div>
 
         {/* Categories */}

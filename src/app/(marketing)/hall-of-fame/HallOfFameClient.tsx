@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { useRealtimePulse } from '@/hooks/useRealtimePulse';
 import { mergeLivePulse } from '@/lib/realtime-pulse';
-import { getSeasons, getPhotos, getPhotographers } from '@/lib/data';
+import { getSeasons } from '@/lib/data';
 import type { Category, Photo, Photographer, Season, SeasonWinner } from '@/lib/types';
 import { MobileHallOfFame } from '@/components/mobile/MobileHallOfFame';
 import { DesktopHallOfFame } from './DesktopHallOfFame';
@@ -32,7 +32,7 @@ function computeWinners(
     const top = pool.reduce((best, p) =>
       (p.pulse || 0) > (best.pulse || 0) ? p : best,
     );
-    result[mappedCat] = { photoId: top.id, voucher: '50,000 THB' };
+    result[mappedCat] = { photoId: top.id, cashback: '50,000 THB CASHBACK' };
   }
   return Object.keys(result).length > 0 ? (result as Record<Category, SeasonWinner>) : null;
 }
@@ -61,15 +61,6 @@ export function HallOfFameClient() {
   useEffect(() => {
     const fetchData = async () => {
       const supabase = getSupabaseBrowserClient();
-
-      // No supabase → fall back to full mock
-      if (!supabase) {
-        setSeasons(getSeasons());
-        setAllPhotos(getPhotos());
-        setPhotographers(getPhotographers());
-        setLoading(false);
-        return;
-      }
 
       try {
         // Fetch seasons and users first
@@ -101,16 +92,8 @@ export function HallOfFameClient() {
           ? basePhotoQuery.eq('season_id', liveSeasonId)
           : basePhotoQuery);
         
+        // Empty DB stays empty — never substitute mock photos.
         const photos = dbPhotos || [];
-
-        // No real photos yet → fall back to full mock so the page looks right
-        if (photos.length === 0) {
-          setSeasons(getSeasons());
-          setAllPhotos(getPhotos());
-          setPhotographers(getPhotographers());
-          setLoading(false);
-          return;
-        }
 
         // Map users → Photographer
         const mappedPhotographers: Photographer[] = users.map(u => ({
@@ -178,8 +161,6 @@ export function HallOfFameClient() {
       } catch (err) {
         console.error('Hall of Fame fetch error:', err);
         setSeasons(getSeasons());
-        setAllPhotos(getPhotos());
-        setPhotographers(getPhotographers());
       } finally {
         setLoading(false);
       }

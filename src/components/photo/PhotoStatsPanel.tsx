@@ -2,6 +2,8 @@
 import { useTranslations } from 'next-intl';
 import { pulseStatus, type PickType } from '@/lib/pulse-engine';
 import { statusFromBadge, type Badge } from '@/lib/pulse-engine-v4';
+import { formatScore } from '@/lib/pulse';
+import { SHOW_LIKE_COUNTS } from '@/lib/flags';
 
 function formatCompact(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, '')}M`;
@@ -70,11 +72,13 @@ export function PhotoStatsPanel({ likes, impressions, pulse, pickType = 'none', 
     <div className="py-7 border-b border-rule">
       <div className="caps opacity-55 mb-4">{t('title')}</div>
       <ul className="flex flex-col gap-[14px]">
-        <li className="flex items-center gap-3">
-          <HeartIcon />
-          <span className="mono text-[15px] font-medium tracking-[-.01em]">{formatCompact(likes)}</span>
-          <span className="caps opacity-55 text-[10px]">{t('likes')}</span>
-        </li>
+        {SHOW_LIKE_COUNTS && (
+          <li className="flex items-center gap-3">
+            <HeartIcon />
+            <span className="mono text-[15px] font-medium tracking-[-.01em]">{formatCompact(likes)}</span>
+            <span className="caps opacity-55 text-[10px]">{t('likes')}</span>
+          </li>
+        )}
         <li className="flex items-center gap-3">
           <EyeIcon />
           <span className="mono text-[15px] font-medium tracking-[-.01em]">{formatCompact(impressions)}</span>
@@ -82,7 +86,7 @@ export function PhotoStatsPanel({ likes, impressions, pulse, pickType = 'none', 
         </li>
         <li className="flex items-center gap-3">
           <PulseIcon />
-          <span className="mono text-[15px] font-medium tracking-[-.01em]">{pulse.toFixed(1)}</span>
+          <span className="mono text-[15px] font-medium tracking-[-.01em]">{formatScore(pulse)}</span>
           <span className="caps opacity-55 text-[10px]">{t('pulse')}</span>
         </li>
         <li className="flex items-center gap-3">

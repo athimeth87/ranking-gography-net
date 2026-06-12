@@ -1,4 +1,4 @@
-import type { Photo } from '@/lib/types';
+import type { Photo, PhotoVisibility } from '@/lib/types';
 import { PhotoCard } from './PhotoCard';
 
 interface PhotoGridProps {
@@ -11,6 +11,9 @@ interface PhotoGridProps {
   showLike?: boolean;
   deletable?: boolean;
   onDeleted?: (id: string) => void;
+  showVisibility?: boolean;
+  onVisibilityChanged?: (id: string, visibility: PhotoVisibility) => void;
+  onCurateChanged?: (id: string, isCurated: boolean) => void;
 }
 
 export function PhotoGrid({
@@ -23,6 +26,9 @@ export function PhotoGrid({
   showLike = false,
   deletable = false,
   onDeleted,
+  showVisibility = false,
+  onVisibilityChanged,
+  onCurateChanged,
 }: PhotoGridProps) {
   const leaderTopScore =
     showRankDelta && photos.length > 0 ? Math.max(...photos.map((p) => p.pulse)) : null;
@@ -57,6 +63,9 @@ export function PhotoGrid({
               showLike={showLike}
               deletable={deletable}
               onDeleted={onDeleted}
+              showVisibility={showVisibility}
+              onVisibilityChanged={onVisibilityChanged}
+              onCurateChanged={onCurateChanged}
             />
           </div>
         ))}
@@ -83,6 +92,9 @@ export function PhotoGrid({
             showLike={showLike}
             deletable={deletable}
             onDeleted={onDeleted}
+            showVisibility={showVisibility}
+            onVisibilityChanged={onVisibilityChanged}
+            onCurateChanged={onCurateChanged}
           />
         </div>
       ))}

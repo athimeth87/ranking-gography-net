@@ -25,3 +25,13 @@ export function rankPhotos(seeds: PhotoSeed[]): Photo[] {
 
 /** The minimum pulse value shown in the UI. */
 export const PULSE_FLOOR = PULSE_PARAMS.FLOOR;
+
+/**
+ * Format a competition score for display: always 1 decimal, hard-capped at 99.9
+ * so 100.0 can never appear (Season Engine v5 — the DB already caps, this guards
+ * any client-side or mock value too). Use this everywhere a single score shows.
+ */
+export function formatScore(pulse: number | null | undefined): string {
+  const v = typeof pulse === 'number' && Number.isFinite(pulse) ? pulse : PULSE_FLOOR;
+  return Math.min(Math.round(v * 10) / 10, 99.9).toFixed(1);
+}

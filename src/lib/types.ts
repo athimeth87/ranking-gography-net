@@ -3,6 +3,8 @@ export type PickKind = 'editor' | 'ambassador';
 export type UserState = 'guest' | 'user' | 'customer' | 'photographer';
 export type Theme = 'light' | 'dark';
 export type Mode = 'atelier' | 'editorial';
+export type SortKey = 'pulse' | 'recent' | 'likes';
+export type PhotoVisibility = 'public' | 'portfolio' | 'private';
 
 export interface Exif {
   camera: string;
@@ -46,6 +48,8 @@ export interface Photo extends PhotoSeed {
   pickType?: 'none' | 'editor' | 'ambassador' | 'both';
   percentile?: number | null;
   badge?: string | null;
+  visibility?: PhotoVisibility;
+  isCurated?: boolean;
 }
 
 export interface Photographer {
@@ -56,6 +60,8 @@ export interface Photographer {
   bio: string;
   avatar: string;
   cover: string;
+  /** CSS object-position for the cover banner, e.g. "50% 30%". */
+  coverPosition?: string;
   followers: number;
   photos: number;
   totalLikes?: number;
@@ -80,7 +86,7 @@ export type SeasonStatus = 'live' | 'closed';
 
 export interface SeasonWinner {
   photoId: string;
-  voucher: string;
+  cashback: string;
 }
 
 export interface Season {

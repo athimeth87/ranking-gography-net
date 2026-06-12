@@ -1,7 +1,6 @@
 // Ambassadors — list of trusted curators (invite-only)
 
 import { getSupabaseServerClient } from '@/lib/supabase/server';
-import { getPhoto } from '@/lib/data';
 import { Footer } from '@/components/layout/Footer';
 import { ProfileButton, PhotoThumb } from './_components';
 

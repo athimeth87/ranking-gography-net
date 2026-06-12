@@ -6,7 +6,7 @@ import { VoyageurMark } from '@/components/icons';
 import { Footer } from '@/components/layout/Footer';
 import { useApp } from '@/providers/AppProvider';
 import { PageCover } from '@/components/layout/PageCover';
-import type { Category } from '@/lib/types';
+import type { Category, PhotoVisibility } from '@/lib/types';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { MAX_UPLOAD_BYTES, formatBytes, convertToWebP } from '@/lib/imageConvert';
 import { getPresignedUploadUrl } from '@/app/actions/r2-upload';
@@ -35,7 +35,11 @@ interface Draft {
   actualFile: File | null;
   width?: number;
   height?: number;
+  visibility: PhotoVisibility;
 }
+
+// Competition quota: 1 public (เข้าประกวด) upload per day per account
+const PUBLIC_DAILY_QUOTA = 1;
 
 interface DropZoneProps {
   draft: Draft;
@@ -176,7 +180,7 @@ function Field2({ label, children }: Field2Props) {
 }
 
 export default function UploadPage() {
-  const { userState } = useApp();
+  const { userState, authUser } = useApp();
   const router = useRouter();
 
   const [uploadedToday, setUploadedToday] = useState(0);
@@ -190,12 +194,60 @@ export default function UploadPage() {
     lens: '',
     file: null,
     actualFile: null,
+    visibility: 'public',
   });
   const [dragOver, setDragOver] = useState(false);
   const [countdown, setCountdown] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+  const [showRightsAck, setShowRightsAck] = useState(false);
+  const [rightsAcked, setRightsAcked] = useState(false);
 
-  const limitReached = false; // unlimited uploads
+  // First-upload photo-rights acknowledgement (persisted in localStorage)
+  useEffect(() => {
+    try {
+      if (localStorage.getItem('gpa-photo-rights-ack')) setRightsAcked(true);
+      else setShowRightsAck(true);
+    } catch {
+      setRightsAcked(true);
+    }
+  }, []);
+
+  const handleRightsAck = (checked: boolean) => {
+    setRightsAcked(checked);
+    if (checked) {
+      try { localStorage.setItem('gpa-photo-rights-ack', '1'); } catch {}
+    }
+  };
+
+  const limitReached = false; // uploads themselves are never blocked — only the public option
+
+  // Today's competition (visibility = 'public') uploads — drives the quota
+  useEffect(() => {
+    if (!authUser?.id) return;
+    const fetchTodayPublicCount = async () => {
+      const supabase = getSupabaseBrowserClient();
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
+      const { count } = await supabase
+        .from('photos')
+        .select('*', { count: 'exact', head: true })
+        .eq('photographer_id', authUser.id)
+        .eq('visibility', 'public')
+        .gte('uploaded_at', startOfDay.toISOString());
+      setUploadedToday(count || 0);
+    };
+    fetchTodayPublicCount();
+  }, [authUser]);
+
+  const publicQuotaUsed = uploadedToday >= PUBLIC_DAILY_QUOTA;
+  const publicQuotaLeft = Math.max(0, PUBLIC_DAILY_QUOTA - uploadedToday);
+
+  // If today's competition quota is used, fall back to portfolio
+  useEffect(() => {
+    if (publicQuotaUsed) {
+      setDraft((d) => (d.visibility === 'public' ? { ...d, visibility: 'portfolio' } : d));
+    }
+  }, [publicQuotaUsed]);
 
   // Countdown to midnight (Bangkok)
   useEffect(() => {
@@ -216,10 +268,10 @@ export default function UploadPage() {
     return () => clearInterval(id);
   }, []);
 
-  const { authUser } = useApp();
-
   const handleSubmit = async () => {
-    if (limitReached || !draft.file || !draft.actualFile || !authUser?.id) return;
+    if (limitReached || !draft.file || !draft.actualFile || !authUser?.id || !rightsAcked) return;
+    // Only competition entries consume the daily quota
+    if (draft.visibility === 'public' && publicQuotaUsed) return;
     setIsUploading(true);
 
     const supabase = getSupabaseBrowserClient();
@@ -264,7 +316,8 @@ export default function UploadPage() {
       width: draft.width || 4,
       height: draft.height || 3,
       likes_count: 0,
-      favorites_count: 0
+      favorites_count: 0,
+      visibility: draft.visibility
     });
 
     if (dbError) {
@@ -274,6 +327,7 @@ export default function UploadPage() {
     }
 
     setIsUploading(false);
+    if (draft.visibility === 'public') setUploadedToday((c) => c + 1);
     // Reset draft so the user can upload another photo right away
     setDraft({
       title: '',
@@ -285,8 +339,16 @@ export default function UploadPage() {
       lens: '',
       file: null,
       actualFile: null,
+      visibility: draft.visibility === 'public' ? 'portfolio' : draft.visibility,
     });
-    toast.success('อัปโหลดสำเร็จแล้ว!', { description: 'รูปภาพของคุณถูกส่งเข้าสู่ระบบแล้ว' });
+    toast.success('อัปโหลดสำเร็จแล้ว!', {
+      description:
+        draft.visibility === 'public'
+          ? 'ภาพของคุณเข้าประกวด Season แล้ว'
+          : draft.visibility === 'portfolio'
+          ? 'ภาพถูกเพิ่มลงพอร์ตของคุณแล้ว'
+          : 'ภาพถูกเก็บในลิ้นชัก — เห็นเฉพาะคุณ',
+    });
     router.push(profilePath);
   };
 
@@ -296,7 +358,6 @@ export default function UploadPage() {
   return (
     <div className="page-fade">
       <PageCover
-        photoId="p019"
         eyebrow="Upload"
         title="Submit a photo"
         subtitle="อัพโหลดได้ไม่จำกัด — JPEG/PNG/WebP สูงสุด 5 MB · แปลงเป็น .webp อัตโนมัติ"
@@ -444,6 +505,60 @@ export default function UploadPage() {
                     </div>
                   )}
 
+                  <div role="radiogroup" aria-label="ส่งภาพแบบไหน">
+                    <div className="caps opacity-55 mb-2">ส่งภาพแบบไหน</div>
+                    <div className="flex flex-col gap-2">
+                      {([
+                        {
+                          v: 'public' as PhotoVisibility,
+                          title: 'เข้าประกวด Season',
+                          sub: publicQuotaUsed
+                            ? 'คุณใช้โควต้าเข้าประกวดของวันนี้แล้ว (รีเซ็ตเวลา 00:00 น.)'
+                            : draft.visibility === 'public'
+                            ? `นับคะแนน ขึ้น feed · โควต้าวันนี้เหลือ ${publicQuotaLeft}/${PUBLIC_DAILY_QUOTA}`
+                            : 'นับคะแนน ขึ้น feed',
+                          disabled: publicQuotaUsed,
+                        },
+                        {
+                          v: 'portfolio' as PhotoVisibility,
+                          title: 'โชว์ในพอร์ต',
+                          sub: 'ไม่เข้าประกวด ไม่นับคะแนน ไม่ใช้โควต้า',
+                          disabled: false,
+                        },
+                        {
+                          v: 'private' as PhotoVisibility,
+                          title: 'เก็บในลิ้นชัก',
+                          sub: 'เห็นคนเดียว ปล่อยทีหลังได้',
+                          disabled: false,
+                        },
+                      ]).map((o) => (
+                        <label
+                          key={o.v}
+                          className="flex items-start gap-3 py-[14px] px-4 transition-colors"
+                          style={{
+                            border: `1px solid ${draft.visibility === o.v ? 'var(--fg)' : 'var(--rule)'}`, // runtime: selection
+                            background: draft.visibility === o.v ? 'var(--cream)' : 'transparent', // runtime: selection
+                            opacity: o.disabled ? 0.45 : 1, // runtime: quota state
+                            cursor: o.disabled ? 'not-allowed' : 'pointer', // runtime: quota state
+                          }}
+                        >
+                          <input
+                            type="radio"
+                            name="upload-visibility"
+                            className="mt-[3px] accent-current cursor-pointer"
+                            checked={draft.visibility === o.v}
+                            disabled={o.disabled}
+                            onChange={() => setDraft((d) => ({ ...d, visibility: o.v }))}
+                          />
+                          <span>
+                            <span className="th text-[15px] font-medium block">{o.title}</span>
+                            <span className="th text-[13px] text-fg-soft block mt-[2px] leading-[1.5]">{o.sub}</span>
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
                   <Field2 label="คำบรรยายภาพ">
                     <textarea
                       className="input"
@@ -482,13 +597,31 @@ export default function UploadPage() {
                     </Field2>
                   </div>
 
+                  {showRightsAck && (
+                    <label className="flex items-start gap-3 py-[14px] px-4 bg-cream border border-rule cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="mt-[3px] accent-current cursor-pointer"
+                        checked={rightsAcked}
+                        onChange={(e) => handleRightsAck(e.target.checked)}
+                      />
+                      <span className="th text-[13px] leading-[1.7]">
+                        <span className="caps block opacity-55 mb-1">Photo Rights</span>
+                        ภาพเป็นของคุณ 100% · เราแสดงเฉพาะในบริบทของ Ranking ·{' '}
+                        <Link href="/photo-rights" target="_blank" className="border-b border-rule pb-[1px]">
+                          อ่านฉบับเต็ม →
+                        </Link>
+                      </span>
+                    </label>
+                  )}
+
                   <button
-                    className={`btn ${!draft.file || !draft.title || isUploading ? 'btn-ghost' : 'btn-solid'} mt-3 justify-center`}
-                    disabled={!draft.file || !draft.title || isUploading}
+                    className={`btn ${!draft.file || !draft.title || isUploading || !rightsAcked ? 'btn-ghost' : 'btn-solid'} mt-3 justify-center`}
+                    disabled={!draft.file || !draft.title || isUploading || !rightsAcked}
                     onClick={handleSubmit}
-                    style={{ opacity: !draft.file || !draft.title || isUploading ? 0.35 : 1 }} // runtime: form validity state
+                    style={{ opacity: !draft.file || !draft.title || isUploading || !rightsAcked ? 0.35 : 1 }} // runtime: form validity state
                   >
-                    {!draft.file ? 'เลือกภาพก่อน' : !draft.title ? 'ใส่ชื่อภาพ' : isUploading ? 'Uploading...' : 'Submit a photo'}
+                    {!draft.file ? 'เลือกภาพก่อน' : !draft.title ? 'ใส่ชื่อภาพ' : !rightsAcked ? 'ยืนยันเรื่องลิขสิทธิ์ภาพก่อน' : isUploading ? 'Uploading...' : 'Submit a photo'}
                   </button>
                   <p className="mono text-[11px] opacity-55 text-center leading-[1.7]">
                     หลังจากส่งแล้ว ภาพจะปรากฏใน Explore ทันที — และคุณจะกลับมาอัพภาพถัดไปได้พรุ่งนี้

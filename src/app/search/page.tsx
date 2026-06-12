@@ -301,7 +301,6 @@ export default function SearchPage() {
   return (
     <>
       <PageCover
-        photoId="p007"
         eyebrow="Search"
         title="Find your photo"
         subtitle="ค้นจากชื่อภาพ ชื่อช่างภาพ สถานที่ หรือหมวดหมู่"

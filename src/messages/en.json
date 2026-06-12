@@ -17,7 +17,9 @@
     "banner_credit": "Banner: \"{title}\" by {name}",
     "cover_of_week": "Cover of the week",
     "by": "by {name}",
-    "view_photo": "View photo"
+    "view_photo": "View photo",
+    "submit_cta": "Submit to Season 01",
+    "traveller_link": "Travelled with Gography? → Travellers Programme"
   },
   "TrendsNowSection": {
     "title": "Popular",
@@ -43,7 +45,7 @@
   },
   "VoyageursSection": {
     "title": "Travelled with us?<br />Become a Traveller",
-    "description": "Every GOGRAPHY traveller earns <strong>Traveller</strong> status — a category of your own, judged only against people who have travelled with us. At the end of each season the top 3 photos win: Rank 1 takes a 50,000 THB cashback, Ranks 2–3 get a discount toward their next trip.",
+    "description": "Every GOGRAPHY traveller earns <strong>Traveller</strong> status — a category of your own, judged only against people who have travelled with us. At the end of each season rewards are paid as cashback: Rank 1 takes 50,000 THB cashback and the Top 10 get 3–15% cashback.",
     "reward1_sub": "per category",
     "program_name": "The Travellers Programme",
     "exclusive": "EXCLUSIVE · TRAVELLERS ONLY",
@@ -57,7 +59,7 @@
     "step2_title": "Upload photos from your trip",
     "step2_desc": "Submit up to 1 photo per day per account. Keep submitting throughout the season (4 months).",
     "step3_title": "Win rewards",
-    "step3_desc": "At the end of the season, the team selects the best photos per category — the winner gets a 50,000 THB voucher and the Top 10 get 3–15% cashback."
+    "step3_desc": "At the end of the season, the photo with the highest GoScore in each category wins — Rank 1 takes 50,000 THB cashback and the Top 10 get 3–15% cashback."
   },
   "CategoryChips": {
     "all": "All",
@@ -140,11 +142,11 @@
     "how_it_works_title": "Three steps. One season.",
     "step": "STEP",
     "step1_title": "Submit your frame",
-    "step1_desc": "Upload up to 12 photos per season. Tag location and category.",
-    "step2_title": "Earn pulse",
-    "step2_desc": "Likes × 1, likes 24h × 3, curation bonus. Time-decayed.",
+    "step1_desc": "Upload 1 photo per account per day. Tag location and category.",
+    "step2_title": "Earn your score",
+    "step2_desc": "Scores come from community votes, weighted by voter trust — designed so votes cannot be gamed.",
     "step3_title": "Win the season",
-    "step3_desc": "Highest pulse across all categories takes Season Winner.",
+    "step3_desc": "The photo with the highest GoScore in each category at season end wins.",
     "voyageurs_num": "Traveller",
     "voyageurs_title": "On the road this season",
     "voyageurs_desc": "An exclusive category for customers who have travelled with Gography — submit and compete within the Traveller group for special rewards.",
@@ -182,6 +184,10 @@
     "uploading": "Uploading...",
     "uploading_short": "Uploading...",
     "change_cover": "Change Cover",
+    "reposition_cover": "Reposition",
+    "reposition_hint": "Drag to reposition",
+    "reposition_save": "Save position",
+    "reposition_cancel": "Cancel",
     "change": "Change",
     "view_public_profile": "View public profile",
     "upload_photo": "Upload photo",

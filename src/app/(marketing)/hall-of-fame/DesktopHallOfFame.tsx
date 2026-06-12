@@ -2,10 +2,10 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { getPhoto } from '@/lib/data';
 import type { Category, Photo, Photographer, Season, SeasonWinner } from '@/lib/types';
 import { Footer } from '@/components/layout/Footer';
 import { cn } from '@/lib/utils';
+import { GlossaryTerm } from '@/components/editorial/GlossaryTerm';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -66,7 +66,7 @@ export function DesktopHallOfFame({
   const liveSeason = seasons.find((s) => s.status === 'live');
   const archived = seasons.filter((s) => s.status === 'closed' && s.winners);
 
-  const resolvePhoto = (photoId: string) => allPhotos.find((p) => p.id === photoId) ?? getPhoto(photoId);
+  const resolvePhoto = (photoId: string) => allPhotos.find((p) => p.id === photoId);
   const coverSrc = '/hall-of-fame-cover.jpg'; // Background image
 
   // Enhance ranking with cover_url and is_customer from our pre-fetched photographers data
@@ -118,7 +118,7 @@ export function DesktopHallOfFame({
             <div className="flex items-center gap-3 mb-5">
               <span className="mono text-[10px] tracking-[.3em] uppercase text-white/75">
                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5 align-middle" />
-                 {liveSeason?.name ?? 'LIVE SEASON'}
+                 <GlossaryTerm term="season">{liveSeason?.name ?? 'LIVE SEASON'}</GlossaryTerm>
               </span>
               <span className="h-px w-10 bg-white/30" />
               <span className="mono text-[10px] tracking-[.3em] uppercase text-white/55 tabular-nums">
