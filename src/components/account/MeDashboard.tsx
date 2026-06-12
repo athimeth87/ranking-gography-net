@@ -11,6 +11,8 @@ import { useTranslations } from 'next-intl';
 import { TranslatedNotificationBody, TranslatedTimeAgo } from '@/components/layout/NotificationsBell';
 import type { Photographer, Photo } from '@/lib/types';
 import { getCashbackPercentage } from '@/lib/ranking-system';
+import { MeStanding } from './MeStanding';
+import { MeGoScore } from './MeGoScore';
 
 const ACTIVITY_PAGE = 5;
 
@@ -116,6 +118,10 @@ export function MeDashboard({ persona, isVoyageur, isPhotographer, myPhotos, fol
           </button>
         </div>
       )}
+
+      {/* Your standing (per-category rank) + GoScore breakdown — real V4 data */}
+      <MeStanding userId={userId} myPhotos={myPhotos} />
+      <MeGoScore myPhotos={myPhotos} />
 
       {/* Quick actions */}
       <div className="mt-14">

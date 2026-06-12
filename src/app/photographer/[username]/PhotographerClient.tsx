@@ -6,21 +6,26 @@ import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { PhotoGrid } from '@/components/photo/PhotoGrid';
 import { Footer } from '@/components/layout/Footer';
 import { VoyageurMark, CrownIcon } from '@/components/icons';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { PageCover } from '@/components/layout/PageCover';
 import { useFollowState } from '@/hooks/useFollowState';
 import { FollowListModal, type FollowTab } from '@/components/account/FollowListModal';
-import { computePulse, type PickType } from '@/lib/pulse-engine';
-
+import { type PickType } from '@/lib/pulse-engine';
 import { computeRankMasters, getCashbackPercentage } from '@/lib/ranking-system';
+import { SpecimenCard } from '@/components/collection/SpecimenCard';
+import { ArchiveDrawer } from '@/components/collection/ArchiveDrawer';
+import { selectCuration, type SeasonAward } from '@/lib/provenance';
 
-// ===== Photographer public profile — /photographer/[username] =====
+// ===== Photographer public profile — /photographer/[username] · "The Collection" =====
 
 function mapPublicPhoto(p: any, username: string) {
   const likes = p.likes_count || 0;
   const favorites = p.favorites_count || 0;
   const comments = p.comments_count || 0;
   const pulse = p.pulse != null ? Number(p.pulse) : 0;
+  const exif = p.exif || null;
+  const exifSettings = exif
+    ? [exif.aperture, exif.shutter, exif.iso ? `ISO ${exif.iso}` : null].filter(Boolean).join(' · ')
+    : '';
+  const year = p.uploaded_at ? new Date(p.uploaded_at).getFullYear().toString() : '';
   return {
     id: p.id,
     slug: p.id,
@@ -31,36 +36,34 @@ function mapPublicPhoto(p: any, username: string) {
     w: p.width || 4,
     h: p.height || 3,
     caption: p.description || '',
-    exif: { camera: 'Unknown', lens: 'Unknown', iso: 100, shutter: '1/100', aperture: 'f/8', focal: '50mm' },
+    exif: {
+      camera: p.camera || 'Unknown',
+      lens: p.lens || 'Unknown',
+      iso: exif?.iso ?? 100,
+      shutter: exif?.shutter ?? '1/100',
+      aperture: exif?.aperture ?? 'f/8',
+      focal: exif?.focal ?? '50mm',
+    },
     likes,
     likes24h: 0,
     comments,
     favorites,
     hours: 1,
-    picks: [],
+    picks: p.pick_type === 'editor' || p.pick_type === 'both' ? ['editor'] : [],
     date: p.uploaded_at,
     pulse,
     impressions: p.impressions_count || 0,
     rank: 0,
+    // Collection fields
+    location: p.location || '',
+    camera: p.camera || '',
+    lens: p.lens || '',
+    year,
+    exifSettings,
+    pickType: (p.pick_type || 'none') as PickType,
+    badge: p.badge ?? null,
+    peakPulse: p.peak_pulse != null ? Number(p.peak_pulse) : null,
   };
-}
-
-interface ProfileStatProps { label: string; val: string | number; onClick?: () => void; }
-function ProfileStat({ label, val, onClick }: ProfileStatProps) {
-  const inner = (
-    <>
-      <div className="text-[28px] font-medium tracking-[-0.015em]">{val}</div>
-      <div className="text-[10px] tracking-[.16em] uppercase opacity-55 mt-1">{label}</div>
-    </>
-  );
-  if (onClick) {
-    return (
-      <button onClick={onClick} className="text-left bg-transparent border-0 p-0 cursor-pointer hover:opacity-65 transition-opacity">
-        {inner}
-      </button>
-    );
-  }
-  return <div>{inner}</div>;
 }
 
 function SocialIconRow({ p }: { p: any }) {
@@ -95,11 +98,27 @@ function ProfileEmpty({ msg }: { msg: string }) {
   return <div className="py-[120px] text-center text-fg-soft th">{msg}</div>;
 }
 
-const MOBILE_TABS = [
-  { id: 'photos' as const,    label: 'Photos' },
-  { id: 'favorites' as const, label: 'Saved' },
-  { id: 'about' as const,     label: 'About' },
-];
+// Editorial section head — "— 01  Curated Set" with hairline rule above.
+function SectionHead({ num, title, small }: { num: string; title: string; small?: string }) {
+  return (
+    <div className="flex items-baseline justify-between border-t border-rule pt-6 md:pt-[26px] pb-6 md:pb-[34px] mt-12 md:mt-[70px] gap-4">
+      <h2 className="font-serif text-[24px] md:text-[30px] font-medium leading-none">
+        <span className="mono text-gold text-[11px] tracking-[.3em] mr-[14px] align-middle">{num}</span>
+        {title}
+      </h2>
+      {small && <span className="th text-[11px] md:text-[12px] tracking-[.04em] text-fg-soft text-right shrink-0">{small}</span>}
+    </div>
+  );
+}
+
+function CollStat({ b, s }: { b: string | number; s: string }) {
+  return (
+    <div className="bg-bg px-[14px] md:px-[18px] py-[18px] md:py-[22px]">
+      <b className="block font-serif text-[26px] md:text-[30px] font-medium">{b}</b>
+      <span className="mono text-[9px] md:text-[10px] tracking-[.22em] text-fg-soft">{s}</span>
+    </div>
+  );
+}
 
 const MOBILE_BTN_SOLID = 'flex-1 inline-flex items-center justify-center min-h-[44px] px-4 text-[13px] font-semibold tracking-[.03em] uppercase border border-fg bg-fg text-bg cursor-pointer';
 const MOBILE_BTN_GHOST = 'flex-1 inline-flex items-center justify-center min-h-[44px] px-4 text-[13px] font-semibold tracking-[.03em] uppercase border border-black/15 dark:border-white/25 bg-transparent text-fg cursor-pointer';
@@ -111,8 +130,8 @@ export function PhotographerClient({ username }: { username: string }) {
   const [photographer, setPhotographer] = useState<any>(null);
   const [myPhotos, setMyPhotos] = useState<any[]>([]);
   const [myFavorites, setMyFavorites] = useState<any[]>([]);
+  const [seasonAwards, setSeasonAwards] = useState<Map<string, SeasonAward>>(new Map());
   const [isLoading, setIsLoading] = useState(true);
-  const [mobileTab, setMobileTab] = useState<'photos' | 'favorites' | 'about'>('photos');
   const [copied, setCopied] = useState(false);
   const [voyageurRank, setVoyageurRank] = useState<number | null>(null);
   const [topCategory, setTopCategory] = useState<string | null>(null);
@@ -165,6 +184,20 @@ export function PhotographerClient({ username }: { username: string }) {
       if (photosData) {
         setMyPhotos(photosData.map(p => mapPublicPhoto(p, userData.username)));
 
+        // Per-photo season-award provenance (permanent achievement history)
+        const ids = photosData.map(p => p.id);
+        if (ids.length > 0) {
+          const { data: sw } = await supabase
+            .from('season_winners')
+            .select('photo_id, category, seasons ( name )')
+            .in('photo_id', ids);
+          const m = new Map<string, SeasonAward>();
+          (sw || []).forEach((w: any) => {
+            m.set(w.photo_id, { seasonName: w.seasons?.name || 'Season', category: w.category });
+          });
+          setSeasonAwards(m);
+        }
+
         // Compute voyageur rank if this photographer is a customer
         if (userData.is_customer && photosData.length > 0) {
           const catCounts: Record<string, number> = {};
@@ -214,7 +247,7 @@ export function PhotographerClient({ username }: { username: string }) {
     fetchProfile();
   }, [username]);
 
-  // Realtime: patch engagement counts + recompute pulse without refetch
+  // Realtime: patch engagement counts without refetch
   useEffect(() => {
     if (!photographer?.id) return;
     const supabase = getSupabaseBrowserClient();
@@ -274,6 +307,8 @@ export function PhotographerClient({ username }: { username: string }) {
     setTimeout(() => setCopied(false), 1900);
   };
 
+  const openPhoto = (id: string) => router.push(`/photo/${id}`);
+
   if (isLoading) return (
     <div className="page-fade py-32 text-center text-fg-soft font-mono text-xs uppercase tracking-widest">
       Loading Profile...
@@ -281,91 +316,67 @@ export function PhotographerClient({ username }: { username: string }) {
   );
   if (!photographer) return notFound();
 
-  const totalViews = myPhotos.reduce((s: number, p: Photo) => s + (p.impressions ?? 0), 0);
+  const { curated, archive } = selectCuration(myPhotos, seasonAwards);
+  const seasonAwardsCount = seasonAwards.size;
   const avgPulse = myPhotos.length
     ? (myPhotos.reduce((s: number, p: Photo) => s + p.pulse, 0) / myPhotos.length).toFixed(0)
     : '—';
-  const editorPickCount = myPhotos.filter((p: Photo) => p.picks.includes('editor')).length;
-  const myCategories = Array.from(new Set(myPhotos.map((p: Photo) => p.cat)));
-  const eyebrowParts = [
-    photographer.isAmbassador ? 'Ambassador' : null,
-    photographer.isCustomer ? 'Traveller' : 'Photographer',
-    `@${photographer.username}`,
-  ].filter(Boolean).join(' · ');
+  const myCategories = Array.from(new Set(myPhotos.map((p: any) => p.cat)));
+  const cameras = Array.from(new Set(myPhotos.map((p: any) => p.camera).filter((c: string) => c && c !== 'Unknown')));
+  const lenses = Array.from(new Set(myPhotos.map((p: any) => p.lens).filter((l: string) => l && l !== 'Unknown')));
+  const gear = [...cameras, ...lenses];
+  const primaryCamera = cameras[0];
+  const nameWords = String(photographer.name).trim().split(/\s+/);
+  const firstName = nameWords[0] ?? photographer.name;
+  const restName = nameWords.slice(1).join(' ');
+  const pad2 = (n: number) => String(n).padStart(2, '0');
+  const collectionLabel = photographer.isCustomer && !photographer.isAmbassador ? 'Traveller' : 'Photographer';
 
   return (
     <div className="page-fade">
 
       {/* ===================== MOBILE LAYOUT ===================== */}
-      <div className="md:hidden min-h-screen bg-white dark:bg-[#0a0a0a] text-fg">
+      <div className="md:hidden min-h-screen bg-bg text-fg">
 
         {/* Sticky top bar */}
-        <header className="sticky top-0 z-30 flex items-center justify-between h-[52px] px-[14px] backdrop-blur-[8px] bg-white/[0.96] dark:bg-[#0a0a0a]/[0.96] border-b border-black/[0.08] dark:border-white/[0.08]">
-          <button
-            onClick={() => router.back()}
-            aria-label="Back"
-            className="w-9 h-9 bg-transparent border-0 cursor-pointer p-0 inline-flex items-center justify-center text-fg"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M15 18l-6-6 6-6" />
-            </svg>
+        <header className="sticky top-0 z-30 flex items-center justify-between h-[52px] px-[14px] backdrop-blur-[8px] bg-[var(--bg-nav)] border-b border-rule">
+          <button onClick={() => router.back()} aria-label="Back" className="w-9 h-9 bg-transparent border-0 cursor-pointer p-0 inline-flex items-center justify-center text-fg">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
           </button>
-
           <div className="flex items-center gap-[6px] text-fg">
             <span className="text-[15px] font-semibold tracking-[-0.01em]">@{photographer.username}</span>
-            {photographer.isCustomer && (
-              <span className="w-[5px] h-[5px] bg-gold rotate-45 inline-block" />
-            )}
+            {photographer.isCustomer && <span className="w-[5px] h-[5px] bg-gold rotate-45 inline-block" />}
           </div>
-
-          <button
-            onClick={handleShare}
-            aria-label="Share"
-            className="w-9 h-9 bg-transparent border-0 cursor-pointer p-0 inline-flex items-center justify-center text-fg"
-          >
+          <button onClick={handleShare} aria-label="Share" className="w-9 h-9 bg-transparent border-0 cursor-pointer p-0 inline-flex items-center justify-center text-fg">
             {copied ? (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
             ) : (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
-                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-              </svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" /></svg>
             )}
           </button>
         </header>
 
         {/* Cover image */}
-        <div className="relative w-full h-[160px] overflow-hidden bg-[#f0ede7] dark:bg-[#1a1916]">
+        <div className="relative w-full h-[160px] overflow-hidden bg-tile">
           {photographer.cover && (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={photographer.cover} alt="" className="w-full h-full object-cover block" />
           )}
           <div className="absolute inset-0 bg-gradient-to-b from-transparent from-[40%] to-black/45" />
-
           {photographer.isRankMaster && (
-            <div className="absolute left-[14px] top-3 z-[2] inline-flex items-center gap-[5px] bg-fg text-bg px-2 py-[3px] mono text-[9px] tracking-[.14em] uppercase font-semibold">
-              Rank Master
-            </div>
+            <div className="absolute left-[14px] top-3 z-[2] inline-flex items-center gap-[5px] bg-fg text-bg px-2 py-[3px] mono text-[9px] tracking-[.14em] uppercase font-semibold">Rank Master</div>
           )}
           {photographer.isAmbassador && (
-            <div className="absolute right-[14px] top-3 z-[2] inline-flex items-center gap-[5px] bg-gold text-white px-2 py-[3px] mono text-[9px] tracking-[.14em] uppercase font-semibold">
-              Ambassador
-            </div>
+            <div className="absolute right-[14px] top-3 z-[2] inline-flex items-center gap-[5px] bg-gold text-white px-2 py-[3px] mono text-[9px] tracking-[.14em] uppercase font-semibold">Ambassador</div>
           )}
           {photographer.isCustomer && !photographer.isAmbassador && (
-            <div className="absolute right-[14px] top-3 z-[2] inline-flex items-center gap-[5px] text-gold bg-black/50 backdrop-blur-[4px] px-2 py-[3px] mono text-[9px] tracking-[.14em] uppercase">
-              <span className="w-[5px] h-[5px] bg-gold rotate-45" />
-              Traveller
-            </div>
+            <div className="absolute right-[14px] top-3 z-[2] inline-flex items-center gap-[5px] text-gold bg-black/50 backdrop-blur-[4px] px-2 py-[3px] mono text-[9px] tracking-[.14em] uppercase"><span className="w-[5px] h-[5px] bg-gold rotate-45" />Traveller</div>
           )}
         </div>
 
         {/* Avatar + stat row */}
         <div className="px-4 flex items-end gap-5">
-          <div className="w-20 h-20 rounded-full bg-[#e8e4dc] dark:bg-[#1a1916] border-[3px] border-white dark:border-[#0a0a0a] overflow-hidden shrink-0 z-[2] -mt-[42px]">
+          <div className="w-20 h-20 rounded-full bg-tile border-[3px] border-bg overflow-hidden shrink-0 z-[2] -mt-[42px]">
             {photographer.avatar && (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={photographer.avatar} alt={photographer.name} className="w-full h-full object-cover" />
@@ -384,9 +395,7 @@ export function PhotographerClient({ username }: { username: string }) {
                 </>
               );
               return tab ? (
-                <button key={l} onClick={() => setFollowModalTab(tab)} className="bg-transparent border-0 p-0 cursor-pointer active:opacity-60 transition-opacity">
-                  {body}
-                </button>
+                <button key={l} onClick={() => setFollowModalTab(tab)} className="bg-transparent border-0 p-0 cursor-pointer active:opacity-60 transition-opacity">{body}</button>
               ) : (
                 <div key={l}>{body}</div>
               );
@@ -394,179 +403,97 @@ export function PhotographerClient({ username }: { username: string }) {
           </div>
         </div>
 
-        {/* Name + bio + location */}
+        {/* Name + bio */}
         <div className="px-4 pt-[14px]">
-          <div className="text-[15px] font-bold tracking-[-0.01em] leading-[1.3]">
-            {photographer.name}
-          </div>
+          <div className="mono text-[9px] tracking-[.34em] uppercase text-gold mb-2">The Private Collection of</div>
+          <h1 className="font-serif text-[30px] font-medium leading-[1.05] mb-1">
+            {firstName}{restName && <> <em className="text-gold">{restName}</em></>}
+          </h1>
           {photographer.bio && (
-            <p className="font-thai text-[15px] leading-[1.65] text-fg-soft max-w-[50ch] mb-4">
-              {photographer.bio}
-            </p>
+            <p className="font-thai text-[15px] leading-[1.65] text-fg-soft max-w-[50ch] mt-3 mb-4">{photographer.bio}</p>
           )}
-          <div className="mb-6">
-            <SocialIconRow p={photographer} />
-          </div>
-          <div className="mono text-[11px] tracking-[.06em] text-fg-soft uppercase mt-1">
-            {photographer.loc} · Joined {photographer.joined}
-          </div>
+          <div className="mb-5"><SocialIconRow p={photographer} /></div>
+          <div className="mono text-[11px] tracking-[.06em] text-fg-soft uppercase">{photographer.loc} · Joined {photographer.joined}{primaryCamera ? ` · ${primaryCamera}` : ''}</div>
         </div>
 
         {/* Action buttons */}
-        <div className="px-4 pt-3 flex gap-2">
-          {follow.isSelf ? (
-            <button onClick={() => router.push('/me')} className={MOBILE_BTN_SOLID}>Edit Profile</button>
-          ) : (
-            <button
-              onClick={onFollowClick}
-              disabled={follow.loading}
-              className={MOBILE_BTN_SOLID}
-            >
-              {follow.following ? 'Following' : 'Follow'}
-            </button>
+        <div className="px-4 pt-4 flex gap-2">
+          {!follow.isSelf && (
+            <button onClick={onFollowClick} disabled={follow.loading} className={MOBILE_BTN_SOLID}>{follow.following ? 'Following' : 'Follow'}</button>
           )}
-          <button onClick={handleShare} className={MOBILE_BTN_GHOST}>
-            {copied ? 'Copied!' : 'Share'}
-          </button>
+          <button onClick={handleShare} className={follow.isSelf ? MOBILE_BTN_SOLID : MOBILE_BTN_GHOST}>{copied ? 'Copied!' : 'Share'}</button>
         </div>
 
         {/* Pulse strip */}
         {myPhotos.length > 0 && (
-          <div className="mx-4 mt-[14px] px-[14px] py-[11px] flex items-center justify-between gap-3 bg-[#f9f7f4] dark:bg-[#1a1916] border border-black/[0.07] dark:border-white/[0.08]">
+          <div className="mx-4 mt-[10px] px-[14px] py-[11px] flex items-center justify-between gap-3 bg-cream border border-rule">
             <div className="flex items-center gap-[9px]">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M7 17l4-8 3 6 3-3" />
-              </svg>
-              <span className="mono text-[13px] font-semibold">
-                Pulse {Math.round(myPhotos.reduce((s: number, p: Photo) => s + p.pulse, 0)).toLocaleString()}
-              </span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17l4-8 3 6 3-3" /></svg>
+              <span className="mono text-[13px] font-semibold">Pulse {Math.round(myPhotos.reduce((s: number, p: Photo) => s + p.pulse, 0)).toLocaleString()}</span>
             </div>
-            <span className="mono text-[10px] tracking-[.1em] uppercase text-fg-soft">
-              Avg {avgPulse}
-            </span>
+            <span className="mono text-[10px] tracking-[.1em] uppercase text-fg-soft">Avg {avgPulse}</span>
           </div>
         )}
 
-        {/* Mobile tab bar */}
-        <div className="mt-4 border-t border-black/[0.08] dark:border-white/[0.1]">
-          <div className="grid grid-cols-3">
-            {MOBILE_TABS.map(({ id, label }) => {
-              const active = mobileTab === id;
-              return (
-                <button
-                  key={id}
-                  onClick={() => setMobileTab(id)}
-                  className={`py-[13px] px-0 bg-transparent cursor-pointer border-x-0 border-t-0 border-b-2 mono text-[11px] tracking-[.1em] uppercase ${
-                    active ? 'border-fg text-fg' : 'border-transparent text-fg-soft'
-                  }`}
-                >
-                  {label}
-                </button>
-              );
-            })}
-          </div>
+        {/* Curated Set */}
+        <div className="px-4">
+          {curated.length > 0 ? (
+            <>
+              <SectionHead num="— 01" title="Curated Set" small={`${pad2(curated.length)} / 12 ชิ้น`} />
+              <div className="grid grid-cols-2 gap-x-4 gap-y-8">
+                {curated.map((p: any, i: number) => (
+                  <SpecimenCard key={p.id} photo={p} index={i} awards={seasonAwards} onOpen={openPhoto} />
+                ))}
+              </div>
+              <ArchiveDrawer photos={archive} onOpen={openPhoto} cols={3} />
+            </>
+          ) : (
+            <ProfileEmpty msg="ยังไม่มีภาพในคอลเลกชันนี้" />
+          )}
         </div>
 
-        {/* Tab content — Photos */}
-        {mobileTab === 'photos' && (
-          myPhotos.length > 0 ? (
+        {/* Saved */}
+        {myFavorites.length > 0 && (
+          <div className="px-4">
+            <SectionHead num="— 02" title="Saved" small="ภาพที่บันทึกไว้" />
             <div className="grid grid-cols-3 gap-[2px]">
-              {myPhotos.map(p => (
-                <div
-                  key={p.id}
-                  onClick={() => router.push(`/photo/${p.id}`)}
-                  className="aspect-square bg-[#f0ede7] dark:bg-[#1a1916] cursor-pointer overflow-hidden"
-                >
+              {myFavorites.map((p: any) => (
+                <button key={p.id} type="button" onClick={() => openPhoto(p.id)} className="aspect-square bg-tile cursor-pointer overflow-hidden p-0 border-0">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={p.src} alt={p.title || ''} className="w-full h-full object-cover block" loading="lazy" />
-                </div>
+                </button>
               ))}
             </div>
-          ) : (
-            <div className="px-4 py-[80px] text-center font-thai text-fg-soft">
-              ยังไม่มีภาพในโปรไฟล์นี้
-            </div>
-          )
-        )}
-
-        {/* Tab content — Favorites */}
-        {mobileTab === 'favorites' && (
-          myFavorites.length > 0 ? (
-            <div className="grid grid-cols-3 gap-[2px]">
-              {myFavorites.map(p => (
-                <div
-                  key={(p as any).id}
-                  onClick={() => router.push(`/photo/${(p as any).id}`)}
-                  className="aspect-square bg-[#f0ede7] dark:bg-[#1a1916] cursor-pointer overflow-hidden"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={(p as any).src} alt={(p as any).title || ''} className="w-full h-full object-cover block" loading="lazy" />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="px-4 py-[80px] text-center font-thai text-fg-soft">
-              ยังไม่มีภาพที่บันทึกไว้
-            </div>
-          )
-        )}
-
-        {/* Tab content — About */}
-        {mobileTab === 'about' && (
-          <div className="px-4 pt-5 pb-[40px]">
-
-            {/* Voyageur card */}
-            {photographer.isCustomer && (
-              <div className="mb-6 bg-[#f9f7f4] dark:bg-[#1a1916] border border-black/[0.08] dark:border-white/[0.08] p-4">
-                <div className="flex items-center gap-[6px] mb-3 mono text-[10px] tracking-[.14em] uppercase text-gold">
-                  <span className="w-[6px] h-[6px] bg-gold rotate-45" />
-                  Traveller · Season 01
-                </div>
-                <div className="mono text-[12px] leading-[2.2]">
-                  <div className="flex justify-between border-b border-black/[0.06] dark:border-white/[0.06] pb-[6px] mb-[6px]">
-                    <span className="text-fg-soft">Photos submitted</span>
-                    <span className="font-semibold">{myPhotos.length}</span>
-                  </div>
-                  {voyageurRank != null && topCategory && (
-                    <div className="flex justify-between border-b border-black/[0.06] dark:border-white/[0.06] pb-[6px] mb-[6px]">
-                      <span className="text-fg-soft">Rank ({topCategory})</span>
-                      <span className="font-semibold">#{voyageurRank}</span>
-                    </div>
-                  )}
-                   <div className="flex justify-between">
-                     <span className="text-fg-soft">Cashback tier</span>
-                     <span className="font-semibold text-gold">
-                       {getCashbackPercentage(voyageurRank)}% {getCashbackPercentage(voyageurRank) > 0 ? '✓' : ''}
-                     </span>
-                   </div>
-                </div>
-              </div>
-            )}
-
-            {/* Bio */}
-            <div className="mb-5">
-              <div className="mono text-[10px] tracking-[.16em] uppercase text-fg-soft mb-2">About</div>
-              <p className="font-thai text-[14px] leading-[1.7] m-0 text-fg-soft">{photographer.bio}</p>
-            </div>
-
-            {/* Categories */}
-            {myCategories.length > 0 && (
-              <div>
-                <div className="mono text-[10px] tracking-[.16em] uppercase text-fg-soft mb-[10px]">Categories</div>
-                <div className="flex gap-[6px] flex-wrap">
-                  {myCategories.map((cat: string) => (
-                    <span
-                      key={cat}
-                      className="px-[10px] py-1 border border-black/[0.12] dark:border-white/[0.15] mono text-[10px] tracking-[.12em] uppercase"
-                    >
-                      {cat}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         )}
+
+        {/* About */}
+        <div className="px-4 pt-2 pb-[40px]">
+          <SectionHead num="— 03" title="About" />
+          {photographer.isCustomer && (
+            <div className="mb-6 bg-cream border border-rule p-4">
+              <div className="flex items-center gap-[6px] mb-3 mono text-[10px] tracking-[.14em] uppercase text-gold"><span className="w-[6px] h-[6px] bg-gold rotate-45" />Traveller · Season 01</div>
+              <div className="mono text-[12px] leading-[2.2]">
+                <div className="flex justify-between border-b border-rule pb-[6px] mb-[6px]"><span className="text-fg-soft">Photos submitted</span><span className="font-semibold">{myPhotos.length}</span></div>
+                {voyageurRank != null && topCategory && (
+                  <div className="flex justify-between border-b border-rule pb-[6px] mb-[6px]"><span className="text-fg-soft">Rank ({topCategory})</span><span className="font-semibold">#{voyageurRank}</span></div>
+                )}
+                <div className="flex justify-between"><span className="text-fg-soft">Cashback tier</span><span className="font-semibold text-gold">{getCashbackPercentage(voyageurRank)}% {getCashbackPercentage(voyageurRank) > 0 ? '✓' : ''}</span></div>
+              </div>
+            </div>
+          )}
+          <p className="font-thai text-[14px] leading-[1.7] m-0 text-fg-soft mb-5">{photographer.bio}</p>
+          {myCategories.length > 0 && (
+            <div>
+              <div className="mono text-[10px] tracking-[.16em] uppercase text-fg-soft mb-[10px]">Categories</div>
+              <div className="flex gap-[6px] flex-wrap">
+                {myCategories.map((cat: string) => (
+                  <span key={cat} className="px-[10px] py-1 border border-rule mono text-[10px] tracking-[.12em] uppercase">{cat}</span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
 
         <div className="h-[40px]" />
         <Footer />
@@ -574,194 +501,118 @@ export function PhotographerClient({ username }: { username: string }) {
 
       {/* ===================== DESKTOP LAYOUT ===================== */}
       <div className="hidden md:block">
-        <PageCover
-          src={photographer.cover}
-          eyebrow={eyebrowParts}
-          title={photographer.name}
-          subtitle={photographer.bio}
-          credit={`${photographer.loc} · ${myPhotos.length} photos · ${follow.followersCount.toLocaleString()} followers`}
-        />
+        <div className="wrap pb-[80px]">
 
-        {/* Identity header */}
-        <section className="pt-8 md:pt-[64px] pb-6 md:pb-[48px] border-b border-rule">
-          <div className="wrap">
-            <div className="flex flex-wrap justify-between items-center gap-3 mb-6 md:mb-[48px]">
-              <div className="flex items-center gap-[10px]">
-                {photographer.isRankMaster && (
-                  <span className="inline-flex items-center gap-[6px] px-[11px] py-[5px] bg-fg text-bg text-[10.5px] tracking-[.16em] uppercase font-medium">
-                    <CrownIcon /> Rank Master
-                  </span>
-                )}
-                {photographer.isAmbassador && (
-                  <span className="inline-flex items-center gap-[6px] px-[11px] py-[5px] bg-gold text-white text-[10.5px] tracking-[.16em] uppercase font-medium">
-                    <CrownIcon /> Ambassador
-                  </span>
-                )}
-                {photographer.isCustomer && (
-                  <span className="inline-flex items-center gap-[6px] px-[11px] py-[5px] bg-fg text-bg text-[10.5px] tracking-[.16em] uppercase font-medium">
-                    <VoyageurMark size={7} /> Voyageur
-                  </span>
-                )}
-                <span className="mono text-[11px] tracking-[.18em] uppercase opacity-55">@{photographer.username}</span>
-              </div>
-              <div className="flex gap-[10px]">
-                <button onClick={handleShare} className="btn btn-sm">
-                  {copied ? 'Copied!' : 'Share'}
-                </button>
-                {follow.isSelf ? (
-                  <button className="btn btn-sm" disabled>You</button>
-                ) : (
-                  <button
-                    className={`btn btn-sm ${follow.following ? '' : 'btn-solid'}`}
-                    onClick={onFollowClick}
-                    disabled={follow.loading}
-                  >
-                    {follow.following ? 'Following' : 'Follow'}
-                  </button>
-                )}
-              </div>
+          {/* Slim action bar */}
+          <div className="flex justify-between items-center py-5 border-b border-rule">
+            <span className="caps text-fg-soft">The Collection</span>
+            <div className="flex gap-[10px]">
+              {!follow.isSelf && (
+                <button className={`btn btn-sm ${follow.following ? '' : 'btn-solid'}`} onClick={onFollowClick} disabled={follow.loading}>{follow.following ? 'Following' : 'Follow'}</button>
+              )}
+              <button onClick={handleShare} className="btn btn-sm">{copied ? 'Copied!' : 'Share'}</button>
             </div>
+          </div>
 
-            <div className="grid gap-6 md:gap-[48px] items-end grid-cols-[1fr_auto]">
-              <div>
-                <h1 className="th font-light m-0 leading-[.92] text-[clamp(40px,9vw,128px)] tracking-[-0.035em]">
-                  {photographer.name}
-                </h1>
-                <div className="mt-6 flex gap-[28px] items-center caps">
-                  <span className="opacity-65">{photographer.loc}</span>
-                  <span className="opacity-35">·</span>
-                  <span className="opacity-65">Joined {photographer.joined}</span>
-                  <span className="opacity-35">·</span>
-                  <span className="opacity-65">{photographer.cameras[0]}</span>
-                </div>
+          {/* Hero */}
+          <header className="pt-[60px] pb-[40px] grid grid-cols-[1.4fr_1fr] gap-[60px] items-end">
+            <div>
+              <div className="mono text-[10.5px] tracking-[.4em] uppercase text-gold mb-[22px]">The Private Collection of</div>
+              <h1 className="font-serif text-[clamp(44px,5.5vw,72px)] font-medium leading-[1.02] tracking-[.01em]">
+                {firstName}{restName && <><br /><em className="text-gold">{restName}</em></>}
+              </h1>
+              <p className="font-thai text-[14.5px] leading-[1.8] text-fg-soft max-w-[46ch] mt-6">{photographer.bio}</p>
+              <div className="flex gap-[14px] mt-7 flex-wrap items-center">
+                {photographer.isAmbassador && <span className="mono text-[10px] tracking-[.18em] uppercase border border-gold text-gold px-[13px] py-[6px]">✦ Ambassador</span>}
+                {photographer.isRankMaster && <span className="mono text-[10px] tracking-[.18em] uppercase border border-gold text-gold px-[13px] py-[6px] inline-flex items-center gap-[6px]"><CrownIcon /> Rank Master</span>}
+                {photographer.isCustomer && !photographer.isAmbassador && <span className="mono text-[10px] tracking-[.18em] uppercase border border-gold text-gold px-[13px] py-[6px] inline-flex items-center gap-[6px]"><VoyageurMark size={7} /> Traveller</span>}
+                <span className="mono text-[10px] tracking-[.18em] uppercase border border-rule text-fg-soft px-[13px] py-[6px]">{photographer.loc}</span>
+                {primaryCamera && <span className="mono text-[10px] tracking-[.18em] uppercase border border-rule text-fg-soft px-[13px] py-[6px]">{primaryCamera}</span>}
               </div>
-              <div className="w-[96px] h-[96px] md:w-[140px] md:h-[140px] rounded-full overflow-hidden bg-tile shrink-0">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={photographer.avatar} alt="" className="w-full h-full object-cover" loading="lazy" />
-              </div>
-            </div>
-
-            <p className="th mt-7 text-[17px] leading-[1.55] max-w-[720px] text-fg-soft mb-0">
-              {photographer.bio}
-            </p>
-            <div className="mt-6">
               <SocialIconRow p={photographer} />
             </div>
-          </div>
-        </section>
 
-        {/* Stat strip + tabs */}
-        <section>
-          <div className="wrap">
-            <div className="grid grid-cols-3 md:grid-cols-6 gap-6 md:gap-8 py-6 md:py-8 border-b border-rule mono">
-              <ProfileStat label="Photos" val={myPhotos.length} />
-              <ProfileStat label="Total Views" val={totalViews.toLocaleString()} />
-              <ProfileStat label="Followers" val={follow.followersCount.toLocaleString()} onClick={() => setFollowModalTab('followers')} />
-              <ProfileStat label="Following" val={(photographer.following ?? 0).toLocaleString()} onClick={() => setFollowModalTab('following')} />
-              <ProfileStat label="Pulse avg" val={avgPulse} />
-              <ProfileStat label="Rank Master" val={editorPickCount} />
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-px bg-rule border border-rule">
+              <CollStat b={pad2(curated.length)} s="CURATED" />
+              <CollStat b={pad2(archive.length)} s="IN ARCHIVE" />
+              <CollStat b={pad2(seasonAwardsCount)} s="SEASON AWARDS" />
             </div>
+          </header>
 
-            <Tabs defaultValue="photos" className="w-full">
-              <TabsList className="w-full justify-start rounded-none bg-transparent border-b border-rule gap-0 h-auto">
-                <TabsTrigger value="photos" className="px-0 mr-8 py-5 text-[13px] tracking-[.14em] uppercase font-medium">
-                  Photos <span className="opacity-55 ml-[6px]">{myPhotos.length}</span>
-                </TabsTrigger>
-                <TabsTrigger value="favorites" className="px-0 mr-8 py-5 text-[13px] tracking-[.14em] uppercase font-medium">
-                  Favorites <span className="opacity-55 ml-[6px]">{myFavorites.length}</span>
-                </TabsTrigger>
-                <TabsTrigger value="about" className="px-0 py-5 text-[13px] tracking-[.14em] uppercase font-medium">
-                  About
-                </TabsTrigger>
-              </TabsList>
+          {/* Next Drop — deferred until the scheduled-release (drops) feature exists. */}
 
-              <div className="py-[48px] pb-[80px]">
-                <TabsContent value="photos">
-                  {myPhotos.length > 0
-                    ? <PhotoGrid photos={myPhotos} cols={3} showLike />
-                    : <ProfileEmpty msg="ยังไม่มีภาพในโปรไฟล์นี้" />
-                  }
-                </TabsContent>
-
-                <TabsContent value="favorites">
-                  <p className="th text-[14px] text-fg-soft mt-0 mb-8 max-w-[600px]">
-                    ภาพที่ {photographer.name.split(' ')[0]} เลือกบันทึกไว้ — ตั้งเป็น public โดยช่างภาพ
-                  </p>
-                  {myFavorites.length > 0 ? (
-                    <PhotoGrid photos={myFavorites} cols={3} showLike />
-                  ) : (
-                    <ProfileEmpty msg="ยังไม่มีภาพที่บันทึกไว้" />
-                  )}
-                </TabsContent>
-
-                <TabsContent value="about">
-                  {photographer.isCustomer && (
-                    <div className="p-6 md:p-[32px_36px] bg-cream border border-rule mb-8 md:mb-[48px] grid gap-8 md:gap-[48px] items-center grid-cols-1 md:grid-cols-[1.5fr_1fr]">
-                      <div>
-                        <div className="caps opacity-55 mb-3 flex items-center gap-2">
-                          <VoyageurMark size={9} /> Traveller
-                        </div>
-                        <h3 className="th text-[26px] font-normal tracking-[-0.015em] m-0 leading-[1.25]">
-                          ลูกค้าทริป GOGRAPHY — มีสิทธิ์ลุ้นรางวัล Travellers Awards
-                        </h3>
-                        <div className="mono mt-5 text-[12px] leading-[1.9]">
-                          <div className="opacity-55 mb-2">TRIPS COMPLETED</div>
-                          {(photographer.customerTrips ?? []).map((t: string) => (
-                            <div key={t}>· {t}</div>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="border-l border-rule pl-8">
-                        <div className="caps opacity-55 mb-3">Travellers · Season 01</div>
-                        <div className="th text-[14px] leading-[1.7]">
-                          <div className="flex justify-between py-2 border-b border-rule">
-                            <span>Photos submitted</span>
-                            <span className="mono font-medium">{myPhotos.length}</span>
-                          </div>
-                          {voyageurRank != null && topCategory && (
-                            <div className="flex justify-between py-2 border-b border-rule">
-                              <span>Current rank ({topCategory})</span>
-                              <span className="mono font-medium">#{voyageurRank}</span>
-                            </div>
-                          )}
-                          <div className="flex justify-between py-2">
-                             <span>Cashback tier</span>
-                             <span className="mono font-medium">
-                               {getCashbackPercentage(voyageurRank)}% {getCashbackPercentage(voyageurRank) > 0 ? '✓' : ''}
-                             </span>
-                           </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-[80px] pt-4">
-                    <div>
-                      <h3 className="th text-[24px] font-normal tracking-[-0.015em] m-0 mb-5">
-                        เกี่ยวกับ {photographer.name}
-                      </h3>
-                      <p className="th text-[15px] leading-[1.75] text-fg-soft">{photographer.bio}</p>
-                    </div>
-                    <div>
-                      <div className="caps opacity-55 mb-4">Gear</div>
-                      <ul className="list-none p-0 m-0 mono">
-                        {photographer.cameras.map((cam: string) => (
-                          <li key={cam} className="py-3 border-b border-rule text-[13px]">{cam}</li>
-                        ))}
-                      </ul>
-                      <div className="caps opacity-55 mb-4 mt-8">Categories</div>
-                      <ul className="list-none p-0 m-0 mono">
-                        {myCategories.map((cat: string) => (
-                          <li key={cat} className="py-3 border-b border-rule text-[13px]">{cat}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                </TabsContent>
+          {/* Curated Set */}
+          {curated.length > 0 ? (
+            <>
+              <SectionHead num="— 01" title="Curated Set" small={`${pad2(curated.length)} / 12 ชิ้น — คัดอัตโนมัติจากผลงานเด่น`} />
+              <div className="grid grid-cols-3 gap-x-[34px] gap-y-[46px]">
+                {curated.map((p: any, i: number) => (
+                  <SpecimenCard key={p.id} photo={p} index={i} awards={seasonAwards} onOpen={openPhoto} />
+                ))}
               </div>
-            </Tabs>
+              <ArchiveDrawer photos={archive} onOpen={openPhoto} cols={6} />
+            </>
+          ) : (
+            <ProfileEmpty msg="ยังไม่มีภาพในคอลเลกชันนี้" />
+          )}
+
+          {/* Saved */}
+          {myFavorites.length > 0 && (
+            <>
+              <SectionHead num="— 02" title="Saved" small={`ภาพที่ ${String(photographer.name).split(' ')[0]} เลือกบันทึกไว้`} />
+              <PhotoGrid photos={myFavorites} cols={4} />
+            </>
+          )}
+
+          {/* About */}
+          <SectionHead num={myFavorites.length > 0 ? '— 03' : '— 02'} title="About" />
+          {photographer.isCustomer && (
+            <div className="p-[32px_36px] bg-cream border border-rule mb-[48px] grid gap-[48px] items-center grid-cols-[1.5fr_1fr]">
+              <div>
+                <div className="caps opacity-55 mb-3 flex items-center gap-2"><VoyageurMark size={9} /> Traveller</div>
+                <h3 className="th text-[26px] font-normal tracking-[-0.015em] m-0 leading-[1.25]">ลูกค้าทริป GOGRAPHY — มีสิทธิ์ลุ้นรางวัล Travellers Awards</h3>
+                <div className="mono mt-5 text-[12px] leading-[1.9]">
+                  <div className="opacity-55 mb-2">TRIPS COMPLETED</div>
+                  {(photographer.customerTrips ?? []).map((t: string) => (<div key={t}>· {t}</div>))}
+                </div>
+              </div>
+              <div className="border-l border-rule pl-8">
+                <div className="caps opacity-55 mb-3">Travellers · Season 01</div>
+                <div className="th text-[14px] leading-[1.7]">
+                  <div className="flex justify-between py-2 border-b border-rule"><span>Photos submitted</span><span className="mono font-medium">{myPhotos.length}</span></div>
+                  {voyageurRank != null && topCategory && (
+                    <div className="flex justify-between py-2 border-b border-rule"><span>Current rank ({topCategory})</span><span className="mono font-medium">#{voyageurRank}</span></div>
+                  )}
+                  <div className="flex justify-between py-2"><span>Cashback tier</span><span className="mono font-medium">{getCashbackPercentage(voyageurRank)}% {getCashbackPercentage(voyageurRank) > 0 ? '✓' : ''}</span></div>
+                </div>
+              </div>
+            </div>
+          )}
+          <div className="grid grid-cols-2 gap-[80px] pt-4">
+            <div>
+              <h3 className="th text-[24px] font-normal tracking-[-0.015em] m-0 mb-5">เกี่ยวกับ {photographer.name}</h3>
+              <p className="th text-[15px] leading-[1.75] text-fg-soft">{photographer.bio}</p>
+              <div className="mt-5 mono text-[11px] tracking-[.06em] uppercase text-fg-soft">{collectionLabel} · Joined {photographer.joined}</div>
+            </div>
+            <div>
+              {gear.length > 0 && (
+                <>
+                  <div className="caps opacity-55 mb-4">Gear</div>
+                  <ul className="list-none p-0 m-0 mono">
+                    {gear.map((cam: string) => (
+                      <li key={cam} className="py-3 border-b border-rule text-[13px]">{cam}</li>
+                    ))}
+                  </ul>
+                </>
+              )}
+              <div className={`caps opacity-55 mb-4 ${gear.length > 0 ? 'mt-8' : ''}`}>Categories</div>
+              <ul className="list-none p-0 m-0 mono">
+                {myCategories.map((cat: string) => (<li key={cat} className="py-3 border-b border-rule text-[13px]">{cat}</li>))}
+              </ul>
+            </div>
           </div>
-        </section>
+        </div>
 
         <Footer />
       </div>
