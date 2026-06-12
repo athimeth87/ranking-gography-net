@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { pulseScore } from '@/lib/data';
 import { formatScore } from '@/lib/pulse';
 import { useApp } from '@/providers/AppProvider';
-import { useLikeState } from '@/hooks/useLikeState';
+import { VoteAspect } from '@/components/photo/VoteAspect';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { MobileNav, MobileFooter, MobileMarquee, MobileSectionHeader, BottomNav } from './MobileShared';
 import { CrownIcon } from '@/components/icons';
@@ -20,18 +20,6 @@ export function MasonryTile({ photo }: { photo: any }) {
   const aspect = photo.w && photo.h ? `${photo.w} / ${photo.h}` : '4 / 5';
 
   const avatarUrl = photo.avatarUrl || photo.photographerAvatar;
-
-  const { liked, count, toggle } = useLikeState(photo.id);
-
-  const toggleLike = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    const result = await toggle();
-    if (result.kind === 'unauth') {
-      router.push(`/login?next=${encodeURIComponent(window.location.pathname)}`);
-    }
-  };
-
-  const likesLabel = count >= 1000 ? `${(count / 1000).toFixed(1)}k` : count;
 
   return (
     <div
@@ -98,24 +86,8 @@ export function MasonryTile({ photo }: { photo: any }) {
           textShadow: '0 1px 2px rgba(0,0,0,0.4)',
         }}>{photo.by}</span>
       </div>
-      {/* Like button — bottom-right (clickable) */}
-      <button
-        onClick={toggleLike}
-        aria-label={liked ? 'Unlike' : 'Like'}
-        style={{
-          position: 'absolute', right: 10, bottom: 10,
-          padding: 0, border: 0, background: 'transparent', cursor: 'pointer',
-          display: 'inline-flex', alignItems: 'center', gap: 4,
-          color: '#fff',
-          fontSize: 13, fontWeight: 500, fontFamily: 'inherit',
-          textShadow: '0 1px 2px rgba(0,0,0,0.4)',
-        }}
-      >
-        <svg width="15" height="15" viewBox="0 0 24 24" fill={liked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-        </svg>
-        {SHOW_LIKE_COUNTS && <span>{likesLabel}</span>}
-      </button>
+      {/* Vote aspect — replaces the like (color / composition) */}
+      <VoteAspect photoId={photo.id} ownerId={(photo as any).photographerId ?? (photo as any).ownerId ?? null} variant="card" />
     </div>
   );
 }

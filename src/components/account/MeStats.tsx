@@ -3,6 +3,7 @@ import { DashStat } from './primitives';
 import type { Photographer, Photo } from '@/lib/types';
 import { ActivityHeatmap } from './ActivityHeatmap';
 import { formatScore } from '@/lib/pulse';
+import { VoteAspect } from '@/components/photo/VoteAspect';
 
 interface MeStatsProps {
   persona: Photographer;
@@ -60,8 +61,11 @@ export function MeStats({ myPhotos, favDates = [] }: MeStatsProps) {
                   <div className="h-full bg-fg" style={{ width: `${Math.min(100, p.pulse)}%` }} />
                 </div>
                 <div className="mono text-[10px] opacity-45 mt-2 flex gap-4">
-                  <span>{p.likes.toLocaleString()} likes</span>
+                  <span>{p.likes.toLocaleString()} votes</span>
                   <span>{p.favorites.toLocaleString()} fav</span>
+                </div>
+                <div className="mt-2 max-w-[200px]">
+                  <VoteAspect photoId={p.id} variant="owner" />
                 </div>
               </div>
               <div className="text-right shrink-0">

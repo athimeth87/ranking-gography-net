@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Users, Image as ImageIcon, Heart, Eye, ArrowRight } from 'lucide-react';
+import { Users, Image as ImageIcon, Heart, Eye, ArrowRight, Layers } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
@@ -12,21 +12,31 @@ import { AdminStatCard } from '@/components/admin/AdminStatCard';
 export default function AdminDashboardPage() {
   const [photos, setPhotos] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
+  const [aspectStats, setAspectStats] = useState<{ dual: number; total: number }>({ dual: 0, total: 0 });
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       const supabase = getSupabaseBrowserClient();
-      const [photosRes, usersRes] = await Promise.all([
+      const [photosRes, usersRes, statsRes] = await Promise.all([
         supabase.from('photos').select('*, users!inner(username)').order('created_at', { ascending: false }),
-        supabase.from('users').select('*').order('created_at', { ascending: false })
+        supabase.from('users').select('*').order('created_at', { ascending: false }),
+        supabase.rpc('vote_aspect_stats'),
       ]);
       if (photosRes.data) setPhotos(photosRes.data);
       if (usersRes.data) setUsers(usersRes.data);
+      const stats = Array.isArray(statsRes.data) ? statsRes.data[0] : statsRes.data;
+      setAspectStats({ dual: Number(stats?.multi ?? 0), total: Number(stats?.total ?? 0) });
       setIsLoading(false);
     };
     fetchData();
   }, []);
+
+  // Watchdog (Vote Aspect): share of votes that endorsed ≥2 aspects. If this
+  // climbs past ~70–80% the 1.25 bonus is becoming a habit and the signal blurs.
+  const dualVotePct = aspectStats.total > 0
+    ? Math.round((aspectStats.dual / aspectStats.total) * 100)
+    : 0;
 
   const PHOTOS = photos;
   const PHOTOGRAPHERS = users;
@@ -91,11 +101,17 @@ export default function AdminDashboardPage() {
           trend="+19% from last month" 
           icon={Heart} 
         />
-        <AdminStatCard 
-          title="Page Views" 
-          value="84.2K" 
-          trend="+5% from last week" 
-          icon={Eye} 
+        <AdminStatCard
+          title="Page Views"
+          value="84.2K"
+          trend="+5% from last week"
+          icon={Eye}
+        />
+        <AdminStatCard
+          title="Multi-Aspect Votes"
+          value={`${dualVotePct}%`}
+          trend={`${aspectStats.dual.toLocaleString()} of ${aspectStats.total.toLocaleString()} votes endorsed ≥2 · watch if >70–80%`}
+          icon={Layers}
         />
       </div>
 

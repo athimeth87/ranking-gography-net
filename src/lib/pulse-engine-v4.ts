@@ -33,6 +33,8 @@ export const PULSE_V5 = {
   DAILY_VOTE_BUDGET: 20,      // first 20 votes/user/day count full weight
   COLLUSION_FACTOR: 0.3,      // reciprocal-voting packs are dampened ×0.3
   COLLUSION_THRESHOLD: 5,     // ≥5 mutual votes in 7 days flags the pair
+  MULTI_VOTE_WEIGHT: 1.25,    // vote endorsing ≥2 aspects (of color/composition/light)
+  MIN_VOTES_FOR_PERCENT: 10,  // below this the power bar shows raw counts, not %
   BASELINE_PERCENTILE: 0.60,  // B = p60 of the season pool
   BASELINE_EMA: 0.10,         // B moves at most ±10% per cron round
   BASELINE_PRIOR_FLOOR: 10,   // season 1 prior; later seasons inherit prior B
@@ -59,6 +61,22 @@ export function budgetWeight(voteIndex: number): number {
 // §2.6 — anti-collusion factor (ported from pulse-engine v1).
 export function collusionFactor(flagged: boolean): number {
   return flagged ? PULSE_V5.COLLUSION_FACTOR : 1.0;
+}
+
+// Vote Aspect — a vote endorses color / composition / light. Endorsing ≥2 weighs
+// 1.25; one side (or a legacy aspect-less vote) weighs 1.0. MUST equal the SQL
+// function vote_aspect_weight() in migration 0033 for every combination.
+export interface VoteAspects {
+  aspectColor: boolean;
+  aspectComposition: boolean;
+  aspectLight: boolean;
+  isLegacy?: boolean;
+}
+export function voteAspectWeight(v: VoteAspects): number {
+  if (v.isLegacy) return 1.0;
+  const n = Number(v.aspectColor) + Number(v.aspectComposition) + Number(v.aspectLight);
+  if (n === 0) throw new Error('vote must endorse at least one aspect');
+  return n >= 2 ? PULSE_V5.MULTI_VOTE_WEIGHT : 1.0;
 }
 
 // Postgres percentile_cont(p): linear interpolation over the sorted pool.

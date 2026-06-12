@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import type { Photo, PhotoVisibility } from '@/lib/types';
 import { PickBadge } from '@/components/icons';
-import { CardLikeButton } from './CardLikeButton';
+import { VoteAspect } from './VoteAspect';
 import { PhotoCardDeleteButton } from './PhotoCardDeleteButton';
 import { PhotoCardVisibilityButton } from './PhotoCardVisibilityButton';
 import { PhotoCardCurateButton } from './PhotoCardCurateButton';
@@ -74,7 +74,7 @@ export function PhotoCard({
             )}
           </div>
         </div>
-        {showLike && <CardLikeButton photoId={photo.id} ownerId={ownerId} />}
+        {showLike && <VoteAspect photoId={photo.id} ownerId={ownerId} variant="card" />}
         {deletable && onDeleted && (
           <PhotoCardDeleteButton photoId={photo.id} storageUrl={photo.src} onDeleted={onDeleted} />
         )}
