@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { PageCover } from '@/components/layout/PageCover';
 import { Footer } from '@/components/layout/Footer';
+import { VoteAspectExplainer } from '@/components/photo/VoteAspectExplainer';
 import { SCORING_RULES, UPLOAD_RULES, TRAVELLER_RULES, getSeasonInfo } from '@/content/rules';
 
 // Real badge tiers from PulseStatusBadge's LABEL map — keep in sync.
@@ -33,8 +34,19 @@ export default function HowRankingWorksPage() {
         subtitle={`${SCORING_RULES.name} — ${SCORING_RULES.summary}`}
       />
 
-      {/* 01 — what counts */}
+      {/* 00 — what voting is */}
       <section className="pt-[80px] pb-[64px]">
+        <div className="wrap-narrow">
+          <SectionLabel num="00" label="การโหวต" />
+          <h2 className="th text-[clamp(26px,3.4vw,40px)] font-normal tracking-[-0.02em] leading-[1.2] m-0 mb-[32px]">
+            โหวตคืออะไร
+          </h2>
+          <VoteAspectExplainer />
+        </div>
+      </section>
+
+      {/* 01 — what counts */}
+      <section className="pt-[16px] pb-[64px]">
         <div className="wrap-narrow">
           <SectionLabel num="01" label="ส่วนที่นับ" />
           <h2 className="th text-[clamp(26px,3.4vw,40px)] font-normal tracking-[-0.02em] leading-[1.2] m-0 mb-[32px]">
