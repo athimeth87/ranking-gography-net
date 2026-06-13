@@ -17,7 +17,9 @@
     "banner_credit": "ภาพปก: \"{title}\" โดย {name}",
     "cover_of_week": "สุดยอดภาพถ่ายประจำสัปดาห์",
     "by": "โดย {name}",
-    "view_photo": "ดูรูปภาพ"
+    "view_photo": "ดูรูปภาพ",
+    "submit_cta": "ส่งภาพเข้า Season 01",
+    "traveller_link": "เคยเดินทางกับ Gography? → Travellers Programme"
   },
   "TrendsNowSection": {
     "title": "Popular",
@@ -43,7 +45,7 @@
   },
   "VoyageursSection": {
     "title": "เคยร่วมเดินทางกับเรา?<br />มาเป็น Traveller",
-    "description": "ลูกค้า GOGRAPHY ทุกคนได้สถานะ <strong>Traveller</strong> — มีหมวดประกวดเฉพาะกลุ่ม แข่งกันเองเฉพาะคนที่เคยร่วมเดินทางกับเรา ปลายฤดูกาลภาพอันดับ 1–3 รับรางวัล — อันดับ 1 Cashback 50,000 บาท, อันดับ 2–3 รับส่วนลดทริปถัดไป",
+    "description": "ลูกค้า GOGRAPHY ทุกคนได้สถานะ <strong>Traveller</strong> — มีหมวดประกวดเฉพาะกลุ่ม แข่งกันเองเฉพาะคนที่เคยร่วมเดินทางกับเรา ปลายฤดูกาลรับรางวัลเป็นเครดิตเงินคืน — อันดับ 1 Cashback 50,000 บาท และ Top 10 รับ Cashback 3–15%",
     "reward1_sub": "ต่อหมวด",
     "program_name": "The Travellers Programme",
     "exclusive": "สิทธิพิเศษ · เฉพาะ TRAVELLER",
@@ -57,7 +59,7 @@
     "step2_title": "อัพโหลดภาพจากทริป",
     "step2_desc": "ส่งได้วันละ 1 รูปต่อบัญชี · ส่งสะสมต่อเนื่องตลอดฤดูกาล (4 เดือน)",
     "step3_title": "ลุ้นรางวัล",
-    "step3_desc": "ปลายฤดูกาล ทีมงานเลือกภาพดีที่สุดต่อหมวด — ผู้ชนะรับ Voucher 50,000 บาท และ Top 10 ได้รับ Cashback 3–15%"
+    "step3_desc": "ปลายฤดูกาล ภาพที่ได้ GoScore สูงสุดของแต่ละหมวดคือผู้ชนะ — อันดับ 1 รับ Cashback (เครดิตเงินคืน) 50,000 บาท และ Top 10 รับ Cashback 3–15%"
   },
   "CategoryChips": {
     "all": "ทั้งหมด",
@@ -131,7 +133,7 @@
     "sign_in": "เข้าสู่ระบบ"
   },
   "MobileHome": {
-    "season_banner": "ฤดูกาล 01 · เหลืออีก 37 วัน",
+    "season_banner": "ฤดูกาล 01 · เหลืออีก {days} วัน",
     "stats_frames": "ภาพถ่าย",
     "stats_photographers": "ช่างภาพ",
     "stats_seasons": "ฤดูกาล",
@@ -140,11 +142,11 @@
     "how_it_works_title": "3 ขั้นตอน ง่ายๆ",
     "step": "ขั้นตอน",
     "step1_title": "ส่งภาพของคุณ",
-    "step1_desc": "อัปโหลดได้สูงสุด 12 รูปต่อฤดูกาล พร้อมระบุสถานที่และหมวดหมู่",
+    "step1_desc": "อัปโหลดได้วันละ 1 ภาพต่อบัญชี พร้อมระบุสถานที่และหมวดหมู่",
     "step2_title": "สะสมคะแนน",
-    "step2_desc": "ยอดไลก์ x 1, ไลก์ใน 24 ชม. x 3, และโบนัสจากทีมงาน (มีการลดทอนตามเวลา)",
+    "step2_desc": "คะแนนมาจากการโหวตของชุมชน ถ่วงน้ำหนักตามความน่าเชื่อถือของผู้โหวต — ออกแบบให้ปั่นโหวตไม่ได้",
     "step3_title": "ผู้ชนะในฤดูกาล",
-    "step3_desc": "ผู้ที่ได้คะแนนรวมสูงสุดในทุกหมวดหมู่จะเป็นผู้ชนะ",
+    "step3_desc": "ภาพที่ได้ GoScore สูงสุดของแต่ละหมวดเมื่อจบฤดูกาลคือผู้ชนะ",
     "voyageurs_num": "Traveller",
     "voyageurs_title": "ช่างภาพที่เดินทางกับเรา",
     "voyageurs_desc": "หมวดพิเศษเฉพาะลูกค้าที่เคยร่วมเดินทางกับ Gography — ส่งภาพประชันกันเองในกลุ่ม Traveller พร้อมลุ้นรางวัลพิเศษ",
@@ -182,10 +184,14 @@
     "uploading": "กำลังอัปโหลด...",
     "uploading_short": "กำลังโหลด...",
     "change_cover": "เปลี่ยนภาพหน้าปก",
+    "reposition_cover": "จัดตำแหน่ง",
+    "reposition_hint": "ลากเพื่อจัดตำแหน่ง",
+    "reposition_save": "บันทึกตำแหน่ง",
+    "reposition_cancel": "ยกเลิก",
     "change": "เปลี่ยนรูป",
     "view_public_profile": "ดูโปรไฟล์สาธารณะ",
     "upload_photo": "อัปโหลดรูปภาพ",
-    "upload_limit_reset": "วันนี้ 0/1 · รีเซ็ต 00:00 น.",
+    "upload_limit_reset": "เครดิตลงรูปต่อวันเหลือ 0/1",
     "apply_photographer": "สมัครเป็นช่างภาพ",
     "sign_out": "ออกจากระบบ",
     "nav_dashboard": "แดชบอร์ด",

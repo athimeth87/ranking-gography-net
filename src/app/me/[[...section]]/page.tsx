@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useApp } from '@/providers/AppProvider';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { PageCover } from '@/components/layout/PageCover';
+import { useCoverReposition } from '@/hooks/useCoverReposition';
 import { Footer } from '@/components/layout/Footer';
 import { MeSidebar } from '@/components/account/MeSidebar';
 import { MeSidebarSkeleton, MeContentSkeleton } from '@/components/account/MeSkeleton';
@@ -56,6 +57,7 @@ function mapPhoto(p: any, username: string, fallbackEmail?: string) {
     peakPulse: p.peak_pulse != null ? Number(p.peak_pulse) : null,
     badge: p.badge ?? null,
     impressions: p.impressions_count || 0,
+    visibility: p.visibility ?? 'public',
     rank: 0,
   };
 }
@@ -141,6 +143,21 @@ export default function Page({ params }: PageProps) {
   const [loading, setLoading] = useState(true);
   const [voyageurRank, setVoyageurRank] = useState<number | null>(null);
   const [topCategory, setTopCategory] = useState<string | null>(null);
+
+  const saveCoverPosition = useCallback(async (pos: string) => {
+    if (!authUser?.id) return;
+    const supabase = getSupabaseBrowserClient();
+    const { error } = await supabase
+      .from('users')
+      .update({ cover_position: pos })
+      .eq('id', authUser.id);
+    if (error) {
+      alert('Save failed: ' + error.message);
+      return;
+    }
+    setProfile((p: any) => ({ ...p, cover_position: pos }));
+  }, [authUser]);
+  const cover = useCoverReposition(profile?.cover_position, saveCoverPosition);
 
   const liveSeason = getSeasons().find(s => s.status === 'live');
   const daysLeft = liveSeason?.endDate ? daysUntil(liveSeason.endDate) : null;
@@ -383,16 +400,64 @@ export default function Page({ params }: PageProps) {
   return (
     <div className="page-fade">
       <div className="hidden md:block relative group">
-        <PageCover
-          photoId={profile?.cover_url ? undefined : "p013"}
-          src={profile?.cover_url || undefined}
-          eyebrow={t('your_account')}
-          title="Dashboard"
-        />
-        <label className="absolute top-6 right-10 bg-black/50 text-white px-4 py-2 rounded text-[11px] tracking-[.1em] uppercase cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity z-20 hover:bg-black/80">
-          {uploadingCover ? t('uploading') : t('change_cover')}
-          <input type="file" accept="image/*" className="hidden" disabled={uploadingCover} onChange={handleCoverUpload} />
-        </label>
+        <div
+          {...(cover.editing ? cover.dragHandlers : {})}
+          className={cover.editing ? 'cursor-move select-none touch-none' : ''}
+        >
+          <PageCover
+            src={profile?.cover_url || undefined}
+            objectPosition={cover.position}
+            eyebrow={t('your_account')}
+            title="Dashboard"
+          />
+        </div>
+
+        {cover.editing && (
+          <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 z-10 flex justify-center pointer-events-none">
+            <span className="bg-black/55 text-white px-4 py-1.5 caps text-[10px] tracking-[.14em] backdrop-blur-sm">
+              {t('reposition_hint')}
+            </span>
+          </div>
+        )}
+
+        <div className="absolute top-6 right-10 z-20 flex gap-2">
+          {!cover.editing ? (
+            <>
+              <label className="bg-black/50 text-white px-4 py-2 text-[11px] tracking-[.1em] uppercase cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80">
+                {uploadingCover ? t('uploading') : t('change_cover')}
+                <input type="file" accept="image/*" className="hidden" disabled={uploadingCover} onChange={handleCoverUpload} />
+              </label>
+              {profile?.cover_url && (
+                <button
+                  type="button"
+                  onClick={cover.start}
+                  className="bg-black/50 text-white px-4 py-2 text-[11px] tracking-[.1em] uppercase cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80"
+                >
+                  {t('reposition_cover')}
+                </button>
+              )}
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={cover.save}
+                disabled={cover.saving}
+                className="bg-white text-black px-4 py-2 text-[11px] tracking-[.1em] uppercase cursor-pointer hover:bg-white/85 disabled:opacity-60"
+              >
+                {cover.saving ? t('uploading') : t('reposition_save')}
+              </button>
+              <button
+                type="button"
+                onClick={cover.cancel}
+                disabled={cover.saving}
+                className="bg-black/50 text-white px-4 py-2 text-[11px] tracking-[.1em] uppercase cursor-pointer hover:bg-black/80"
+              >
+                {t('reposition_cancel')}
+              </button>
+            </>
+          )}
+        </div>
       </div>
       <div className="md:hidden">
         {loading ? (
@@ -452,9 +517,6 @@ export default function Page({ params }: PageProps) {
                   followers={profile.followers_count ?? 0}
                   following={profile.following_count ?? 0}
                   userId={profile.id}
-                  daysLeft={daysLeft}
-                  voyageurRank={voyageurRank}
-                  topCategory={topCategory}
                   onPhotoDeleted={handlePhotoDeleted}
                 />
               )}

@@ -7,14 +7,23 @@ import { PhotoGrid } from '@/components/photo/PhotoGrid';
 import { Footer } from '@/components/layout/Footer';
 import { VoyageurMark, CrownIcon } from '@/components/icons';
 import { useFollowState } from '@/hooks/useFollowState';
+import { NextDropCard } from '@/components/photo/NextDropCard';
+import { PhotoCardCurateButton } from '@/components/photo/PhotoCardCurateButton';
 import { FollowListModal, type FollowTab } from '@/components/account/FollowListModal';
-import { type PickType } from '@/lib/pulse-engine';
-import { computeRankMasters, getCashbackPercentage } from '@/lib/ranking-system';
-import { SpecimenCard } from '@/components/collection/SpecimenCard';
-import { ArchiveDrawer } from '@/components/collection/ArchiveDrawer';
-import { selectCuration, type SeasonAward } from '@/lib/provenance';
+import { useApp } from '@/providers/AppProvider';
+import {
+  CuratedSet,
+  ArchiveDrawer,
+  PrivateDrawer,
+  SectionHead,
+  CURATED_MAX,
+  type ProvenanceRow,
+} from './CollectionSections';
 
-// ===== Photographer public profile — /photographer/[username] · "The Collection" =====
+import { computeRankMasters, getCashbackPercentage } from '@/lib/ranking-system';
+import { formatScore } from '@/lib/pulse';
+
+// ===== Photographer "The Collection" — /photographer/[username] =====
 
 function mapPublicPhoto(p: any, username: string) {
   const likes = p.likes_count || 0;
@@ -36,14 +45,7 @@ function mapPublicPhoto(p: any, username: string) {
     w: p.width || 4,
     h: p.height || 3,
     caption: p.description || '',
-    exif: {
-      camera: p.camera || 'Unknown',
-      lens: p.lens || 'Unknown',
-      iso: exif?.iso ?? 100,
-      shutter: exif?.shutter ?? '1/100',
-      aperture: exif?.aperture ?? 'f/8',
-      focal: exif?.focal ?? '50mm',
-    },
+    exif: { camera: p.camera || 'Unknown', lens: p.lens || 'Unknown', iso: 100, shutter: '1/100', aperture: 'f/8', focal: '50mm' },
     likes,
     likes24h: 0,
     comments,
@@ -54,16 +56,33 @@ function mapPublicPhoto(p: any, username: string) {
     pulse,
     impressions: p.impressions_count || 0,
     rank: 0,
-    // Collection fields
-    location: p.location || '',
-    camera: p.camera || '',
-    lens: p.lens || '',
-    year,
-    exifSettings,
-    pickType: (p.pick_type || 'none') as PickType,
-    badge: p.badge ?? null,
+    visibility: (p.visibility ?? 'public') as 'public' | 'portfolio' | 'private',
+    isCurated: !!p.is_curated,
+    camera: p.camera || null,
+    lens: p.lens || null,
+    place: p.location || null,
+    year: p.uploaded_at ? String(new Date(p.uploaded_at).getFullYear()) : null,
     peakPulse: p.peak_pulse != null ? Number(p.peak_pulse) : null,
+    badge: p.badge ?? null,
   };
+}
+
+interface ProfileStatProps { label: string; val: string | number; onClick?: () => void; }
+function ProfileStat({ label, val, onClick }: ProfileStatProps) {
+  const inner = (
+    <>
+      <div className="font-serif text-[30px] font-medium tracking-[-0.01em]">{val}</div>
+      <div className="text-[10px] tracking-[.16em] uppercase opacity-55 mt-1">{label}</div>
+    </>
+  );
+  if (onClick) {
+    return (
+      <button onClick={onClick} className="text-left bg-transparent border-0 p-0 cursor-pointer hover:opacity-65 transition-opacity">
+        {inner}
+      </button>
+    );
+  }
+  return <div>{inner}</div>;
 }
 
 function SocialIconRow({ p }: { p: any }) {
@@ -126,16 +145,19 @@ const MOBILE_BTN_GHOST = 'flex-1 inline-flex items-center justify-center min-h-[
 export function PhotographerClient({ username }: { username: string }) {
   const router = useRouter();
   const pathname = usePathname();
+  const { authUser } = useApp();
 
   const [photographer, setPhotographer] = useState<any>(null);
   const [myPhotos, setMyPhotos] = useState<any[]>([]);
   const [myFavorites, setMyFavorites] = useState<any[]>([]);
-  const [seasonAwards, setSeasonAwards] = useState<Map<string, SeasonAward>>(new Map());
+  const [provenance, setProvenance] = useState<ProvenanceRow[]>([]);
+  const [isOwner, setIsOwner] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [voyageurRank, setVoyageurRank] = useState<number | null>(null);
   const [topCategory, setTopCategory] = useState<string | null>(null);
   const [followModalTab, setFollowModalTab] = useState<FollowTab | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -148,6 +170,11 @@ export function PhotographerClient({ username }: { username: string }) {
         .single();
 
       if (!userData) { setIsLoading(false); return; }
+
+      const { data: sessionData } = await supabase.auth.getSession();
+      const viewerId = sessionData?.session?.user?.id ?? null;
+      const viewerIsOwner = viewerId === userData.id;
+      setIsOwner(viewerIsOwner);
 
       // Fetch all photos to compute Rank Masters dynamically
       const { data: allPhotosData } = await supabase.from('photos').select('*');
@@ -162,6 +189,7 @@ export function PhotographerClient({ username }: { username: string }) {
         loc: userData.location || 'EARTH',
         avatar: userData.avatar_url,
         cover: userData.cover_url || 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=2938&auto=format&fit=crop',
+        coverPosition: userData.cover_position || undefined,
         socialTwitter: userData.social_twitter || '',
         socialInstagram: userData.social_instagram || '',
         socialFacebook: userData.social_facebook || '',
@@ -172,14 +200,28 @@ export function PhotographerClient({ username }: { username: string }) {
         followers: userData.followers_count ?? 0,
         following: userData.following_count ?? 0,
         joined: new Date(userData.created_at || Date.now()).getFullYear().toString(),
-        cameras: ['Digital Camera'],
+        cameras: [],
       });
 
-      const { data: photosData } = await supabase
+      // Owner sees all visibilities (own-row RLS); visitors get published public+portfolio explicitly
+      let photosQuery = supabase
         .from('photos')
         .select('*')
         .eq('photographer_id', userData.id)
+        .eq('is_hidden', false)
+        .eq('status', 'published')
         .order('uploaded_at', { ascending: false });
+      if (!viewerIsOwner) {
+        photosQuery = photosQuery.in('visibility', ['public', 'portfolio']);
+      }
+      const { data: photosData } = await photosQuery;
+
+      // Provenance badges (view from 0028) — empty until the migration is applied
+      const { data: provData } = await supabase
+        .from('photo_provenance')
+        .select('*')
+        .eq('photographer_id', userData.id);
+      setProvenance((provData as ProvenanceRow[] | null) ?? []);
 
       if (photosData) {
         setMyPhotos(photosData.map(p => mapPublicPhoto(p, userData.username)));
@@ -199,10 +241,11 @@ export function PhotographerClient({ username }: { username: string }) {
         }
 
         // Compute voyageur rank if this photographer is a customer
-        if (userData.is_customer && photosData.length > 0) {
+        const competitionData = photosData.filter((p: any) => (p.visibility ?? 'public') === 'public');
+        if (userData.is_customer && competitionData.length > 0) {
           const catCounts: Record<string, number> = {};
           const catBestLikes: Record<string, number> = {};
-          for (const p of photosData) {
+          for (const p of competitionData) {
             if (!p.category) continue;
             catCounts[p.category] = (catCounts[p.category] || 0) + 1;
             catBestLikes[p.category] = Math.max(catBestLikes[p.category] || 0, p.likes_count || 0);
@@ -245,7 +288,7 @@ export function PhotographerClient({ username }: { username: string }) {
     };
 
     fetchProfile();
-  }, [username]);
+  }, [username, reloadKey, authUser?.id]);
 
   // Realtime: patch engagement counts without refetch
   useEffect(() => {
@@ -316,21 +359,39 @@ export function PhotographerClient({ username }: { username: string }) {
   );
   if (!photographer) return notFound();
 
-  const { curated, archive } = selectCuration(myPhotos, seasonAwards);
-  const seasonAwardsCount = seasonAwards.size;
   const avgPulse = myPhotos.length
-    ? (myPhotos.reduce((s: number, p: Photo) => s + p.pulse, 0) / myPhotos.length).toFixed(0)
+    ? formatScore(myPhotos.reduce((s: number, p: Photo) => s + p.pulse, 0) / myPhotos.length)
     : '—';
-  const myCategories = Array.from(new Set(myPhotos.map((p: any) => p.cat)));
-  const cameras = Array.from(new Set(myPhotos.map((p: any) => p.camera).filter((c: string) => c && c !== 'Unknown')));
-  const lenses = Array.from(new Set(myPhotos.map((p: any) => p.lens).filter((l: string) => l && l !== 'Unknown')));
-  const gear = [...cameras, ...lenses];
-  const primaryCamera = cameras[0];
-  const nameWords = String(photographer.name).trim().split(/\s+/);
-  const firstName = nameWords[0] ?? photographer.name;
-  const restName = nameWords.slice(1).join(' ');
-  const pad2 = (n: number) => String(n).padStart(2, '0');
-  const collectionLabel = photographer.isCustomer && !photographer.isAmbassador ? 'Traveller' : 'Photographer';
+  const myCategories = Array.from(new Set(myPhotos.map((p: Photo) => p.cat)));
+  const eyebrowParts = [
+    photographer.isAmbassador ? 'Ambassador' : null,
+    photographer.isCustomer ? 'Traveller' : 'Photographer',
+    `@${photographer.username}`,
+  ].filter(Boolean).join(' · ');
+
+  // ----- The Collection: derived sets -----
+  const competitionPhotos = myPhotos.filter((p) => (p.visibility ?? 'public') === 'public');
+  const curatedPhotos = myPhotos
+    .filter((p) => p.isCurated && p.visibility !== 'private')
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    .slice(0, CURATED_MAX);
+  const archivePhotos = myPhotos.filter((p) => p.visibility === 'portfolio' && !p.isCurated);
+  const privatePhotos = myPhotos.filter((p) => p.visibility === 'private');
+  const provMap = new Map(provenance.map((r) => [r.photo_id, r] as const));
+  const seasonAwardCount = provenance.filter((r) => r.season_winner).length;
+  const reloadCollection = () => setReloadKey((k) => k + 1);
+
+  // Real gear, derived from this photographer's photos (frequency-sorted)
+  const cameraCounts = new Map<string, number>();
+  for (const p of myPhotos) {
+    if (p.camera) cameraCounts.set(p.camera, (cameraCounts.get(p.camera) ?? 0) + 1);
+  }
+  const camerasList = Array.from(cameraCounts.entries()).sort((a, b) => b[1] - a[1]).map(([c]) => c);
+  const topCamera = camerasList[0] ?? null;
+
+  const nameWords = String(photographer.name ?? '').trim().split(/\s+/).filter(Boolean);
+  const lastName = nameWords.length > 1 ? nameWords[nameWords.length - 1] ?? null : null;
+  const leadName = lastName ? nameWords.slice(0, -1).join(' ') : photographer.name;
 
   return (
     <div className="page-fade">
@@ -360,14 +421,21 @@ export function PhotographerClient({ username }: { username: string }) {
         <div className="relative w-full h-[160px] overflow-hidden bg-tile">
           {photographer.cover && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={photographer.cover} alt="" className="w-full h-full object-cover block" />
+            <img
+              src={photographer.cover}
+              alt=""
+              className="w-full h-full object-cover block"
+              style={photographer.coverPosition ? { objectPosition: photographer.coverPosition } : undefined}
+            />
           )}
           <div className="absolute inset-0 bg-gradient-to-b from-transparent from-[40%] to-black/45" />
           {photographer.isRankMaster && (
             <div className="absolute left-[14px] top-3 z-[2] inline-flex items-center gap-[5px] bg-fg text-bg px-2 py-[3px] mono text-[9px] tracking-[.14em] uppercase font-semibold">Rank Master</div>
           )}
           {photographer.isAmbassador && (
-            <div className="absolute right-[14px] top-3 z-[2] inline-flex items-center gap-[5px] bg-gold text-white px-2 py-[3px] mono text-[9px] tracking-[.14em] uppercase font-semibold">Ambassador</div>
+            <div className="absolute right-[14px] top-3 z-[2] inline-flex items-center gap-[5px] bg-gold text-black px-2 py-[3px] mono text-[9px] tracking-[.14em] uppercase font-semibold">
+              Ambassador
+            </div>
           )}
           {photographer.isCustomer && !photographer.isAmbassador && (
             <div className="absolute right-[14px] top-3 z-[2] inline-flex items-center gap-[5px] text-gold bg-black/50 backdrop-blur-[4px] px-2 py-[3px] mono text-[9px] tracking-[.14em] uppercase"><span className="w-[5px] h-[5px] bg-gold rotate-45" />Traveller</div>
@@ -435,35 +503,166 @@ export function PhotographerClient({ username }: { username: string }) {
           </div>
         )}
 
-        {/* Curated Set */}
-        <div className="px-4">
-          {curated.length > 0 ? (
-            <>
-              <SectionHead num="— 01" title="Curated Set" small={`${pad2(curated.length)} / 12 ชิ้น`} />
-              <div className="grid grid-cols-2 gap-x-4 gap-y-8">
-                {curated.map((p: any, i: number) => (
-                  <SpecimenCard key={p.id} photo={p} index={i} awards={seasonAwards} onOpen={openPhoto} />
-                ))}
-              </div>
-              <ArchiveDrawer photos={archive} onOpen={openPhoto} cols={3} />
-            </>
-          ) : (
-            <ProfileEmpty msg="ยังไม่มีภาพในคอลเลกชันนี้" />
-          )}
+        {/* Collection stat strip */}
+        <div className="mx-4 mt-2 grid grid-cols-3 text-center border border-black/[0.07] dark:border-white/[0.08] divide-x divide-black/[0.07] dark:divide-white/[0.08]">
+          {([
+            ['Curated', curatedPhotos.length],
+            ['In Archive', archivePhotos.length],
+            ['Season Awards', seasonAwardCount],
+          ] as const).map(([l, n]) => (
+            <div key={l} className="py-[10px]">
+              <div className="mono text-[15px] font-semibold">{n}</div>
+              <div className="mono text-[9px] tracking-[.12em] uppercase text-fg-soft mt-[2px]">{l}</div>
+            </div>
+          ))}
         </div>
 
-        {/* Saved */}
-        {myFavorites.length > 0 && (
-          <div className="px-4">
-            <SectionHead num="— 02" title="Saved" small="ภาพที่บันทึกไว้" />
+        {/* Mobile tab bar */}
+        <div className="mt-4 border-t border-black/[0.08] dark:border-white/[0.1]">
+          <div className="grid grid-cols-3">
+            {MOBILE_TABS.map(({ id, label }) => {
+              const active = mobileTab === id;
+              return (
+                <button
+                  key={id}
+                  onClick={() => setMobileTab(id)}
+                  className={`py-[13px] px-0 bg-transparent cursor-pointer border-x-0 border-t-0 border-b-2 mono text-[11px] tracking-[.1em] uppercase ${
+                    active ? 'border-fg text-fg' : 'border-transparent text-fg-soft'
+                  }`}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Tab content — Photos (The Collection) */}
+        {mobileTab === 'photos' && (
+          <div className="px-4 pt-5">
+            <NextDropCard photographerId={photographer.id} onReleased={reloadCollection} />
+            <CuratedSet
+              photos={curatedPhotos}
+              provenance={provMap}
+              isOwner={isOwner}
+              onCurateChanged={reloadCollection}
+            />
+            <SectionHead num="03" title="In Competition" />
+          </div>
+        )}
+        {mobileTab === 'photos' && (
+          competitionPhotos.length > 0 ? (
             <div className="grid grid-cols-3 gap-[2px]">
-              {myFavorites.map((p: any) => (
-                <button key={p.id} type="button" onClick={() => openPhoto(p.id)} className="aspect-square bg-tile cursor-pointer overflow-hidden p-0 border-0">
+              {competitionPhotos.map(p => (
+                <div
+                  key={p.id}
+                  onClick={() => router.push(`/photo/${p.id}`)}
+                  className="relative group aspect-square bg-[#f0ede7] dark:bg-[#1a1916] cursor-pointer overflow-hidden"
+                >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={p.src} alt={p.title || ''} className="w-full h-full object-cover block" loading="lazy" />
-                </button>
+                  {isOwner && (
+                    <PhotoCardCurateButton
+                      photoId={p.id}
+                      isCurated={p.isCurated ?? false}
+                      alwaysVisible
+                      onChanged={reloadCollection}
+                    />
+                  )}
+                </div>
               ))}
             </div>
+          ) : (
+            <div className="px-4 py-[40px] text-center font-thai text-fg-soft">
+              ยังไม่มีภาพเข้าประกวด
+            </div>
+          )
+        )}
+        {mobileTab === 'photos' && (
+          <div className="px-4 pt-6">
+            <ArchiveDrawer photos={archivePhotos} isOwner={isOwner} onCurateChanged={reloadCollection} />
+            {isOwner && (
+              <PrivateDrawer photos={privatePhotos} photographerId={photographer.id} onChanged={reloadCollection} />
+            )}
+          </div>
+        )}
+
+        {/* Tab content — Favorites */}
+        {mobileTab === 'favorites' && (
+          myFavorites.length > 0 ? (
+            <div className="grid grid-cols-3 gap-[2px]">
+              {myFavorites.map(p => (
+                <div
+                  key={(p as any).id}
+                  onClick={() => router.push(`/photo/${(p as any).id}`)}
+                  className="aspect-square bg-[#f0ede7] dark:bg-[#1a1916] cursor-pointer overflow-hidden"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={(p as any).src} alt={(p as any).title || ''} className="w-full h-full object-cover block" loading="lazy" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="px-4 py-[80px] text-center font-thai text-fg-soft">
+              ยังไม่มีภาพที่บันทึกไว้
+            </div>
+          )
+        )}
+
+        {/* Tab content — About */}
+        {mobileTab === 'about' && (
+          <div className="px-4 pt-5 pb-[40px]">
+
+            {/* Voyageur card */}
+            {photographer.isCustomer && (
+              <div className="mb-6 bg-[#f9f7f4] dark:bg-[#1a1916] border border-black/[0.08] dark:border-white/[0.08] p-4">
+                <div className="flex items-center gap-[6px] mb-3 mono text-[10px] tracking-[.14em] uppercase text-gold">
+                  <span className="w-[6px] h-[6px] bg-gold rotate-45" />
+                  Traveller · Season 01
+                </div>
+                <div className="mono text-[12px] leading-[2.2]">
+                  <div className="flex justify-between border-b border-black/[0.06] dark:border-white/[0.06] pb-[6px] mb-[6px]">
+                    <span className="text-fg-soft">Photos submitted</span>
+                    <span className="font-semibold">{myPhotos.length}</span>
+                  </div>
+                  {voyageurRank != null && topCategory && (
+                    <div className="flex justify-between border-b border-black/[0.06] dark:border-white/[0.06] pb-[6px] mb-[6px]">
+                      <span className="text-fg-soft">Rank ({topCategory})</span>
+                      <span className="font-semibold">#{voyageurRank}</span>
+                    </div>
+                  )}
+                   <div className="flex justify-between">
+                     <span className="text-fg-soft">Cashback tier</span>
+                     <span className="font-semibold text-gold">
+                       {getCashbackPercentage(voyageurRank)}% {getCashbackPercentage(voyageurRank) > 0 ? '✓' : ''}
+                     </span>
+                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* Bio */}
+            <div className="mb-5">
+              <div className="mono text-[10px] tracking-[.16em] uppercase text-fg-soft mb-2">About</div>
+              <p className="font-thai text-[14px] leading-[1.7] m-0 text-fg-soft">{photographer.bio}</p>
+            </div>
+
+            {/* Categories */}
+            {myCategories.length > 0 && (
+              <div>
+                <div className="mono text-[10px] tracking-[.16em] uppercase text-fg-soft mb-[10px]">Categories</div>
+                <div className="flex gap-[6px] flex-wrap">
+                  {myCategories.map((cat: string) => (
+                    <span
+                      key={cat}
+                      className="px-[10px] py-1 border border-black/[0.12] dark:border-white/[0.15] mono text-[10px] tracking-[.12em] uppercase"
+                    >
+                      {cat}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -501,55 +700,212 @@ export function PhotographerClient({ username }: { username: string }) {
 
       {/* ===================== DESKTOP LAYOUT ===================== */}
       <div className="hidden md:block">
-        <div className="wrap pb-[80px]">
+        <PageCover
+          src={photographer.cover}
+          objectPosition={photographer.coverPosition}
+          eyebrow={eyebrowParts}
+          title={photographer.name}
+          subtitle={photographer.bio}
+          credit={`${photographer.loc} · ${myPhotos.length} photos · ${follow.followersCount.toLocaleString()} followers`}
+        />
 
-          {/* Slim action bar */}
-          <div className="flex justify-between items-center py-5 border-b border-rule">
-            <span className="caps text-fg-soft">The Collection</span>
-            <div className="flex gap-[10px]">
-              {!follow.isSelf && (
-                <button className={`btn btn-sm ${follow.following ? '' : 'btn-solid'}`} onClick={onFollowClick} disabled={follow.loading}>{follow.following ? 'Following' : 'Follow'}</button>
-              )}
-              <button onClick={handleShare} className="btn btn-sm">{copied ? 'Copied!' : 'Share'}</button>
+        {/* Identity header */}
+        <section className="pt-8 md:pt-[64px] pb-6 md:pb-[48px] border-b border-rule">
+          <div className="wrap">
+            <div className="flex flex-wrap justify-between items-center gap-3 mb-6 md:mb-[48px]">
+              <div className="flex items-center gap-[10px]">
+                {photographer.isRankMaster && (
+                  <span className="inline-flex items-center gap-[6px] px-[11px] py-[5px] bg-fg text-bg text-[10.5px] tracking-[.16em] uppercase font-medium">
+                    <CrownIcon /> Rank Master
+                  </span>
+                )}
+                {photographer.isAmbassador && (
+                  <span className="inline-flex items-center gap-[6px] px-[11px] py-[5px] bg-gold text-black text-[10.5px] tracking-[.16em] uppercase font-medium">
+                    <CrownIcon /> Ambassador
+                  </span>
+                )}
+                {photographer.isCustomer && (
+                  <span className="inline-flex items-center gap-[6px] px-[11px] py-[5px] bg-fg text-bg text-[10.5px] tracking-[.16em] uppercase font-medium">
+                    <VoyageurMark size={7} /> Voyageur
+                  </span>
+                )}
+                <span className="mono text-[11px] tracking-[.18em] uppercase opacity-55">@{photographer.username}</span>
+              </div>
+              <div className="flex gap-[10px]">
+                <button onClick={handleShare} className="btn btn-sm">
+                  {copied ? 'Copied!' : 'Share'}
+                </button>
+                {follow.isSelf ? (
+                  <button className="btn btn-sm" disabled>You</button>
+                ) : (
+                  <button
+                    className={`btn btn-sm ${follow.following ? '' : 'btn-solid'}`}
+                    onClick={onFollowClick}
+                    disabled={follow.loading}
+                  >
+                    {follow.following ? 'Following' : 'Follow'}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Hero */}
-          <header className="pt-[60px] pb-[40px] grid grid-cols-[1.4fr_1fr] gap-[60px] items-end">
-            <div>
-              <div className="mono text-[10.5px] tracking-[.4em] uppercase text-gold mb-[22px]">The Private Collection of</div>
-              <h1 className="font-serif text-[clamp(44px,5.5vw,72px)] font-medium leading-[1.02] tracking-[.01em]">
-                {firstName}{restName && <><br /><em className="text-gold">{restName}</em></>}
-              </h1>
-              <p className="font-thai text-[14.5px] leading-[1.8] text-fg-soft max-w-[46ch] mt-6">{photographer.bio}</p>
-              <div className="flex gap-[14px] mt-7 flex-wrap items-center">
-                {photographer.isAmbassador && <span className="mono text-[10px] tracking-[.18em] uppercase border border-gold text-gold px-[13px] py-[6px]">✦ Ambassador</span>}
-                {photographer.isRankMaster && <span className="mono text-[10px] tracking-[.18em] uppercase border border-gold text-gold px-[13px] py-[6px] inline-flex items-center gap-[6px]"><CrownIcon /> Rank Master</span>}
-                {photographer.isCustomer && !photographer.isAmbassador && <span className="mono text-[10px] tracking-[.18em] uppercase border border-gold text-gold px-[13px] py-[6px] inline-flex items-center gap-[6px]"><VoyageurMark size={7} /> Traveller</span>}
-                <span className="mono text-[10px] tracking-[.18em] uppercase border border-rule text-fg-soft px-[13px] py-[6px]">{photographer.loc}</span>
-                {primaryCamera && <span className="mono text-[10px] tracking-[.18em] uppercase border border-rule text-fg-soft px-[13px] py-[6px]">{primaryCamera}</span>}
+            <div className="grid gap-6 md:gap-[48px] items-end grid-cols-[1fr_auto]">
+              <div>
+                <div className="caps opacity-55 tracking-[.3em] mb-5">The Private Collection of</div>
+                <h1 className="font-serif font-medium m-0 leading-[1.04] tracking-[.01em] text-[clamp(40px,6.5vw,92px)]">
+                  {leadName}
+                  {lastName && (
+                    <>
+                      <br />
+                      <em>{lastName}</em>
+                    </>
+                  )}
+                </h1>
+                <div className="mt-7 flex gap-[10px] items-center flex-wrap">
+                  <span className="caps text-[10px] border border-rule text-fg-soft px-[13px] py-[6px]">
+                    {photographer.loc}
+                  </span>
+                  <span className="caps text-[10px] border border-rule text-fg-soft px-[13px] py-[6px]">
+                    Joined {photographer.joined}
+                  </span>
+                  {topCamera && (
+                    <span className="caps text-[10px] border border-rule text-fg-soft px-[13px] py-[6px]">
+                      {topCamera}
+                    </span>
+                  )}
+                </div>
               </div>
               <SocialIconRow p={photographer} />
             </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-px bg-rule border border-rule">
-              <CollStat b={pad2(curated.length)} s="CURATED" />
-              <CollStat b={pad2(archive.length)} s="IN ARCHIVE" />
-              <CollStat b={pad2(seasonAwardsCount)} s="SEASON AWARDS" />
+        {/* Stat strip + tabs */}
+        <section>
+          <div className="wrap">
+            <div className="grid grid-cols-3 md:grid-cols-6 gap-6 md:gap-8 py-6 md:py-8 border-b border-rule mono">
+              <ProfileStat label="Curated" val={curatedPhotos.length} />
+              <ProfileStat label="In Archive" val={archivePhotos.length} />
+              <ProfileStat label="Season Awards" val={seasonAwardCount} />
+              <ProfileStat label="In Competition" val={competitionPhotos.length} />
+              <ProfileStat label="Followers" val={follow.followersCount.toLocaleString()} onClick={() => setFollowModalTab('followers')} />
+              <ProfileStat label="Following" val={(photographer.following ?? 0).toLocaleString()} onClick={() => setFollowModalTab('following')} />
             </div>
           </header>
 
-          {/* Next Drop — deferred until the scheduled-release (drops) feature exists. */}
+            <Tabs defaultValue="photos" className="w-full">
+              <TabsList className="w-full justify-start rounded-none bg-transparent border-b border-rule gap-0 h-auto">
+                <TabsTrigger value="photos" className="px-0 mr-8 py-5 text-[13px] tracking-[.14em] uppercase font-medium">
+                  Collection <span className="opacity-55 ml-[6px]">{myPhotos.length}</span>
+                </TabsTrigger>
+                <TabsTrigger value="favorites" className="px-0 mr-8 py-5 text-[13px] tracking-[.14em] uppercase font-medium">
+                  Favorites <span className="opacity-55 ml-[6px]">{myFavorites.length}</span>
+                </TabsTrigger>
+                <TabsTrigger value="about" className="px-0 py-5 text-[13px] tracking-[.14em] uppercase font-medium">
+                  About
+                </TabsTrigger>
+              </TabsList>
 
-          {/* Curated Set */}
-          {curated.length > 0 ? (
-            <>
-              <SectionHead num="— 01" title="Curated Set" small={`${pad2(curated.length)} / 12 ชิ้น — คัดอัตโนมัติจากผลงานเด่น`} />
-              <div className="grid grid-cols-3 gap-x-[34px] gap-y-[46px]">
-                {curated.map((p: any, i: number) => (
-                  <SpecimenCard key={p.id} photo={p} index={i} awards={seasonAwards} onOpen={openPhoto} />
-                ))}
+              <div className="py-[48px] pb-[80px]">
+                <TabsContent value="photos">
+                  <NextDropCard photographerId={photographer.id} onReleased={reloadCollection} />
+                  <CuratedSet
+                    photos={curatedPhotos}
+                    provenance={provMap}
+                    isOwner={isOwner}
+                    onCurateChanged={reloadCollection}
+                  />
+                  <section className="mb-10 md:mb-[64px]">
+                    <SectionHead num="03" title="In Competition" note="ภาพที่ส่งเข้าประกวด Season — นับคะแนนจริง" />
+                    {competitionPhotos.length > 0
+                      ? <PhotoGrid photos={competitionPhotos} cols={3} showLike onCurateChanged={isOwner ? reloadCollection : undefined} />
+                      : <ProfileEmpty msg="ยังไม่มีภาพเข้าประกวด" />
+                    }
+                  </section>
+                  <ArchiveDrawer photos={archivePhotos} isOwner={isOwner} onCurateChanged={reloadCollection} />
+                  {isOwner && (
+                    <PrivateDrawer photos={privatePhotos} photographerId={photographer.id} onChanged={reloadCollection} />
+                  )}
+                </TabsContent>
+
+                <TabsContent value="favorites">
+                  <p className="th text-[14px] text-fg-soft mt-0 mb-8 max-w-[600px]">
+                    ภาพที่ {photographer.name.split(' ')[0]} เลือกบันทึกไว้ — ตั้งเป็น public โดยช่างภาพ
+                  </p>
+                  {myFavorites.length > 0 ? (
+                    <PhotoGrid photos={myFavorites} cols={3} showLike />
+                  ) : (
+                    <ProfileEmpty msg="ยังไม่มีภาพที่บันทึกไว้" />
+                  )}
+                </TabsContent>
+
+                <TabsContent value="about">
+                  {photographer.isCustomer && (
+                    <div className="p-6 md:p-[32px_36px] bg-cream border border-rule mb-8 md:mb-[48px] grid gap-8 md:gap-[48px] items-center grid-cols-1 md:grid-cols-[1.5fr_1fr]">
+                      <div>
+                        <div className="caps opacity-55 mb-3 flex items-center gap-2">
+                          <VoyageurMark size={9} /> Traveller
+                        </div>
+                        <h3 className="th text-[26px] font-normal tracking-[-0.015em] m-0 leading-[1.25]">
+                          ลูกค้าทริป GOGRAPHY — มีสิทธิ์ลุ้นรางวัล Travellers Awards
+                        </h3>
+                        <div className="mono mt-5 text-[12px] leading-[1.9]">
+                          <div className="opacity-55 mb-2">TRIPS COMPLETED</div>
+                          {(photographer.customerTrips ?? []).map((t: string) => (
+                            <div key={t}>· {t}</div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="border-l border-rule pl-8">
+                        <div className="caps opacity-55 mb-3">Travellers · Season 01</div>
+                        <div className="th text-[14px] leading-[1.7]">
+                          <div className="flex justify-between py-2 border-b border-rule">
+                            <span>Photos submitted</span>
+                            <span className="mono font-medium">{myPhotos.length}</span>
+                          </div>
+                          {voyageurRank != null && topCategory && (
+                            <div className="flex justify-between py-2 border-b border-rule">
+                              <span>Current rank ({topCategory})</span>
+                              <span className="mono font-medium">#{voyageurRank}</span>
+                            </div>
+                          )}
+                          <div className="flex justify-between py-2">
+                             <span>Cashback tier</span>
+                             <span className="mono font-medium">
+                               {getCashbackPercentage(voyageurRank)}% {getCashbackPercentage(voyageurRank) > 0 ? '✓' : ''}
+                             </span>
+                           </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-[80px] pt-4">
+                    <div>
+                      <h3 className="th text-[24px] font-normal tracking-[-0.015em] m-0 mb-5">
+                        เกี่ยวกับ {photographer.name}
+                      </h3>
+                      <p className="th text-[15px] leading-[1.75] text-fg-soft">{photographer.bio}</p>
+                    </div>
+                    <div>
+                      {camerasList.length > 0 && (
+                        <>
+                          <div className="caps opacity-55 mb-4">Gear</div>
+                          <ul className="list-none p-0 m-0 mono">
+                            {camerasList.map((cam: string) => (
+                              <li key={cam} className="py-3 border-b border-rule text-[13px]">{cam}</li>
+                            ))}
+                          </ul>
+                        </>
+                      )}
+                      <div className="caps opacity-55 mb-4 mt-8">Categories</div>
+                      <ul className="list-none p-0 m-0 mono">
+                        {myCategories.map((cat: string) => (
+                          <li key={cat} className="py-3 border-b border-rule text-[13px]">{cat}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </TabsContent>
               </div>
               <ArchiveDrawer photos={archive} onOpen={openPhoto} cols={6} />
             </>

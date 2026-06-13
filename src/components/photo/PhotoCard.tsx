@@ -1,12 +1,20 @@
 'use client';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import type { Photo } from '@/lib/types';
-import { getPhotographer } from '@/lib/data';
+import type { Photo, PhotoVisibility } from '@/lib/types';
 import { PickBadge } from '@/components/icons';
-import { CardLikeButton } from './CardLikeButton';
+import { VoteAspect } from './VoteAspect';
 import { PhotoCardDeleteButton } from './PhotoCardDeleteButton';
+import { PhotoCardVisibilityButton } from './PhotoCardVisibilityButton';
+import { PhotoCardCurateButton } from './PhotoCardCurateButton';
 import { PulseStatusBadge } from './PulseStatusBadge';
+import { SHOW_LIKE_COUNTS } from '@/lib/flags';
+
+const VISIBILITY_LABELS: Record<PhotoVisibility, string> = {
+  public: 'Competition',
+  portfolio: 'Portfolio',
+  private: 'Private',
+};
 
 interface PhotoCardProps {
   photo: Photo;
@@ -19,6 +27,9 @@ interface PhotoCardProps {
   ownerId?: string | null;
   deletable?: boolean;
   onDeleted?: (id: string) => void;
+  showVisibility?: boolean;
+  onVisibilityChanged?: (id: string, visibility: PhotoVisibility) => void;
+  onCurateChanged?: (id: string, isCurated: boolean) => void;
 }
 
 export function PhotoCard({
@@ -29,10 +40,12 @@ export function PhotoCard({
   ownerId,
   deletable = false,
   onDeleted,
+  showVisibility = false,
+  onVisibilityChanged,
+  onCurateChanged,
 }: PhotoCardProps) {
   const router = useRouter();
   const t = useTranslations('PhotoCard');
-  const photographer = getPhotographer(photo.by);
 
   return (
     <div className="pcard relative group" onClick={() => router.push(`/photo/${photo.id}`)}>
@@ -49,19 +62,35 @@ export function PhotoCard({
             <div className="pimg-overlay-cat">{photo.cat}</div>
             <div className="pimg-overlay-title">{photo.title}</div>
             <div className="pimg-overlay-meta">
-              <span>{photographer ? photographer.name : photo.by}</span>
+              <span>{photo.by}</span>
               <span className="pimg-overlay-sep">·</span>
               <span>{photo.exif?.camera || t('unknown_camera')}</span>
             </div>
-            <div className="pimg-overlay-pulse">
-              <span className="pimg-overlay-pulse-num">{photo.likes}</span>
-              <span className="pimg-overlay-pulse-lab">{t('likes')}</span>
-            </div>
+            {SHOW_LIKE_COUNTS && (
+              <div className="pimg-overlay-pulse">
+                <span className="pimg-overlay-pulse-num">{photo.likes}</span>
+                <span className="pimg-overlay-pulse-lab">{t('likes')}</span>
+              </div>
+            )}
           </div>
         </div>
-        {showLike && <CardLikeButton photoId={photo.id} ownerId={ownerId} />}
+        {showLike && <VoteAspect photoId={photo.id} ownerId={ownerId} variant="card" />}
         {deletable && onDeleted && (
           <PhotoCardDeleteButton photoId={photo.id} storageUrl={photo.src} onDeleted={onDeleted} />
+        )}
+        {onVisibilityChanged && (
+          <PhotoCardVisibilityButton
+            photoId={photo.id}
+            visibility={photo.visibility ?? 'public'}
+            onChanged={onVisibilityChanged}
+          />
+        )}
+        {onCurateChanged && (
+          <PhotoCardCurateButton
+            photoId={photo.id}
+            isCurated={photo.isCurated ?? false}
+            onChanged={onCurateChanged}
+          />
         )}
       </div>
       <div className="pmeta">
@@ -75,20 +104,27 @@ export function PhotoCard({
             <div className="ptitle truncate">
               {photo.title}
             </div>
-            <div className="pby">{photographer ? photographer.name : photo.by}</div>
+            <div className="pby">{photo.by}</div>
+            {showVisibility && (
+              <div className="caps text-[9px] opacity-55 mt-1">
+                {VISIBILITY_LABELS[photo.visibility ?? 'public']}
+              </div>
+            )}
             <PulseStatusBadge pulse={photo.peakPulse ?? photo.pulse} badge={photo.badge} className="mt-[6px]" />
           </div>
         </div>
-        <div className="shrink-0 ml-4 text-right">
-          <div className="pulse">
-            <span className="big">{photo.likes}</span>
-            <span className="lab">{t('likes')}</span>
+        {SHOW_LIKE_COUNTS && (
+          <div className="shrink-0 ml-4 text-right">
+            <div className="pulse">
+              <span className="big">{photo.likes}</span>
+              <span className="lab">{t('likes')}</span>
+            </div>
+            <div className="mono text-[10px] text-fg-soft mt-1 tracking-[.04em] flex gap-2 justify-end">
+              {photo.favorites > 0 && <span>★ {photo.favorites}</span>}
+              {photo.comments > 0 && <span>· {photo.comments} {t('comments')}</span>}
+            </div>
           </div>
-          <div className="mono text-[10px] text-fg-soft mt-1 tracking-[.04em] flex gap-2 justify-end">
-            {photo.favorites > 0 && <span>★ {photo.favorites}</span>}
-            {photo.comments > 0 && <span>· {photo.comments} {t('comments')}</span>}
-          </div>
-        </div>
+        )}
       </div>
       {(photo.picks?.length || 0) > 0 && (
         <div className="absolute top-3 right-3 flex gap-[6px]">

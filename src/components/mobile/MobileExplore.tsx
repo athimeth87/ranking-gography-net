@@ -3,13 +3,15 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { PHOTOS, PHOTOGRAPHERS, pulseScore } from '@/lib/data';
+import { pulseScore } from '@/lib/data';
+import { formatScore } from '@/lib/pulse';
 import { useApp } from '@/providers/AppProvider';
-import { useLikeState } from '@/hooks/useLikeState';
+import { VoteAspect } from '@/components/photo/VoteAspect';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { MobileNav, MobileFooter, MobileMarquee, MobileSectionHeader, BottomNav } from './MobileShared';
 import { CrownIcon } from '@/components/icons';
 import { PulseStatusBadge } from '@/components/photo/PulseStatusBadge';
+import { SHOW_LIKE_COUNTS } from '@/lib/flags';
 
 // Masonry photo tile with avatar+username overlay (left) and like button (right)
 export function MasonryTile({ photo }: { photo: any }) {
@@ -17,20 +19,7 @@ export function MasonryTile({ photo }: { photo: any }) {
   const { authUser } = useApp();
   const aspect = photo.w && photo.h ? `${photo.w} / ${photo.h}` : '4 / 5';
 
-  const photographer = PHOTOGRAPHERS.find(p => p.username === photo.by);
-  const avatarUrl = photo.avatarUrl || photographer?.avatar;
-
-  const { liked, count, toggle } = useLikeState(photo.id);
-
-  const toggleLike = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    const result = await toggle();
-    if (result.kind === 'unauth') {
-      router.push('/login');
-    }
-  };
-
-  const likesLabel = count >= 1000 ? `${(count / 1000).toFixed(1)}k` : count;
+  const avatarUrl = photo.avatarUrl || photo.photographerAvatar;
 
   return (
     <div
@@ -97,24 +86,8 @@ export function MasonryTile({ photo }: { photo: any }) {
           textShadow: '0 1px 2px rgba(0,0,0,0.4)',
         }}>{photo.by}</span>
       </div>
-      {/* Like button — bottom-right (clickable) */}
-      <button
-        onClick={toggleLike}
-        aria-label={liked ? 'Unlike' : 'Like'}
-        style={{
-          position: 'absolute', right: 10, bottom: 10,
-          padding: 0, border: 0, background: 'transparent', cursor: 'pointer',
-          display: 'inline-flex', alignItems: 'center', gap: 4,
-          color: liked ? '#ff5d75' : '#fff',
-          fontSize: 13, fontWeight: 500, fontFamily: 'inherit',
-          textShadow: '0 1px 2px rgba(0,0,0,0.4)',
-        }}
-      >
-        <svg width="15" height="15" viewBox="0 0 24 24" fill={liked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-        </svg>
-        <span>{likesLabel}</span>
-      </button>
+      {/* Vote aspect — replaces the like (color / composition) */}
+      <VoteAspect photoId={photo.id} ownerId={(photo as any).photographerId ?? (photo as any).ownerId ?? null} variant="card" />
     </div>
   );
 }
@@ -139,7 +112,7 @@ export function MobileExplore({ initialCategory = 'All', dbPhotos = [] }: { init
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const dataSource = dbPhotos.length > 0 ? dbPhotos : PHOTOS;
+  const dataSource = dbPhotos;
 
   const filtered = useMemo(() => {
     const base = cat === 'All' ? dataSource
@@ -223,30 +196,26 @@ export function MobileExplore({ initialCategory = 'All', dbPhotos = [] }: { init
     
     // In case there's no latest week or no rankings, fallback to overall top photographers
     if (latestRankings.length === 0) {
-      return PHOTOGRAPHERS
-        .map(p => {
-          const matchedPhotos = dataSource.filter(ph => ph.by === p.username);
-          const totalPulse = matchedPhotos.reduce((s, ph) => s + (ph.pulse && ph.pulse > 0 ? ph.pulse : pulseScore(ph)), 0);
-          return {
-            username: p.username,
-            name: p.name,
-            avatar: p.avatar,
-            pulse: totalPulse,
-            isRankMaster: false
-          };
-        })
+      const byUser: Record<string, { name: string, avatar: string, pulse: number }> = {};
+      dataSource.forEach(ph => {
+        const score = ph.pulse && ph.pulse > 0 ? ph.pulse : pulseScore(ph);
+        const entry = byUser[ph.by] || { name: ph.photographerName || ph.by, avatar: ph.photographerAvatar || ph.avatarUrl || '', pulse: 0 };
+        entry.pulse += score;
+        byUser[ph.by] = entry;
+      });
+      return Object.entries(byUser)
+        .map(([username, e]) => ({ username, ...e, isRankMaster: false }))
         .sort((a, b) => b.pulse - a.pulse)
         .slice(0, 10);
     }
 
     return latestRankings.slice(0, 10).map(r => {
       const matchedPhoto = dataSource.find(ph => ph.by === r.username);
-      const staticPhotographer = PHOTOGRAPHERS.find(p => p.username === r.username);
-      
+
       return {
         username: r.username,
-        name: matchedPhoto?.photographerName || staticPhotographer?.name || r.username,
-        avatar: matchedPhoto?.photographerAvatar || staticPhotographer?.avatar || '',
+        name: matchedPhoto?.photographerName || r.username,
+        avatar: matchedPhoto?.photographerAvatar || matchedPhoto?.avatarUrl || '',
         pulse: r.totalScore,
         isRankMaster: rankMasterUsernames.has(r.username)
       };
@@ -417,7 +386,7 @@ export function MobileExplore({ initialCategory = 'All', dbPhotos = [] }: { init
                       fontFamily: "'IBM Plex Mono', monospace", fontSize: 10,
                       letterSpacing: '0.08em', color: 'var(--fg-soft)',
                       marginTop: 2, textTransform: 'uppercase',
-                    }}>Pulse {typeof p.pulse === 'number' ? p.pulse.toFixed(1) : p.pulse}</div>
+                    }}>Pulse {typeof p.pulse === 'number' ? formatScore(p.pulse) : p.pulse}</div>
                   </div>
                 ))}
               </div>

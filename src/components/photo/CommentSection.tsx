@@ -5,6 +5,7 @@ import { useApp } from '@/providers/AppProvider';
 import { useComments } from '@/hooks/useComments';
 import { createComment, type CommentRow } from '@/lib/data/comments-db';
 import { CommentItem } from './CommentItem';
+import { SHOW_LIKE_COUNTS } from '@/lib/flags';
 
 const PAGE_SIZE = 5;
 
@@ -62,9 +63,11 @@ export function CommentSection({ photoId }: CommentSectionProps) {
     <div className="mt-14">
       <div className="mb-8">
         <div className="caps opacity-55 mb-2">Comments</div>
-        <div className="mono text-[11px] opacity-50">
-          {loading ? 'Loading…' : `${comments.length} comments`}
-        </div>
+        {(loading || SHOW_LIKE_COUNTS) && (
+          <div className="mono text-[11px] opacity-50">
+            {loading ? 'Loading…' : `${comments.length} comments`}
+          </div>
+        )}
       </div>
 
       <div className="flex gap-3 mb-8">

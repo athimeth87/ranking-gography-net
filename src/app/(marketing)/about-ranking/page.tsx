@@ -1,2 +1,2 @@
 import { redirect } from 'next/navigation';
-export default function Page() { redirect('/faq'); }
+export default function Page() { redirect('/how-ranking-works'); }

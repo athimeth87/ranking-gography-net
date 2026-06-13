@@ -90,7 +90,6 @@ export default function ApplyPhotographerPage() {
   return (
     <div className="page-fade">
       <PageCover
-        photoId="p005"
         eyebrow="Apply"
         title={<>Submit your portfolio<br />for upload access</>}
         subtitle="เราเปิดรับช่างภาพมือสมัครเล่นและอาชีพ — ทีม Editorial จะตรวจสอบ portfolio ของคุณก่อนอนุมัติสิทธิ์อัพโหลด (ภายใน 7 วัน)"
