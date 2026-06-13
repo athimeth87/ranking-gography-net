@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { RealtimePhotoGrid } from '@/components/photo/RealtimePhotoGrid';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -8,9 +8,10 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { useApp } from '@/providers/AppProvider';
-import type { Photographer, Photo, Category } from '@/lib/types';
+import type { Photographer, Photo, Category, PhotoVisibility } from '@/lib/types';
 import { MAX_UPLOAD_BYTES, formatBytes, convertToWebP } from '@/lib/imageConvert';
 import { getPresignedUploadUrl } from '@/app/actions/r2-upload';
+import { CreateDropDialog } from '@/components/account/CreateDropDialog';
 import { toast } from 'sonner';
 
 interface MePhotosProps {
@@ -27,6 +28,7 @@ export function MePhotos({ myPhotos, isPhotographer, isVoyageur, onPhotoUploaded
   const { authUser, userState } = useApp();
   const [tab, setTab] = useState<'all' | 'public' | 'hidden'>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDropOpen, setIsDropOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedTodayCount, setUploadedTodayCount] = useState(0);
   const [draft, setDraft] = useState<{
@@ -38,6 +40,7 @@ export function MePhotos({ myPhotos, isPhotographer, isVoyageur, onPhotoUploaded
     voyageurOnly: boolean;
     camera: string;
     lens: string;
+    visibility: PhotoVisibility;
   }>({
     title: '',
     cat: 'Landscape',
@@ -46,11 +49,12 @@ export function MePhotos({ myPhotos, isPhotographer, isVoyageur, onPhotoUploaded
     file: null,
     previewUrl: '',
     camera: '',
-    lens: ''
+    lens: '',
+    visibility: 'public'
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const checkUploadLimit = async () => {
+  const checkUploadLimit = useCallback(async () => {
     if (!authUser?.id) return;
     const supabase = getSupabaseBrowserClient();
     const startOfDay = new Date();
@@ -59,13 +63,30 @@ export function MePhotos({ myPhotos, isPhotographer, isVoyageur, onPhotoUploaded
       .from('photos')
       .select('*', { count: 'exact', head: true })
       .eq('photographer_id', authUser.id)
+      .eq('visibility', 'public')
       .gte('uploaded_at', startOfDay.toISOString());
     setUploadedTodayCount(count || 0);
-  };
+  }, [authUser]);
 
   useEffect(() => {
     checkUploadLimit();
-  }, [authUser]);
+  }, [checkUploadLimit]);
+  // Competition quota: 1 public (เข้าประกวด) upload per day per account
+  const PUBLIC_DAILY_QUOTA = 1;
+  const publicQuotaUsed = uploadedTodayCount >= PUBLIC_DAILY_QUOTA;
+  const publicQuotaLeft = Math.max(0, PUBLIC_DAILY_QUOTA - uploadedTodayCount);
+
+  // If today's competition quota is used, fall back to portfolio
+  useEffect(() => {
+    if (publicQuotaUsed) {
+      setDraft((d) => (d.visibility === 'public' ? { ...d, visibility: 'portfolio' } : d));
+    }
+  }, [publicQuotaUsed]);
+
+  const handleVisibilityChanged = () => {
+    checkUploadLimit();
+    onPhotoUploaded?.();
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -80,6 +101,8 @@ export function MePhotos({ myPhotos, isPhotographer, isVoyageur, onPhotoUploaded
   const handleUploadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!draft.file || !draft.title || !authUser?.id) return;
+    // Only competition entries consume the daily quota
+    if (draft.visibility === 'public' && publicQuotaUsed) return;
 
     setIsUploading(true);
     const supabase = getSupabaseBrowserClient();
@@ -136,7 +159,8 @@ export function MePhotos({ myPhotos, isPhotographer, isVoyageur, onPhotoUploaded
       width: imgWidth,
       height: imgHeight,
       likes_count: 0,
-      favorites_count: 0
+      favorites_count: 0,
+      visibility: draft.visibility
     });
 
     if (dbError) {
@@ -147,8 +171,15 @@ export function MePhotos({ myPhotos, isPhotographer, isVoyageur, onPhotoUploaded
 
     setIsUploading(false);
     setIsModalOpen(false);
-    setDraft({ title: '', cat: 'Landscape', caption: '', voyageurOnly: false, file: null, previewUrl: '', camera: '', lens: '' });
-    toast.success('อัปโหลดสำเร็จแล้ว!', { description: 'รูปภาพของคุณถูกส่งเข้าสู่ระบบแล้ว' });
+    setDraft({ title: '', cat: 'Landscape', caption: '', voyageurOnly: false, file: null, previewUrl: '', camera: '', lens: '', visibility: 'public' });
+    toast.success('อัปโหลดสำเร็จแล้ว!', {
+      description:
+        draft.visibility === 'public'
+          ? 'ภาพของคุณเข้าประกวด Season แล้ว'
+          : draft.visibility === 'portfolio'
+          ? 'ภาพถูกเพิ่มลงพอร์ตของคุณแล้ว'
+          : 'ภาพถูกเก็บในลิ้นชัก — เห็นเฉพาะคุณ',
+    });
     checkUploadLimit();
 
     if (onPhotoUploaded) {
@@ -156,12 +187,8 @@ export function MePhotos({ myPhotos, isPhotographer, isVoyageur, onPhotoUploaded
     }
   };
 
-  // Enforce 2 per day limit for non-photographers
-  const limitReached = !isPhotographer && uploadedTodayCount >= 2;
-
-  // Demo: last photo is "hidden"
-  const visible = myPhotos.slice(0, Math.max(myPhotos.length - 1, 0));
-  const hidden = myPhotos.slice(-1);
+  const visible = myPhotos.filter((p) => (p.visibility ?? 'public') === 'public');
+  const hidden = myPhotos.filter((p) => (p.visibility ?? 'public') !== 'public');
   const display = tab === 'all' ? myPhotos : tab === 'public' ? visible : hidden;
 
   return (
@@ -171,12 +198,22 @@ export function MePhotos({ myPhotos, isPhotographer, isVoyageur, onPhotoUploaded
         <h1 className="th text-[56px] font-normal tracking-[-0.025em] m-0 leading-none">
           My photos
         </h1>
-        <button 
-          className="btn btn-solid btn-sm" 
-          onClick={() => setIsModalOpen(true)}
-        >
-          Upload photo
-        </button>
+        <div className="flex gap-[10px]">
+          {isPhotographer && (
+            <button
+              className="btn btn-sm th"
+              onClick={() => setIsDropOpen(true)}
+            >
+              ตั้งเป็น Drop
+            </button>
+          )}
+          <button
+            className="btn btn-solid btn-sm"
+            onClick={() => setIsModalOpen(true)}
+          >
+            Upload photo
+          </button>
+        </div>
       </div>
 
       <Tabs
@@ -199,7 +236,7 @@ export function MePhotos({ myPhotos, isPhotographer, isVoyageur, onPhotoUploaded
         <TabsContent value="all">
           <div className="py-8">
             {display.length > 0 ? (
-              <RealtimePhotoGrid photos={display} cols={3} uniform deletable onDeleted={onPhotoDeleted} />
+              <RealtimePhotoGrid photos={display} cols={3} uniform deletable onDeleted={onPhotoDeleted} showVisibility onVisibilityChanged={handleVisibilityChanged} />
             ) : (
               <div className="py-20 text-center text-fg-soft th">ไม่มีภาพในแท็บนี้</div>
             )}
@@ -208,7 +245,7 @@ export function MePhotos({ myPhotos, isPhotographer, isVoyageur, onPhotoUploaded
         <TabsContent value="public">
           <div className="py-8">
             {visible.length > 0 ? (
-              <RealtimePhotoGrid photos={visible} cols={3} uniform deletable onDeleted={onPhotoDeleted} />
+              <RealtimePhotoGrid photos={visible} cols={3} uniform deletable onDeleted={onPhotoDeleted} showVisibility onVisibilityChanged={handleVisibilityChanged} />
             ) : (
               <div className="py-20 text-center text-fg-soft th">ไม่มีภาพในแท็บนี้</div>
             )}
@@ -217,22 +254,23 @@ export function MePhotos({ myPhotos, isPhotographer, isVoyageur, onPhotoUploaded
         <TabsContent value="hidden">
           <div className="py-8">
             {hidden.length > 0 ? (
-              <RealtimePhotoGrid photos={hidden} cols={3} uniform deletable onDeleted={onPhotoDeleted} />
+              <RealtimePhotoGrid photos={hidden} cols={3} uniform deletable onDeleted={onPhotoDeleted} showVisibility onVisibilityChanged={handleVisibilityChanged} />
             ) : (
               <div className="py-20 text-center text-fg-soft th">ไม่มีภาพในแท็บนี้</div>
             )}
           </div>
         </TabsContent>
       </Tabs>
+      {isPhotographer && authUser?.id && (
+        <CreateDropDialog
+          open={isDropOpen}
+          onOpenChange={setIsDropOpen}
+          photographerId={authUser.id}
+          onCreated={onPhotoUploaded}
+        />
+      )}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="sm:max-w-[400px] p-6 bg-[#1a1a1a]/80 backdrop-blur-2xl border-white/10 shadow-[0_0_40px_rgba(0,0,0,0.5)] text-white !rounded-2xl outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 border">
-          {limitReached ? (
-            <div className="py-10 text-center">
-              <h2 className="th text-[24px] font-normal mb-2 text-white">Limit Reached</h2>
-              <p className="th text-white/60 text-[14px]">คุณอัปโหลดภาพครบโควตา 2 ภาพสำหรับวันนี้แล้ว (รีเซ็ตเวลา 00:00 น.)</p>
-              <button className="bg-white text-black px-6 py-2 rounded-full font-medium mt-6 hover:bg-white/90 transition-colors" onClick={() => setIsModalOpen(false)}>เข้าใจแล้ว</button>
-            </div>
-          ) : (
             <form onSubmit={handleUploadSubmit}>
               <DialogHeader className="mb-2 shrink-0">
                 <DialogTitle className="font-serif text-2xl font-normal text-center text-white">Upload Photo</DialogTitle>
@@ -309,6 +347,56 @@ export function MePhotos({ myPhotos, isPhotographer, isVoyageur, onPhotoUploaded
                   </div>
                 </div>
 
+                <div role="radiogroup" aria-label="ส่งภาพแบบไหน">
+                  <div className="caps text-white/50 mb-1.5 text-[10px]">ส่งภาพแบบไหน</div>
+                  <div className="flex flex-col gap-2">
+                    {([
+                      {
+                        v: 'public' as PhotoVisibility,
+                        title: 'เข้าประกวด Season',
+                        sub: publicQuotaUsed
+                          ? 'คุณใช้โควต้าเข้าประกวดของวันนี้แล้ว (รีเซ็ตเวลา 00:00 น.)'
+                          : draft.visibility === 'public'
+                          ? `นับคะแนน ขึ้น feed · โควต้าวันนี้เหลือ ${publicQuotaLeft}/${PUBLIC_DAILY_QUOTA}`
+                          : 'นับคะแนน ขึ้น feed',
+                        disabled: publicQuotaUsed,
+                      },
+                      {
+                        v: 'portfolio' as PhotoVisibility,
+                        title: 'โชว์ในพอร์ต',
+                        sub: 'ไม่เข้าประกวด ไม่นับคะแนน ไม่ใช้โควต้า',
+                        disabled: false,
+                      },
+                      {
+                        v: 'private' as PhotoVisibility,
+                        title: 'เก็บในลิ้นชัก',
+                        sub: 'เห็นคนเดียว ปล่อยทีหลังได้',
+                        disabled: false,
+                      },
+                    ]).map((o) => (
+                      <label
+                        key={o.v}
+                        className={`flex items-start gap-2.5 border rounded-lg p-3 transition-all ${
+                          draft.visibility === o.v ? 'border-white/80 bg-white/10' : 'border-white/10 bg-white/5'
+                        } ${o.disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
+                      >
+                        <input
+                          type="radio"
+                          name="me-upload-visibility"
+                          className="mt-[3px] accent-white cursor-pointer"
+                          checked={draft.visibility === o.v}
+                          disabled={o.disabled}
+                          onChange={() => setDraft((d) => ({ ...d, visibility: o.v }))}
+                        />
+                        <span>
+                          <span className="th text-[13px] font-medium text-white block">{o.title}</span>
+                          <span className="th text-[10px] text-white/50 block mt-0.5">{o.sub}</span>
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
                 <div className="flex items-center justify-between border border-white/10 rounded-lg p-3 bg-white/5">
                   <div>
                     <div className="th text-[14px] font-medium text-white">Traveller Only</div>
@@ -335,12 +423,11 @@ export function MePhotos({ myPhotos, isPhotographer, isVoyageur, onPhotoUploaded
                 <button type="button" className="text-white/50 hover:text-white text-sm px-2 transition-colors" onClick={() => setIsModalOpen(false)} disabled={isUploading}>
                   Cancel
                 </button>
-                <button type="submit" className="bg-white text-black hover:bg-white/90 text-sm font-medium px-6 py-2 rounded-full transition-colors disabled:opacity-50" disabled={!draft.file || !draft.title || isUploading}>
+                <button type="submit" className="bg-white text-black hover:bg-white/90 text-sm font-medium px-6 py-2 rounded-full transition-colors disabled:opacity-50" disabled={!draft.file || !draft.title || isUploading || (draft.visibility === 'public' && publicQuotaUsed)}>
                   {isUploading ? 'Uploading...' : 'Upload'}
                 </button>
               </DialogFooter>
             </form>
-          )}
         </DialogContent>
       </Dialog>
     </div>

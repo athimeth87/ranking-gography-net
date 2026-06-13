@@ -1,14 +1,12 @@
 import React from 'react';
-import { getPhoto, getPhotographer } from '@/lib/data';
 import { cn } from '@/lib/utils';
-import type { Photo, Photographer } from '@/lib/types';
 
 const DEFAULT_COVER_SRC =
   'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=2400&q=85&auto=format&fit=crop';
 
 /**
  * Full-width cinematic page hero. White text over darkened image.
- * Pass `photoId` to pull from mock data, or `src`/`credit` directly.
+ * Pass `src` for a custom image and `credit` for the credit line.
  *
  * Slots:
  *   eyebrow   — small uppercase line above title (e.g. "About")
@@ -17,7 +15,6 @@ const DEFAULT_COVER_SRC =
  *   children  — optional CTAs / extra content rendered under subtitle
  */
 interface PageCoverProps {
-  photoId?: string;
   src?: string;
   credit?: string;
   eyebrow?: string;
@@ -28,10 +25,11 @@ interface PageCoverProps {
   minHeight?: number;
   maxHeight?: number;
   align?: 'left' | 'center';
+  /** CSS object-position for the cover image, e.g. "50% 30%". Defaults to centre. */
+  objectPosition?: string;
 }
 
 export function PageCover({
-  photoId,
   src,
   credit,
   eyebrow,
@@ -42,13 +40,11 @@ export function PageCover({
   minHeight = 340,
   maxHeight = 520,
   align = 'left',
+  objectPosition,
 }: PageCoverProps) {
-  const photo: Photo | undefined = photoId ? getPhoto(photoId) : undefined;
-  const photographer: Photographer | undefined = photo ? getPhotographer(photo.by) : undefined;
   // Uniform cover image across the site unless caller passes an explicit src.
   const imgSrc = src ?? DEFAULT_COVER_SRC;
-  const creditLine =
-    credit ?? (photo && photographer ? `"${photo.title}" by ${photographer.name}` : null);
+  const creditLine = credit ?? null;
 
   return (
     <section className="relative">
@@ -60,9 +56,11 @@ export function PageCover({
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={imgSrc}
-          alt={photo?.title ?? (typeof title === 'string' ? title : '') ?? ''}
+          alt={typeof title === 'string' ? title : ''}
           className="w-full h-full object-cover"
+          style={objectPosition ? { objectPosition } : undefined}
           loading="lazy"
+          draggable={false}
         />
 
         {/* gradient overlay top→bottom for legibility */}

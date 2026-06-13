@@ -1,8 +1,9 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { notFound } from 'next/navigation';
-import { getPhotographers, getPhotos } from '@/lib/data';
+import { getSupabaseBrowserClient } from '@/lib/supabase/client';
+import { fetchLivePhotoData } from '@/lib/data';
 import type { Photographer } from '@/lib/types';
 import { PhotographerCard } from '@/components/home/PhotographerCard';
 import { Footer } from '@/components/layout/Footer';
@@ -11,12 +12,13 @@ import { PageCover } from '@/components/layout/PageCover';
 import { computeRankMasters } from '@/lib/ranking-system';
 
 // ===== Filtered photographers directory — /photographers/[filter] =====
-// Valid filter values: 'all' | 'voyageurs' | 'ambassadors' | 'general'
+// Valid filter values: 'all' | 'travellers' | 'ambassadors' | 'general'
+// (/photographers/voyageurs 308-redirects here via next.config.mjs)
 
-type FilterValue = 'all' | 'voyageurs' | 'ambassadors' | 'general';
+type FilterValue = 'all' | 'travellers' | 'ambassadors' | 'general';
 type SortValue = 'featured' | 'followers' | 'photos' | 'newest';
 
-const VALID_FILTERS: FilterValue[] = ['all', 'voyageurs', 'ambassadors', 'general'];
+const VALID_FILTERS: FilterValue[] = ['all', 'travellers', 'ambassadors', 'general'];
 
 export default function PhotographersFilterPage({ params }: { params: { filter: string } }) {
   const initialFilter: FilterValue = VALID_FILTERS.includes(params.filter as FilterValue)
@@ -26,16 +28,27 @@ export default function PhotographersFilterPage({ params }: { params: { filter: 
   const router = useRouter();
   const [filter, setFilter] = useState<FilterValue>(initialFilter);
   const [sort, setSort] = useState<SortValue>('featured');
+  const [loading, setLoading] = useState(true);
+  const [allPhotos, setAllPhotos] = useState<{ by: string; src: string }[]>([]);
+  const [allPhotographers, setAllPhotographers] = useState<Photographer[]>([]);
 
-  const allPhotos = getPhotos();
-  const rankMasters = computeRankMasters(allPhotos);
-  const allPhotographers = getPhotographers().map(p => ({
-    ...p,
-    isRankMaster: rankMasters.has(p.username)
-  }));
+  useEffect(() => {
+    const fetchData = async () => {
+      const supabase = getSupabaseBrowserClient();
+      const { photos, photographers } = await fetchLivePhotoData(supabase);
+      const rankMasters = computeRankMasters(photos);
+      setAllPhotos(photos.map((p) => ({ by: p.by, src: p.src })));
+      setAllPhotographers(photographers.map((p) => ({
+        ...p,
+        isRankMaster: rankMasters.has(p.username),
+      })));
+      setLoading(false);
+    };
+    fetchData();
+  }, []);
 
   let list: Photographer[] = allPhotographers.slice();
-  if (filter === 'voyageurs') list = list.filter((p: Photographer) => p.isCustomer);
+  if (filter === 'travellers') list = list.filter((p: Photographer) => p.isCustomer);
   if (filter === 'ambassadors') list = list.filter((p: Photographer) => p.isAmbassador);
   if (filter === 'general') list = list.filter((p: Photographer) => !p.isCustomer && !p.isAmbassador);
 
@@ -45,14 +58,13 @@ export default function PhotographersFilterPage({ params }: { params: { filter: 
 
   const filterChips: { v: FilterValue; l: string; n: number }[] = [
     { v: 'all', l: 'All', n: allPhotographers.length },
-    { v: 'voyageurs', l: 'Travellers ◆', n: allPhotographers.filter((p: Photographer) => p.isCustomer).length },
+    { v: 'travellers', l: 'Travellers ◆', n: allPhotographers.filter((p: Photographer) => p.isCustomer).length },
     { v: 'ambassadors', l: 'Ambassadors ★', n: allPhotographers.filter((p: Photographer) => p.isAmbassador).length },
     { v: 'general', l: 'Photographers', n: allPhotographers.filter((p: Photographer) => !p.isCustomer && !p.isAmbassador).length },
   ];
 
-  const coverPhotoId = filter === 'voyageurs' ? 'p015' : filter === 'ambassadors' ? 'p002' : 'p018';
-  const coverTitle = filter === 'voyageurs' ? 'Travellers' : filter === 'ambassadors' ? 'Ambassadors' : 'All photographers';
-  const coverSubtitle = filter === 'voyageurs'
+  const coverTitle = filter === 'travellers' ? 'Travellers' : filter === 'ambassadors' ? 'Ambassadors' : 'All photographers';
+  const coverSubtitle = filter === 'travellers'
     ? 'ลูกค้า GOGRAPHY ที่เคยร่วมทริปและมีภาพอยู่บนเวที'
     : filter === 'ambassadors'
     ? 'ช่างภาพรับเชิญที่ GOGRAPHY ไว้วางใจให้คัดเลือกภาพ'
@@ -61,7 +73,6 @@ export default function PhotographersFilterPage({ params }: { params: { filter: 
   return (
     <div className="page-fade">
       <PageCover
-        photoId={coverPhotoId}
         eyebrow="Directory"
         title={coverTitle}
         subtitle={coverSubtitle}
@@ -112,7 +123,11 @@ export default function PhotographersFilterPage({ params }: { params: { filter: 
       {/* Grid */}
       <section className="py-[56px] pb-[96px]">
         <div className="wrap">
-          {list.length === 0 ? (
+          {loading ? (
+            <div className="py-[120px] text-center opacity-40 mono text-[12px] uppercase tracking-widest">
+              Loading...
+            </div>
+          ) : list.length === 0 ? (
             <div className="py-[120px] text-center text-fg-soft th">ไม่พบช่างภาพในตัวกรองนี้</div>
           ) : (
             <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">

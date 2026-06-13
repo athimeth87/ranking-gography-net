@@ -1,64 +1,100 @@
 import { describe, it, expect } from 'vitest';
-import {
-  getPhotos, getPhoto, getPhotographer, getAmbassadors,
-  getSeasons, getCommentsFor, getVoyageurUsernames, getPhotographers,
-} from '@/lib/data';
+import { getSeasons, mapDbPhoto, mapDbUser, userName } from '@/lib/data';
 
-describe('data access', () => {
-  it('returns photos ranked by pulse desc', () => {
-    const photos = getPhotos();
-    expect(photos.length).toBeGreaterThan(0);
-    expect(photos[0]!.rank).toBe(1);
-    for (let i = 1; i < photos.length; i++) {
-      expect(photos[i - 1]!.pulse).toBeGreaterThanOrEqual(photos[i]!.pulse);
-    }
+const users = [
+  {
+    id: 'u1',
+    username: 'kanthorn',
+    display_name: 'Kanthorn S.',
+    avatar_url: 'https://example.com/a.jpg',
+    cover_url: null,
+    location: 'Bangkok',
+    bio: 'bio',
+    is_ambassador: true,
+    is_customer: false,
+    created_at: '2026-06-01T00:00:00Z',
+  },
+  { id: 'u2', display_name: 'No Username', is_customer: true },
+];
+
+const photoRow = {
+  id: 'ph1',
+  slug: 'misty-ridge',
+  title: 'Misty Ridge',
+  photographer_id: 'u1',
+  category: 'bw',
+  width: 4,
+  height: 5,
+  storage_url: 'https://cdn.example.com/ph1.jpg',
+  description: 'desc',
+  camera: 'Q3',
+  likes_count: 12,
+  comments_count: 3,
+  favorites_count: 4,
+  uploaded_at: '2026-06-10T00:00:00Z',
+  pulse: '87.5',
+  peak_pulse: 91,
+  pick_type: 'editor' as const,
+  percentile: '99.1',
+  badge: 'top-10',
+};
+
+describe('seasons config', () => {
+  it('exposes Season 1 as the live season ending 2026-10-08', () => {
+    const seasons = getSeasons();
+    const live = seasons.find((s) => s.status === 'live');
+    expect(live).toBeDefined();
+    expect(live?.name).toBe('Season 1');
+    expect(live?.endDate).toBe('2026-10-08');
+    expect(live?.winners).toBeNull();
   });
-  it('filters by category', () => {
-    expect(getPhotos({ category: 'BW' }).every((p) => p.cat === 'BW')).toBe(true);
-  });
-  it('finds a photo and photographer by id/username', () => {
-    expect(getPhoto('p001')?.id).toBe('p001');
-    expect(getPhoto('nope')).toBeUndefined();
-    expect(getPhotographer('kanthorn')?.username).toBe('kanthorn');
-  });
-  it('returns only ambassadors', () => {
-    expect(getAmbassadors().every((p) => p.isAmbassador)).toBe(true);
-  });
-  it('falls back to default comments', () => {
-    expect(getCommentsFor('p004').length).toBeGreaterThan(0);
-  });
-  it('lists voyageur usernames', () => {
-    expect(getVoyageurUsernames().has('pim.travels')).toBe(true);
-  });
-  it('exposes seasons', () => {
-    expect(getSeasons().some((s) => s.status === 'live')).toBe(true);
+});
+
+describe('live mappers', () => {
+  it('userName prefers username, then display name', () => {
+    expect(userName(users[0])).toBe('kanthorn');
+    expect(userName(users[1])).toBe('No Username');
+    expect(userName(undefined)).toBe('unknown');
   });
 
-  it('returns default comments for an unknown photo id', () => {
-    const fallback = getCommentsFor('p999');
-    expect(fallback.length).toBeGreaterThan(0);
-    expect(getCommentsFor('also-unknown')).toEqual(fallback);
-    expect(getCommentsFor('p004')).not.toEqual(fallback);
+  it('mapDbPhoto maps a DB row to the Photo model', () => {
+    const photo = mapDbPhoto(photoRow, users);
+    expect(photo.id).toBe('ph1');
+    expect(photo.slug).toBe('misty-ridge');
+    expect(photo.by).toBe('kanthorn');
+    expect(photo.cat).toBe('BW');
+    expect(photo.src).toBe('https://cdn.example.com/ph1.jpg');
+    expect(photo.likes).toBe(12);
+    expect(photo.comments).toBe(3);
+    expect(photo.favorites).toBe(4);
+    expect(photo.pulse).toBe(87.5);
+    expect(photo.peakPulse).toBe(91);
+    expect(photo.pickType).toBe('editor');
+    expect(photo.percentile).toBe(99.1);
+    expect(photo.badge).toBe('top-10');
   });
 
-  it('filters by photographer username', () => {
-    const photos = getPhotos({ by: 'kanthorn' });
-    expect(photos.length).toBeGreaterThan(0);
-    expect(photos.every((p) => p.by === 'kanthorn')).toBe(true);
+  it('mapDbPhoto capitalizes non-BW categories and falls back to unknown owner', () => {
+    const photo = mapDbPhoto({ ...photoRow, category: 'landscape', photographer_id: 'nope' }, users);
+    expect(photo.cat).toBe('Landscape');
+    expect(photo.by).toBe('unknown');
   });
 
-  it('sorts by recency (date desc) and by likes desc', () => {
-    const byRecent = getPhotos({ sort: 'recent' });
-    for (let i = 1; i < byRecent.length; i++) {
-      expect(byRecent[i - 1]!.date.localeCompare(byRecent[i]!.date)).toBeGreaterThanOrEqual(0);
-    }
-    const byLikes = getPhotos({ sort: 'likes' });
-    for (let i = 1; i < byLikes.length; i++) {
-      expect(byLikes[i - 1]!.likes).toBeGreaterThanOrEqual(byLikes[i]!.likes);
-    }
-  });
-
-  it('returns all photographers', () => {
-    expect(getPhotographers()).toHaveLength(11);
+  it('mapDbUser counts followers and photos from related rows', () => {
+    const follows = [
+      { follower_id: 'u2', following_id: 'u1' },
+      { follower_id: 'x', following_id: 'u1' },
+      { follower_id: 'u1', following_id: 'u2' },
+    ];
+    const first = users[0];
+    expect(first).toBeDefined();
+    if (!first) return;
+    const photographer = mapDbUser(first, follows, [photoRow]);
+    expect(photographer.username).toBe('kanthorn');
+    expect(photographer.name).toBe('Kanthorn S.');
+    expect(photographer.followers).toBe(2);
+    expect(photographer.photos).toBe(1);
+    expect(photographer.isAmbassador).toBe(true);
+    expect(photographer.isCustomer).toBe(false);
   });
 });

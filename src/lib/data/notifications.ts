@@ -16,7 +16,8 @@ export type NotificationType =
   | 'ambassador_invited'
   | 'photo_reported'
   | 'photo_hidden'
-  | 'photo_warned';
+  | 'photo_warned'
+  | 'drop_released';
 
 export interface NotificationRow {
   id: string;
@@ -37,6 +38,7 @@ const FALLBACK: Partial<Record<NotificationType, string>> = {
   comment_received: 'Someone commented on your photo',
   comment_reply: 'Someone replied to your comment',
   follow_received: 'Someone started following you',
+  drop_released: 'A photographer you follow released a new drop',
 };
 
 export function formatNotificationBody(n: NotificationRow): string {

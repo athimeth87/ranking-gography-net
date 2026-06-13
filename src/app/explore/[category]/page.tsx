@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { notFound } from 'next/navigation';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
-import type { SortKey } from '@/lib/data';
+import type { SortKey } from '@/lib/types';
 import type { Category, Photo } from '@/lib/types';
 import { PhotoGrid } from '@/components/photo/PhotoGrid';
 import { Footer } from '@/components/layout/Footer';
@@ -143,9 +143,14 @@ export default function ExploreCategoryPage({
     const fetchPhotos = async () => {
       setIsLoading(true);
       const supabase = getSupabaseBrowserClient();
+      // Competition entries only — owners can read their own drafts/portfolio
+      // via RLS, but those must never appear in the explore feed.
       let query = supabase
         .from('photos')
-        .select('id, title, storage_url, category, likes_count, favorites_count, comments_count, uploaded_at, width, height, description, users:users!photos_photographer_id_fkey(username, display_name, avatar_url, is_customer)');
+        .select('id, title, storage_url, category, likes_count, favorites_count, comments_count, pulse, peak_pulse, pick_type, badge, uploaded_at, width, height, description, users:users!photos_photographer_id_fkey(username, display_name, avatar_url, is_customer)')
+        .eq('status', 'published')
+        .eq('is_hidden', false)
+        .eq('visibility', 'public');
 
       if (catKey) {
         query = query.ilike('category', catKey);

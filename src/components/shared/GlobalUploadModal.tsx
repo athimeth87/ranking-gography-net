@@ -1,26 +1,29 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { useApp } from '@/providers/AppProvider';
-import type { Category } from '@/lib/types';
+import type { Category, PhotoVisibility } from '@/lib/types';
 import { MAX_UPLOAD_BYTES, formatBytes, convertToWebP } from '@/lib/imageConvert';
 import { getPresignedUploadUrl } from '@/app/actions/r2-upload';
 import { toast } from 'sonner';
 
+// Competition quota: 1 public (เข้าประกวด) upload per day per account
+const PUBLIC_DAILY_QUOTA = 1;
+
 export function GlobalUploadModal() {
   const router = useRouter();
   const pathname = usePathname();
-  const { authUser, userState, isUploadModalOpen, setUploadModalOpen } = useApp();
-  
-  const isPhotographer = userState === 'photographer';
-  const isVoyageur = userState === 'customer';
-  
+  const { authUser, isUploadModalOpen, setUploadModalOpen } = useApp();
+
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedTodayCount, setUploadedTodayCount] = useState(0);
+  const [showRightsAck, setShowRightsAck] = useState(false);
+  const [rightsAcked, setRightsAcked] = useState(false);
   const [draft, setDraft] = useState<{
     file: File | null;
     previewUrl: string;
@@ -30,6 +33,7 @@ export function GlobalUploadModal() {
     voyageurOnly: boolean;
     camera: string;
     lens: string;
+    visibility: PhotoVisibility;
   }>({
     title: '',
     cat: 'Landscape',
@@ -38,11 +42,12 @@ export function GlobalUploadModal() {
     file: null,
     previewUrl: '',
     camera: '',
-    lens: ''
+    lens: '',
+    visibility: 'public'
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const checkUploadLimit = async () => {
+  const checkUploadLimit = useCallback(async () => {
     if (!authUser?.id) return;
     const supabase = getSupabaseBrowserClient();
     const startOfDay = new Date();
@@ -51,15 +56,40 @@ export function GlobalUploadModal() {
       .from('photos')
       .select('*', { count: 'exact', head: true })
       .eq('photographer_id', authUser.id)
+      .eq('visibility', 'public')
       .gte('uploaded_at', startOfDay.toISOString());
     setUploadedTodayCount(count || 0);
-  };
+  }, [authUser]);
 
   useEffect(() => {
     if (isUploadModalOpen) {
       checkUploadLimit();
+      // First-upload photo-rights acknowledgement (persisted in localStorage)
+      try {
+        if (localStorage.getItem('gpa-photo-rights-ack')) setRightsAcked(true);
+        else setShowRightsAck(true);
+      } catch {
+        setRightsAcked(true);
+      }
     }
-  }, [isUploadModalOpen, authUser]);
+  }, [isUploadModalOpen, checkUploadLimit]);
+  const handleRightsAck = (checked: boolean) => {
+    setRightsAcked(checked);
+    if (checked) {
+      try { localStorage.setItem('gpa-photo-rights-ack', '1'); } catch {}
+    }
+  };
+
+  const publicQuotaUsed = uploadedTodayCount >= PUBLIC_DAILY_QUOTA;
+  const publicQuotaLeft = Math.max(0, PUBLIC_DAILY_QUOTA - uploadedTodayCount);
+
+  // If today's competition quota is used, fall back to portfolio so the
+  // upload itself is never blocked.
+  useEffect(() => {
+    if (publicQuotaUsed) {
+      setDraft((d) => (d.visibility === 'public' ? { ...d, visibility: 'portfolio' } : d));
+    }
+  }, [publicQuotaUsed]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -73,7 +103,9 @@ export function GlobalUploadModal() {
 
   const handleUploadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!draft.file || !draft.title || !authUser?.id) return;
+    if (!draft.file || !draft.title || !authUser?.id || !rightsAcked) return;
+    // Only competition entries consume the daily quota
+    if (draft.visibility === 'public' && publicQuotaUsed) return;
 
     setIsUploading(true);
     const supabase = getSupabaseBrowserClient();
@@ -132,7 +164,8 @@ export function GlobalUploadModal() {
       width: imgWidth,
       height: imgHeight,
       likes_count: 0,
-      favorites_count: 0
+      favorites_count: 0,
+      visibility: draft.visibility
     });
 
     if (dbError) {
@@ -143,8 +176,15 @@ export function GlobalUploadModal() {
 
     setIsUploading(false);
     setUploadModalOpen(false);
-    setDraft({ title: '', cat: 'Landscape', caption: '', voyageurOnly: false, file: null, previewUrl: '', camera: '', lens: '' });
-    toast.success('อัปโหลดสำเร็จแล้ว!', { description: 'รูปภาพของคุณถูกส่งเข้าสู่ระบบแล้ว' });
+    setDraft({ title: '', cat: 'Landscape', caption: '', voyageurOnly: false, file: null, previewUrl: '', camera: '', lens: '', visibility: 'public' });
+    toast.success('อัปโหลดสำเร็จแล้ว!', {
+      description:
+        draft.visibility === 'public'
+          ? 'ภาพของคุณเข้าประกวด Season แล้ว'
+          : draft.visibility === 'portfolio'
+          ? 'ภาพถูกเพิ่มลงพอร์ตของคุณแล้ว'
+          : 'ภาพถูกเก็บในลิ้นชัก — เห็นเฉพาะคุณ',
+    });
     checkUploadLimit();
     
     // Refresh page data if we are on a page that needs it
@@ -153,21 +193,11 @@ export function GlobalUploadModal() {
     }
   };
 
-  // Enforce 2 per day limit for non-photographers and non-voyageurs
-  const limitReached = !(isPhotographer || isVoyageur) && uploadedTodayCount >= 2;
-
   // Don't render for guests if they shouldn't see it, but we handle it via Auth wrapper normally.
-  
+
   return (
     <Dialog open={isUploadModalOpen} onOpenChange={setUploadModalOpen}>
       <DialogContent className="sm:max-w-[400px] p-6 bg-[#1a1a1a]/80 backdrop-blur-2xl border-white/10 shadow-[0_0_40px_rgba(0,0,0,0.5)] text-white !rounded-2xl outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 border z-[100]">
-        {limitReached ? (
-          <div className="py-10 text-center">
-            <h2 className="th text-[24px] font-normal mb-2 text-white">Limit Reached</h2>
-            <p className="th text-white/60 text-[14px]">คุณอัปโหลดภาพครบโควตา 2 ภาพสำหรับวันนี้แล้ว (รีเซ็ตเวลา 00:00 น.)</p>
-            <button className="bg-white text-black px-6 py-2 rounded-full font-medium mt-6 hover:bg-white/90 transition-colors" onClick={() => setUploadModalOpen(false)}>เข้าใจแล้ว</button>
-          </div>
-        ) : (
           <form onSubmit={handleUploadSubmit}>
             <DialogHeader className="mb-2 shrink-0">
               <DialogTitle className="font-serif text-2xl font-normal text-center text-white">Upload Photo</DialogTitle>
@@ -244,6 +274,56 @@ export function GlobalUploadModal() {
                 </div>
               </div>
 
+              <div role="radiogroup" aria-label="ส่งภาพแบบไหน">
+                <div className="caps text-white/50 mb-1.5 text-[10px]">ส่งภาพแบบไหน</div>
+                <div className="flex flex-col gap-2">
+                  {([
+                    {
+                      v: 'public' as PhotoVisibility,
+                      title: 'เข้าประกวด Season',
+                      sub: publicQuotaUsed
+                        ? 'คุณใช้โควต้าเข้าประกวดของวันนี้แล้ว (รีเซ็ตเวลา 00:00 น.)'
+                        : draft.visibility === 'public'
+                        ? `นับคะแนน ขึ้น feed · โควต้าวันนี้เหลือ ${publicQuotaLeft}/${PUBLIC_DAILY_QUOTA}`
+                        : 'นับคะแนน ขึ้น feed',
+                      disabled: publicQuotaUsed,
+                    },
+                    {
+                      v: 'portfolio' as PhotoVisibility,
+                      title: 'โชว์ในพอร์ต',
+                      sub: 'ไม่เข้าประกวด ไม่นับคะแนน ไม่ใช้โควต้า',
+                      disabled: false,
+                    },
+                    {
+                      v: 'private' as PhotoVisibility,
+                      title: 'เก็บในลิ้นชัก',
+                      sub: 'เห็นคนเดียว ปล่อยทีหลังได้',
+                      disabled: false,
+                    },
+                  ]).map((o) => (
+                    <label
+                      key={o.v}
+                      className={`flex items-start gap-2.5 border rounded-lg p-3 transition-all ${
+                        draft.visibility === o.v ? 'border-white/80 bg-white/10' : 'border-white/10 bg-white/5'
+                      } ${o.disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
+                    >
+                      <input
+                        type="radio"
+                        name="upload-visibility"
+                        className="mt-[3px] accent-white cursor-pointer"
+                        checked={draft.visibility === o.v}
+                        disabled={o.disabled}
+                        onChange={() => setDraft((d) => ({ ...d, visibility: o.v }))}
+                      />
+                      <span>
+                        <span className="th text-[13px] font-medium text-white block">{o.title}</span>
+                        <span className="th text-[10px] text-white/50 block mt-0.5">{o.sub}</span>
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
               <div className="flex items-center justify-between border border-white/10 rounded-lg p-3 bg-white/5">
                 <div>
                   <div className="th text-[14px] font-medium text-white">Traveller Only</div>
@@ -265,17 +345,33 @@ export function GlobalUploadModal() {
                   onChange={(e) => setDraft(d => ({ ...d, caption: e.target.value }))}
                 />
               </div>
+
+              {showRightsAck && (
+                <label className="flex items-start gap-2.5 border border-white/10 rounded-lg p-3 bg-white/5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="mt-[2px] accent-white cursor-pointer"
+                    checked={rightsAcked}
+                    onChange={(e) => handleRightsAck(e.target.checked)}
+                  />
+                  <span className="th text-[11px] text-white/60 leading-[1.6]">
+                    ภาพเป็นของคุณ 100% · เราแสดงเฉพาะในบริบทของ Ranking ·{' '}
+                    <Link href="/photo-rights" target="_blank" className="text-white/80 underline underline-offset-2">
+                      อ่านฉบับเต็ม
+                    </Link>
+                  </span>
+                </label>
+              )}
             </div>
             <DialogFooter className="pt-4 border-t border-white/10 mt-2 sm:justify-between items-center flex-row shrink-0">
               <button type="button" className="text-white/50 hover:text-white text-sm px-2 transition-colors" onClick={() => setUploadModalOpen(false)} disabled={isUploading}>
                 Cancel
               </button>
-              <button type="submit" className="bg-white text-black hover:bg-white/90 text-sm font-medium px-6 py-2 rounded-full transition-colors disabled:opacity-50" disabled={!draft.file || !draft.title || isUploading}>
+              <button type="submit" className="bg-white text-black hover:bg-white/90 text-sm font-medium px-6 py-2 rounded-full transition-colors disabled:opacity-50" disabled={!draft.file || !draft.title || isUploading || !rightsAcked || (draft.visibility === 'public' && publicQuotaUsed)}>
                 {isUploading ? 'Uploading...' : 'Upload'}
               </button>
             </DialogFooter>
           </form>
-        )}
       </DialogContent>
     </Dialog>
   );

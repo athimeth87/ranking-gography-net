@@ -11,6 +11,8 @@ export default function LoginPage() {
     setError(null);
     setBusy(true);
     try {
+      // Honour ?next= (set when a guest taps like) so sign-in returns to that photo.
+      const next = new URLSearchParams(window.location.search).get('next') || '/';
       const { getSupabaseBrowserClient } = await import('@/lib/supabase/client');
       const supabase = getSupabaseBrowserClient();
       if (!supabase) throw new Error('Supabase not configured');
@@ -18,7 +20,7 @@ export default function LoginPage() {
       const { error: signInError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?next=/`,
+          redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
           queryParams: { prompt: 'select_account' },
         },
       });

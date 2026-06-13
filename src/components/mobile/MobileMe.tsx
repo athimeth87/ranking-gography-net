@@ -15,6 +15,7 @@ import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { getPresignedUploadUrl } from '@/app/actions/r2-upload';
 import { convertToWebP } from '@/lib/imageConvert';
 import { getCashbackPercentage } from '@/lib/ranking-system';
+import { useCoverReposition } from '@/hooks/useCoverReposition';
 
 type SectionKey = 'dashboard' | 'photos' | 'favorites' | 'stats' | 'notifications' | 'settings';
 
@@ -49,6 +50,7 @@ export function MobileMe({
   const [uploadingCover, setUploadingCover] = useState(false);
   const [localAvatar, setLocalAvatar] = useState<string | null>(null);
   const [localCover, setLocalCover] = useState<string | null>(null);
+  const [localCoverPos, setLocalCoverPos] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [followModalTab, setFollowModalTab] = useState<FollowTab | null>(null);
   const [photos, setPhotos] = useState(myPhotos);
@@ -137,12 +139,23 @@ export function MobileMe({
     }
   };
 
+  const saveCoverPosition = async (pos: string) => {
+    if (!authUser?.id) return;
+    const supabase = getSupabaseBrowserClient();
+    const { error } = await supabase.from('users').update({ cover_position: pos }).eq('id', authUser.id);
+    if (error) { alert('Save failed: ' + error.message); return; }
+    setLocalCoverPos(pos);
+    if (typeof profile?.updateProfile === 'function') profile.updateProfile({ cover_position: pos });
+  };
+  const coverRepos = useCoverReposition(localCoverPos || profile?.cover_position, saveCoverPosition);
+
   const persona = {
     username: profile?.username || '',
     name: profile?.display_name || 'User',
     loc: profile?.location || '',
     avatar: localAvatar || profile?.avatar_url || '',
     cover: localCover || profile?.cover_url || 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=800&auto=format&fit=crop',
+    hasCover: !!(localCover || profile?.cover_url),
   };
 
   const totalLikes = photos.reduce((s: any, p: any) => s + (p.likes || 0), 0);
@@ -166,22 +179,49 @@ export function MobileMe({
           position: 'relative', overflow: 'hidden', background: '#000',
         }}>
           {persona.cover && (
-            <img src={persona.cover} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.38 }} />
+            <img src={persona.cover} alt="" draggable={false} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: coverRepos.position, opacity: coverRepos.editing ? 0.6 : 0.38 }} />
           )}
-          <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(125% 85% at 50% 0%, rgba(38,38,38,0.5) 0%, rgba(0,0,0,0.82) 58%, rgba(0,0,0,0.95) 100%)' }} />
+          <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(125% 85% at 50% 0%, rgba(38,38,38,0.5) 0%, rgba(0,0,0,0.82) 58%, rgba(0,0,0,0.95) 100%)' }} />
 
-          {/* edit cover */}
-          <label className="ios-press" style={{
-            position: 'absolute', top: 12, right: 12, zIndex: 3, width: 32, height: 32, borderRadius: '50%',
-            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-            background: 'rgba(255,255,255,0.12)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)',
-            backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', cursor: 'pointer',
-          }} aria-label={t('change_cover')}>
-            {uploadingCover
-              ? <span style={{ fontSize: 11 }}>···</span>
-              : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></svg>}
-            <input type="file" accept="image/*" className="hidden" disabled={uploadingCover} onChange={(e) => handleImageUpload(e, 'cover')} />
-          </label>
+          {/* drag-to-reposition layer + hint (only while editing) */}
+          {coverRepos.editing && (
+            <>
+              <div {...coverRepos.dragHandlers} style={{ position: 'absolute', inset: 0, zIndex: 4, cursor: 'move', touchAction: 'none' }} />
+              <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', transform: 'translateY(-50%)', zIndex: 5, display: 'flex', justifyContent: 'center', pointerEvents: 'none' }}>
+                <span style={{ background: 'rgba(0,0,0,0.55)', color: '#fff', padding: '6px 14px', fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', fontFamily: "'IBM Plex Mono', monospace" }}>{t('reposition_hint')}</span>
+              </div>
+            </>
+          )}
+
+          {/* cover controls */}
+          {!coverRepos.editing ? (
+            <div style={{ position: 'absolute', top: 12, right: 12, zIndex: 5, display: 'flex', gap: 8 }}>
+              <label className="ios-press" style={{
+                width: 32, height: 32, borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                background: 'rgba(255,255,255,0.12)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)',
+                backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', cursor: 'pointer',
+              }} aria-label={t('change_cover')}>
+                {uploadingCover
+                  ? <span style={{ fontSize: 11 }}>···</span>
+                  : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></svg>}
+                <input type="file" accept="image/*" className="hidden" disabled={uploadingCover} onChange={(e) => handleImageUpload(e, 'cover')} />
+              </label>
+              {persona.hasCover && (
+                <button type="button" className="ios-press" onClick={coverRepos.start} aria-label={t('reposition_cover')} style={{
+                  width: 32, height: 32, borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  background: 'rgba(255,255,255,0.12)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)',
+                  backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', cursor: 'pointer',
+                }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M19 9l3 3-3 3M15 19l-3 3-3-3M2 12h20M12 2v20" /></svg>
+                </button>
+              )}
+            </div>
+          ) : (
+            <div style={{ position: 'absolute', top: 12, right: 12, zIndex: 5, display: 'flex', gap: 8 }}>
+              <button type="button" className="ios-press" onClick={coverRepos.save} disabled={coverRepos.saving} style={{ minHeight: 32, padding: '0 14px', borderRadius: 16, background: '#fff', color: '#000', border: 0, fontSize: 11, fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase', cursor: 'pointer', opacity: coverRepos.saving ? 0.6 : 1 }}>{coverRepos.saving ? t('uploading') : t('reposition_save')}</button>
+              <button type="button" className="ios-press" onClick={coverRepos.cancel} disabled={coverRepos.saving} style={{ minHeight: 32, padding: '0 14px', borderRadius: 16, background: 'rgba(0,0,0,0.5)', color: '#fff', border: '1px solid rgba(255,255,255,0.25)', fontSize: 11, fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase', cursor: 'pointer' }}>{t('reposition_cancel')}</button>
+            </div>
+          )}
 
           {/* content */}
           <div style={{ position: 'relative', zIndex: 2, padding: '40px 22px 30px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
@@ -303,6 +343,12 @@ export function MobileMe({
                   fontFamily: "'Noto Sans Thai', sans-serif",
                   fontSize: 13, color: 'var(--fg-soft)', lineHeight: 1.6, marginTop: 8,
                 }}>{daysLeft != null ? `เหลือเวลา ${daysLeft} วัน` : 'กำลังโหลด…'}</p>
+                <button
+                  onClick={() => router.push('/travellers/how-cashback-works')}
+                  className="th mt-3 block bg-transparent border-0 p-0 cursor-pointer text-[13px] font-medium text-gold"
+                >
+                  ทำอย่างไรถึงได้ 15% →
+                </button>
               </div>
             </section>
           )}

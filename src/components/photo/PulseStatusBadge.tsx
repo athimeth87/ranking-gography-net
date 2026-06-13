@@ -1,5 +1,7 @@
 import { pulseStatus, type PickType } from '@/lib/pulse-engine';
 import { statusFromBadge, type Badge } from '@/lib/pulse-engine-v4';
+import { GlossaryTerm } from '@/components/editorial/GlossaryTerm';
+import { SHOW_LIKE_COUNTS } from '@/lib/flags';
 
 const LABEL: Record<string, string> = {
   rising: 'Rising',
@@ -30,16 +32,31 @@ export function PulseStatusBadge({
   const status = badge !== undefined
     ? statusFromBadge((badge ?? null) as Badge, v4PickType)
     : pulseStatus(pulse, pickType);
-  if (!status || status === 'undiscovered') return null;
+  if (!status || status === 'undiscovered') {
+    // Counts hidden → every card still needs a signal, so show "New" instead of nothing.
+    if (SHOW_LIKE_COUNTS) return null;
+    return (
+      <span
+        className={`inline-flex items-center mono uppercase text-[9px] tracking-[.14em] leading-none px-2 py-[3px] border border-rule text-fg-soft ${className}`}
+      >
+        New
+      </span>
+    );
+  }
 
   const solid = SOLID.has(status);
+  const label = LABEL[status] ?? status;
   return (
     <span
       className={`inline-flex items-center mono uppercase text-[9px] tracking-[.14em] leading-none px-2 py-[3px] ${
         solid ? 'bg-fg text-bg' : 'border border-rule text-fg-soft'
       } ${className}`}
     >
-      {LABEL[status] ?? status}
+      {status === 'popular' || status === 'rising' || status === 'trending' ? (
+        <GlossaryTerm term={status}>{label}</GlossaryTerm>
+      ) : (
+        label
+      )}
     </span>
   );
 }

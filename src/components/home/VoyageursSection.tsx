@@ -8,7 +8,7 @@ import { VoyageurMark, RewardIcon } from '@/components/icons';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 
 interface RewardBadgeProps {
-  icon: 'voucher' | 'cashback' | 'star';
+  icon: 'cashback' | 'star';
   label: string;
   sub: string;
 }
@@ -62,9 +62,9 @@ export function VoyageursSection({ featuredPhoto }: VoyageursSectionProps) {
     reward1_amount: '50,000 THB',
     reward1_label: 'CASHBACK',
     reward1_sub: 'RANK 1',
-    reward2_amount: '10–20%',
-    reward2_label: 'ส่วนลดทริป',
-    reward2_sub: 'RANK 2–3',
+    reward2_amount: '3–15%',
+    reward2_label: 'CASHBACK',
+    reward2_sub: 'TOP 10',
     image_url: '/traveller-pick.jpg'
   });
 
@@ -104,7 +104,7 @@ export function VoyageursSection({ featuredPhoto }: VoyageursSectionProps) {
             <p className="th text-[17px] leading-[1.65] text-[var(--fg-soft)] max-w-[520px] mb-8" dangerouslySetInnerHTML={{ __html: content.description }}></p>
           
             <div className="flex gap-4 mb-12">
-              <RewardBadge icon="voucher" label={content.reward1_amount} sub={`${content.reward1_label} · ${content.reward1_sub}`} />
+              <RewardBadge icon="cashback" label={content.reward1_amount} sub={`${content.reward1_label} · ${content.reward1_sub}`} />
               <RewardBadge icon="cashback" label={content.reward2_amount} sub={`${content.reward2_label} · ${content.reward2_sub}`} />
               <RewardBadge icon="star" label="Traveller" sub={t('badge_sub')} />
             </div>
@@ -123,7 +123,7 @@ export function VoyageursSection({ featuredPhoto }: VoyageursSectionProps) {
             <div className="relative">
               <div
                 className="pimg overflow-hidden cursor-pointer aspect-[4/5]"
-                onClick={() => router.push('/photographers/voyageurs')}
+                onClick={() => router.push('/photographers/travellers')}
               >
                 {(content.image_url || featuredPhoto) && (
                   // eslint-disable-next-line @next/next/no-img-element

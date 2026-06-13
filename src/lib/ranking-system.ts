@@ -1,4 +1,3 @@
-import { PHOTOGRAPHERS } from '@/lib/data';
 
 // Helper to calculate the Monday key (YYYY-MM-DD) for a date
 export function getWeekKey(dateStr: string | Date): string {

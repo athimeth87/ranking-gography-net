@@ -15,9 +15,9 @@ export default function AdminContentPage() {
   
   const [voySettings, setVoySettings] = useState({
     title: 'Travelled with us?\\nBecome a Traveller',
-    description: 'Customers who have travelled with GOGRAPHY earn Traveller status — eligible to submit photos in a customer-only category. Each season the winner receives a 50,000 THB voucher, and the top 10 receive cashback on their next trip.',
+    description: 'Customers who have travelled with GOGRAPHY earn Traveller status — eligible to submit photos in a customer-only category. Each season the winner receives 50,000 THB cashback, and the top 10 receive 3-15% cashback on their next trip.',
     reward1_amount: '50,000 THB',
-    reward1_label: 'VOUCHER',
+    reward1_label: 'CASHBACK',
     reward1_sub: 'ต่อหมวด',
     reward2_amount: '3-15%',
     reward2_label: 'CASHBACK',
@@ -277,7 +277,7 @@ export default function AdminContentPage() {
                       <Input value={voySettings.reward1_amount} onChange={e => setVoySettings({...voySettings, reward1_amount: e.target.value})} className="rounded-lg bg-white h-9" />
                     </div>
                     <div>
-                      <Label className="text-xs mb-1.5 block text-neutral-600">Label (e.g. VOUCHER)</Label>
+                      <Label className="text-xs mb-1.5 block text-neutral-600">Label (e.g. CASHBACK)</Label>
                       <Input value={voySettings.reward1_label} onChange={e => setVoySettings({...voySettings, reward1_label: e.target.value})} className="rounded-lg bg-white h-9" />
                     </div>
                     <div>

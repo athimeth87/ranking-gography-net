@@ -1,19 +1,49 @@
-import { getPhotos } from '@/lib/data';
-import { Badge } from '@/components/ui/badge';
+'use client';
+
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { MoreVertical, Check, X, Eye } from 'lucide-react';
-import Link from 'next/link';
+import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 
 import { AdminPhotoCard } from '@/components/admin/AdminPhotoCard';
 
+interface AdminPhotoRow {
+  id: string;
+  src: string;
+  title: string;
+  date: string;
+  by: string;
+  cat: string;
+  exif: { camera: string };
+  status: string;
+}
+
 export default function AdminPhotosPage() {
-  const PHOTOS = getPhotos();
-  // Add some mock statuses to the imported data
-  const photos = PHOTOS.slice(0, 12).map((p, i) => ({
-    ...p,
-    status: i % 4 === 0 ? 'Pending' : (i % 7 === 0 ? 'Rejected' : 'Approved')
-  }));
+  const [photos, setPhotos] = useState<AdminPhotoRow[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const supabase = getSupabaseBrowserClient();
+      const { data } = await supabase
+        .from('photos')
+        .select('*, users!inner(username, display_name)')
+        .order('uploaded_at', { ascending: false })
+        .limit(48);
+      const rows: AdminPhotoRow[] = (data || []).map((p: any) => ({
+        id: p.id,
+        src: p.storage_url,
+        title: p.title,
+        date: (p.uploaded_at || '').slice(0, 10),
+        by: p.users?.username || p.users?.display_name || 'unknown',
+        cat: p.category || '',
+        exif: { camera: p.camera || 'Unknown' },
+        status: p.is_hidden ? 'Rejected' : p.status === 'published' ? 'Approved' : 'Pending',
+      }));
+      setPhotos(rows);
+      setIsLoading(false);
+    };
+    fetchData();
+  }, []);
 
   return (
     <div className="flex flex-col gap-8 pb-12">
@@ -34,11 +64,15 @@ export default function AdminPhotosPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        {photos.map((photo) => (
-          <AdminPhotoCard key={photo.id} photo={photo} />
-        ))}
-      </div>
+      {isLoading ? (
+        <div className="p-12 text-center text-neutral-500 font-mono text-xs uppercase tracking-widest">Loading Photos...</div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {photos.map((photo) => (
+            <AdminPhotoCard key={photo.id} photo={photo} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

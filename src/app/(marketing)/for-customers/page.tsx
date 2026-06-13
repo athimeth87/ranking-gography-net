@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Footer } from '@/components/layout/Footer';
 import { VoyageurMark, RewardIcon } from '@/components/icons';
 import { LoginButton } from './_components';
+import { UPLOAD_RULES, TRAVELLER_RULES, getSeasonInfo } from '@/content/rules';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -22,7 +23,7 @@ function RewardBadge({
   label,
   sub,
 }: {
-  icon: 'voucher' | 'cashback' | 'star';
+  icon: 'cashback' | 'star';
   label: string;
   sub: string;
 }) {
@@ -106,23 +107,19 @@ const PATH_STEPS = [
   },
   {
     n: '03',
-    t: 'อัพโหลดภาพ — วันละ 1 ภาพ',
-    b: 'อัพได้ 1 ภาพต่อบัญชีต่อวัน ลงได้ทั้งหมวด Classic (เปิดให้ทุกคน) และหมวด Traveller (เฉพาะลูกค้า Gography)',
-    extra: 'JPEG/PNG/WebP · ขนาดสูงสุด 5MB · ทุกภาพเปิดรับโหวต 24 ชั่วโมงเท่ากัน',
+    t: `อัพโหลดภาพ — ${UPLOAD_RULES.quota}`,
+    b: `${UPLOAD_RULES.quotaDetail} ลงได้ทั้งหมวด Classic (เปิดให้ทุกคน) และหมวด Traveller (เฉพาะลูกค้า Gography)`,
+    extra: `${UPLOAD_RULES.fileTypes} · ${UPLOAD_RULES.maxFileSize}`,
     cta: null as null | { label: string; to: string },
     prizes: null as null | { rank: string; reward: string }[],
   },
   {
     n: '04',
     t: 'ปลายฤดูกาล: ประกาศผล',
-    b: '1 season = 4 เดือน · ประกาศผลในวันเริ่มต้นฤดูกาลใหม่ — นับคะแนนรวมจากภาพทั้ง season ผู้ได้คะแนนสูงสุดอันดับ 1–3 รับรางวัล Cashback',
-    extra: 'ใช้ได้กับทริปใดก็ได้ · เงื่อนไขเป็นไปตามที่บริษัทกำหนด',
+    b: '1 season = 4 เดือน · ประกาศผลในวันเริ่มต้นฤดูกาลใหม่ — ภาพที่ได้ GoScore สูงสุดของหมวดคือผู้ชนะ รางวัลทั้งหมดเป็นเครดิตเงินคืน (Cashback)',
+    extra: TRAVELLER_RULES.rewardNote,
     cta: null as null | { label: string; to: string },
-    prizes: [
-      { rank: 'รางวัลที่ 1', reward: 'Cashback 50,000 บาท' },
-      { rank: 'รางวัลที่ 2', reward: 'ส่วนลด 20% ของราคาทริป' },
-      { rank: 'รางวัลที่ 3', reward: 'ส่วนลด 10% ของราคาทริป' },
-    ] as { rank: string; reward: string }[],
+    prizes: [...TRAVELLER_RULES.rewards] as { rank: string; reward: string }[],
   },
 ] as const;
 
@@ -130,6 +127,7 @@ const PATH_STEPS = [
 
 export default function Page() {
   const coverSrc = "/for-travellers-cover.jpg";
+  const season = getSeasonInfo();
 
   return (
     <div className="page-fade">
@@ -183,12 +181,12 @@ export default function Page() {
               </h2>
               <p className="th text-[17px] leading-[1.65] text-[var(--fg-soft)] max-w-[520px] mb-8">
                 ลูกค้า GOGRAPHY ทุกคนได้สถานะ Traveller — มีหมวดประกวดเฉพาะกลุ่ม แข่งกันเองเฉพาะคนที่เคยร่วมเดินทางกับเรา
-                ปลายฤดูกาลภาพอันดับ 1–3 รับรางวัล — อันดับ 1 Cashback 50,000 บาท, อันดับ 2–3 รับส่วนลดทริปถัดไป
+                ปลายฤดูกาลรับรางวัลเป็นเครดิตเงินคืน — อันดับ 1 Cashback 50,000 บาท และ Top 10 รับ Cashback 3–15%
               </p>
 
               <div className="flex gap-4 mb-12 flex-wrap">
-                <RewardBadge icon="voucher" label="50,000 THB" sub="CASHBACK · RANK 1" />
-                <RewardBadge icon="cashback" label="10–20%" sub="ส่วนลดทริป · RANK 2–3" />
+                <RewardBadge icon="cashback" label="50,000 THB" sub="CASHBACK · RANK 1" />
+                <RewardBadge icon="cashback" label="3–15%" sub="CASHBACK · TOP 10" />
                 <RewardBadge icon="star" label="Traveller" sub="PUBLIC BADGE · LIFETIME" />
               </div>
 
@@ -220,7 +218,7 @@ export default function Page() {
       {/* Reward summary */}
       <section className="pt-[40px] pb-[56px]">
         <div className="wrap">
-          <div className="grid grid-cols-1 md:grid-cols-3 border border-[var(--rule)]">
+          <div className="grid grid-cols-1 md:grid-cols-2 border border-[var(--rule)]">
             <RewardCell
               tag="Rank 01"
               big="50,000"
@@ -228,16 +226,10 @@ export default function Page() {
               detail="ใช้ได้กับทริป GOGRAPHY ใดก็ได้ · เงื่อนไขเป็นไปตามที่บริษัทกำหนด"
             />
             <RewardCell
-              tag="Rank 02"
-              big="20%"
-              sub="ส่วนลด"
-              detail="ส่วนลดราคาทริปครั้งถัดไป"
-            />
-            <RewardCell
-              tag="Rank 03"
-              big="10%"
-              sub="ส่วนลด"
-              detail="ส่วนลดราคาทริปครั้งถัดไป"
+              tag="Top 10"
+              big="3–15%"
+              sub="Cashback"
+              detail="เครดิตเงินคืนสำหรับทริปครั้งถัดไป ตามลำดับขั้นของอันดับ"
             />
           </div>
         </div>
@@ -248,13 +240,13 @@ export default function Page() {
         <div className="wrap">
           <div className="caps opacity-55 mb-[24px]">Rules at a glance</div>
           <div className="grid grid-cols-2 md:grid-cols-4 border border-[var(--rule)]">
-            <RuleCell num="1/day" lab="Upload" sub="วันละ 1 ภาพต่อบัญชี รวมทุกหมวด" />
+            <RuleCell num={UPLOAD_RULES.quotaShort} lab="Upload" sub="วันละ 1 ภาพต่อบัญชี รวมทุกหมวด" />
             <RuleCell
               num="∞"
               lab="Vote"
-              sub="โหวตให้ภาพอื่นได้ไม่จำกัด · 1 ภาพโหวตได้ครั้งเดียว กดถอนโหวตได้ตลอด"
+              sub={UPLOAD_RULES.voteRule}
             />
-            <RuleCell num="≤5 MB" lab="File size" sub="JPEG · PNG · WebP" />
+            <RuleCell num="≤5 MB" lab="File size" sub={UPLOAD_RULES.fileTypes} />
             <RuleCell num="4 mo" lab="Season" sub="ภาพอยู่ในประกวดตลอดฤดูกาล" />
           </div>
         </div>
@@ -328,7 +320,7 @@ export default function Page() {
                 ],
                 [
                   'โหวต (like) ภาพอื่นได้ไม่จำกัดใช่ไหม?',
-                  'ใช่ — โหวตภาพได้ไม่จำกัดจำนวน เพียงภาพละ 1 ครั้ง คะแนนของคุณช่วยภาพอื่นไต่อันดับใน Pulse Score',
+                  'ใช่ — โหวตภาพได้ไม่จำกัดจำนวน เพียงภาพละ 1 ครั้ง คะแนนของคุณช่วยภาพอื่นไต่อันดับใน GoScore',
                 ],
                 [
                   'Cashback ใช้ได้กับทริปไหนบ้าง?',
@@ -370,8 +362,8 @@ export default function Page() {
           </h2>
           <p className="th mt-[20px] text-[16px] text-[var(--fg-soft)] leading-[1.7]">
             ฤดูกาลปัจจุบัน{' '}
-            <strong className="text-[var(--fg)] font-medium">Season 01</strong>{' '}
-            เปิดรับภาพถึง 8 ตุลาคม 2569
+            <strong className="text-[var(--fg)] font-medium">{season.label}</strong>{' '}
+            เปิดรับภาพถึง {season.endLabel}
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-[16px] mt-[32px]">
             <LoginButton

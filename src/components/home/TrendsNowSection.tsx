@@ -1,8 +1,9 @@
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import type { Photo } from '@/lib/types';
-import { getPhotographer } from '@/lib/data';
 import { TrendsHeart } from './TrendsHeart';
+import { PulseStatusBadge } from '@/components/photo/PulseStatusBadge';
+import { SHOW_LIKE_COUNTS } from '@/lib/flags';
 
 interface TrendsNowSectionProps {
   photos: Photo[];
@@ -32,7 +33,6 @@ export function TrendsNowSection({ photos }: TrendsNowSectionProps) {
 
         <ol className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-[40px] gap-y-[20px]">
           {top9.map((photo, i) => {
-            const photographer = getPhotographer(photo.by);
             return (
               <li key={photo.id}>
                 <Link
@@ -56,16 +56,26 @@ export function TrendsNowSection({ photos }: TrendsNowSectionProps) {
                       {photo.title}
                     </div>
                     <div className="mono text-[10px] tracking-[.16em] uppercase opacity-55 mt-[6px] truncate">
-                      {photographer?.name ?? photo.by}
+                      {photo.by}
                     </div>
                     <div className="flex items-center gap-[10px] mt-[8px]">
                       <span className="mono text-[10px] tracking-[.14em] uppercase opacity-65">
                         {photo.cat}
                       </span>
-                      <span className="opacity-40 text-[10px]">·</span>
-                      <span className="mono text-[11px] tabular-nums opacity-80">
-                        {photo.likes} {t('likes')}
-                      </span>
+                      {SHOW_LIKE_COUNTS ? (
+                        <>
+                          <span className="opacity-40 text-[10px]">·</span>
+                          <span className="mono text-[11px] tabular-nums opacity-80">
+                            {photo.likes} {t('likes')}
+                          </span>
+                        </>
+                      ) : (
+                        <PulseStatusBadge
+                          pulse={photo.peakPulse ?? photo.pulse}
+                          badge={photo.badge}
+                          pickType={photo.pickType}
+                        />
+                      )}
                     </div>
                     <div className="mt-[10px]">
                       <TrendsHeart photoId={photo.id} />
