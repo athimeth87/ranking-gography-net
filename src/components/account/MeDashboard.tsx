@@ -10,7 +10,9 @@ import { formatNotificationBody } from '@/lib/data/notifications';
 import { useTranslations } from 'next-intl';
 import { TranslatedNotificationBody, TranslatedTimeAgo } from '@/components/layout/NotificationsBell';
 import type { Photographer, Photo } from '@/lib/types';
-
+import { getCashbackPercentage } from '@/lib/ranking-system';
+import { MeStanding } from './MeStanding';
+import { MeGoScore } from './MeGoScore';
 const ACTIVITY_PAGE = 5;
 
 // timeAgoThai removed in favor of TranslatedTimeAgo
